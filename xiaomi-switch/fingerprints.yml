@@ -14,7 +14,7 @@ zigbeeManufacturer:
     deviceIdentifiers:
       - 0x0104
     deviceProfileName: switch
-  - id: "LUMI/sensor_motion_profile"
+  - id: "profile"
     deviceLabel: profile
     profile:
       - 0x0104

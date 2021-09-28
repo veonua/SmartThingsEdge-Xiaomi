@@ -70,6 +70,12 @@ function pause(driver, device, command)
 end
 
 function set_window_shade_level(driver, device, number)
+  local prev_level = device:get_field("shadeLevel") or 0
+  
+  if prev_level == number then
+    log.info("window shade level is already set to %s", number)
+  return end
+  
   local sign = 0
   local mantissa, exponent = math.frexp(number)
   mantissa = mantissa * 2 - 1
@@ -78,7 +84,6 @@ function set_window_shade_level(driver, device, number)
   local data = data_types.SinglePrecisionFloat(sign, exponent, mantissa)
   device:send(cluster_base.write_attribute(device, CLUSTER, ATTRIBUTE, data))
 
-  local prev_level = device:get_field("shadeLevel") or 0
   device:emit_event(capabilities.windowShade.windowShade((number < prev_level) and "closing" or "opening"))
 end
 

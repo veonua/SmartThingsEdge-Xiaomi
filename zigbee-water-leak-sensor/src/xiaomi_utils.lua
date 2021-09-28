@@ -7,14 +7,15 @@ local log = require "log"
 
 local xiaomi_key_map = {
   [0x01] = "battery_mV",
-  [0x03] = "deviceTemperature",
+  [0x02] = "battery_??",
+  [0x03] = "device_temperature",
   [0x04] = "unknown1",
   [0x05] = "RSSI_dB",
   [0x06] = "LQI",
   [0x07] = "unknown2",
   [0x08] = "unknown3",
   [0x09] = "unknown4",
-  [0x0a] = "routerid",
+  [0x0a] = "router_id",
   [0x0b] = "unknown5",
   [0x0c] = "unknown6",
   [0x64] = "switch1",
@@ -22,12 +23,12 @@ local xiaomi_key_map = {
   [0x66] = "pressure",
   [0x6e] = "button1",
   [0x6f] = "button2",
-  [0x95] = "consumption",
-  [0x96] = "voltage",
-  [0x97] = "??",               --  0
+  [0x95] = "consumption", -- Wh 
+  [0x96] = "voltage",     -- V            (must do round(f / 10) )
+  [0x97] = "current in mA",               --  0
   [0x98] = "power/gestureCounter", -- counter increasing by 4
   [0x99] = "gestureCounter3", -- 0x1A
-  [0x9a] = "cudeSide",        -- 0x04
+  [0x9a] = "cubeSide",        -- 0x04
   [0x9b] = "unknown9",
 }
 
@@ -55,13 +56,13 @@ end
 
 local function emit_temperature_event(device, temperature_record)
   local temperature = temperature_record.value
-  local alarm = "cleared"
+  local alarm = capabilities.temperatureAlarm.temperatureAlarm.cleared()
   if temperature > 60 then
-    alarm = "heat"
+    alarm = capabilities.temperatureAlarm.temperatureAlarm.heat()
   elseif temperature < -20 then
-    alarm = "freeze"
+    alarm = capabilities.temperatureAlarm.temperatureAlarm.freeze()
   end
-  device:emit_event(capabilities.temperatureAlarm.temperatureAlarm(alarm))
+  device:emit_event(alarm)
 end
 
 local xiaomi_utils = {
