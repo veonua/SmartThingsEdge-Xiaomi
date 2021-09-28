@@ -1,0 +1,21 @@
+name: temp-general
+components:
+- id: main
+  capabilities:
+  - id: temperatureMeasurement
+    version: 1
+  - id: relativeHumidityMeasurement
+    version: 1
+  - id: configuration
+    version: 1
+  - id: battery
+    version: 1
+  - id: temperatureAlarm
+    version: 1
+  categories:
+  - name: Thermostat
+preferences:
+  - preferenceId: humidityOffset
+    explicit: true
+  - preferenceId: tempOffset
+    explicit: true

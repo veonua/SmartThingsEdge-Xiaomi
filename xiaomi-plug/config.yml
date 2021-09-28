@@ -1,0 +1,4 @@
+name: 'Xiaomi Plug'
+packageKey: 'lumi-plug'
+permissions:
+  zigbee: {}

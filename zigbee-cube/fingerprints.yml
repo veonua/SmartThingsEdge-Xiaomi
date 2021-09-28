@@ -1,0 +1,6 @@
+zigbeeManufacturer:
+  - id: "LUMI/lumi.sensor_cube.aqgl01"
+    deviceLabel: Aqara Cube
+    manufacturer: LUMI
+    model: lumi.sensor_cube.aqgl01
+    deviceProfileName: cube

@@ -1,0 +1,6 @@
+zigbeeManufacturer:
+  - id: "LUMI/sens"
+    deviceLabel: Xiaomi Temperature Sensor
+    manufacturer: LUMI
+    model: lumi.sensor_ht
+    deviceProfileName: temp-general

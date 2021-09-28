@@ -1,4 +1,4 @@
-name: 'Zigbee Motion Sensor'
+name: 'Xiaomi Motion Sensor'
 packageKey: 'zigbee-motion-sensor'
 permissions:
   zigbee: {}

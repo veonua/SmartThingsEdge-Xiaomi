@@ -1,0 +1,4 @@
+name: 'Aqara Cube'
+packageKey: 'aqara-cube'
+permissions:
+  zigbee: {}

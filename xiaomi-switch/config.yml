@@ -1,0 +1,4 @@
+name: 'Xiaomi Switch'
+packageKey: 'lumi-switch'
+permissions:
+  zigbee: {}

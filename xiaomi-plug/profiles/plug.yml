@@ -1,0 +1,20 @@
+name: plug
+components:
+- id: main
+  capabilities:
+  - id: switch
+    version: 1
+  - id: powerMeter
+    version: 1
+  - id: energyMeter
+    version: 1
+  - id: voltageMeasurement
+    version: 1
+  - id: temperatureAlarm
+    version: 1
+  - id: refresh
+    version: 1
+  - id: configuration
+    version: 1
+  categories:
+  - name: SmartPlug

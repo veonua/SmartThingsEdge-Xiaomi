@@ -16,7 +16,8 @@ local capabilities = require "st.capabilities"
 local ZigbeeDriver = require "st.zigbee"
 local defaults = require "st.zigbee.defaults"
 local constants = require "st.zigbee.constants"
-
+local clusters = require "st.zigbee.zcl.clusters"
+local xiaomi_utils = "xiaomi-utils"
 
 local zigbee_motion_driver = {
   supported_capabilities = {
@@ -24,19 +25,20 @@ local zigbee_motion_driver = {
     capabilities.motionSensor,
     capabilities.battery,
   },
-  sub_drivers = { require("aurora"),
-                  require("ikea"),
-                  require("iris"),
-                  require("gatorsystem"),
-                  require("motion_timeout"),
-                  require("nyce"),
-                  require("lumi"),
+  sub_drivers = { require("lumi"),
                   require("zigbee-plugin-motion-sensor"),
+  },
+  zigbee_handlers = {
+    attr = {
+      [clusters.Basic.ID] = {
+        [0xFF01] = xiaomi_utils.handler
+      },
+    }
   },
   ias_zone_configuration_method = constants.IAS_ZONE_CONFIGURE_TYPE.AUTO_ENROLL_RESPONSE
 }
 
 defaults.register_for_default_handlers(zigbee_motion_driver, zigbee_motion_driver.supported_capabilities)
 
-local driver = ZigbeeDriver("zigbee-motion", zigbee_motion_driver)
-driver:run(false)
+local driver = ZigbeeDriver("xiaomi-motion", zigbee_motion_driver)
+driver:run()

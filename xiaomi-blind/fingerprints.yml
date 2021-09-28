@@ -1,0 +1,7 @@
+zigbeeManufacturer:
+  - id: "lumi.curtain.hagl04"
+    deviceLabel: Aqara Curtain B1
+    manufacturer: LUMI
+    model: lumi.curtain.hagl04
+    deviceProfileName: blind
+  

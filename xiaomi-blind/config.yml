@@ -1,0 +1,4 @@
+name: 'Xiaomi Blinds'
+packageKey: 'lumi-blind'
+permissions:
+  zigbee: {}

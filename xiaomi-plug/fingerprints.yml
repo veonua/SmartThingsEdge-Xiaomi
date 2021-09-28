@@ -1,0 +1,33 @@
+zigbeeManufacturer:
+  - id: "lumi.plug"
+    deviceLabel: Xiaomi CN Plug
+    manufacturer: LUMI
+    model: lumi.plug
+    deviceProfileName: plug
+  - id: "lumi.plug.mmeu01"
+    deviceLabel: Xiaomi EU Plug
+    manufacturer: LUMI
+    model: lumi.plug.mmeu01
+    deviceProfileName: plug
+  - id: "lumi.plug.mitw01"
+    deviceLabel: Xiaomi TW Plug
+    manufacturer: LUMI
+    model: lumi.plug.mitw01
+    deviceProfileName: plug
+  - id: "lumi.plug.maus01"
+    deviceLabel: Xiaomi US Plug
+    manufacturer: LUMI
+    model: lumi.plug.maus01
+    deviceProfileName: plug
+
+  - id: "lumi.ctrl_86plug"
+    deviceLabel: Xiaomi Zigbee CN Smart Wall Socket
+    manufacturer: LUMI
+    model: lumi.ctrl_86plug
+    deviceProfileName: plug    
+  - id: "lumi.ctrl_86plug.aq1"
+    deviceLabel: Aqara Zigbee CN Smart Wall Socket
+    manufacturer: LUMI
+    model: lumi.ctrl_86plug.aq1
+    deviceProfileName: plug    
+  

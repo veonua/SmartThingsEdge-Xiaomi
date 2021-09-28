@@ -1,0 +1,4 @@
+name: 'Xiaomi Temperature'
+packageKey: 'xiaomi-temp'
+permissions:
+  zigbee: {}

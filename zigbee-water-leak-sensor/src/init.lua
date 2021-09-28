@@ -25,7 +25,7 @@ local zigbee_water_driver_template = {
     capabilities.battery,
   },
   ias_zone_configuration_method = constants.IAS_ZONE_CONFIGURE_TYPE.AUTO_ENROLL_RESPONSE,
-  sub_drivers = { require("zigbee-water-freeze"), require("leaksmart") },
+  sub_drivers = { require("lumi")  },
 }
 
 defaults.register_for_default_handlers(zigbee_water_driver_template, zigbee_water_driver_template.supported_capabilities)
