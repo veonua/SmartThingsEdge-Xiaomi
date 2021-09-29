@@ -75,12 +75,6 @@ local lumi_motion_handler = {
     }
   },
 
-  -- capability_handlers = {
-  --   [capabilities.refresh.ID] = {
-  --     [capabilities.refresh.commands.refresh.NAME] = do_refresh,
-  --   }
-  -- },
-
   can_handle = is_zigbee_lumi_motion_sensor
 }
 

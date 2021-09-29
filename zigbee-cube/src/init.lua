@@ -14,22 +14,24 @@ local side = 0
 -- 4 : left
 -- 5 : bottom
 
+local button = capabilities.button.button 
+
 local map_flip_attribute_to_capability = {
-  [0] = capabilities.button.button.up,
-  [1] = capabilities.button.button.up_2x,
-  [2] = capabilities.button.button.up_3x,
-  [3] = capabilities.button.button.up_4x,
-  [4] = capabilities.button.button.up_5x,
-  [5] = capabilities.button.button.up_6x
+  [0] = button.up,
+  [1] = button.up_2x,
+  [2] = button.up_3x,
+  [3] = button.up_4x,
+  [4] = button.up_5x,
+  [5] = button.up_6x
 }
 
 local map_slide_attribute_to_capability = {
-  [0] = capabilities.button.button.pushed,
-  [1] = capabilities.button.button.pushed_2x,
-  [2] = capabilities.button.button.pushed_3x,
-  [3] = capabilities.button.button.pushed_4x,
-  [4] = capabilities.button.button.pushed_5x,
-  [5] = capabilities.button.button.pushed_6x
+  [0] = button.pushed,
+  [1] = button.pushed_2x,
+  [2] = button.pushed_3x,
+  [3] = button.pushed_4x,
+  [4] = button.pushed_5x,
+  [5] = button.pushed_6x
 }
 
 local function added_handler(self, device)

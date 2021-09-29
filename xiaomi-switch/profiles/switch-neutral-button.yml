@@ -1,0 +1,25 @@
+name: switch-neutral-button
+components:
+  - id: main
+    capabilities:
+    - id: button
+      version: 1
+    - id: switch
+      version: 1
+    - id: powerMeter
+      version: 1
+    - id: energyMeter
+      version: 1
+    - id: temperatureAlarm
+      version: 1
+    - id: refresh
+      version: 1
+    categories:
+    - name: RemoteController
+preferences:
+  - title: "Button detached"
+    name: detach1
+    required: true
+    preferenceType: boolean
+    definition:
+      default: false
