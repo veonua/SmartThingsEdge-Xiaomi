@@ -115,7 +115,6 @@ function FloatABC.new_mt(base, byte_length, mantissa_bit_length, exponent_bit_le
     if (bit_pos -1) / 8 ~= byte_length then
       error("Something went wrong")
     end
-    print(utils.bit_list_to_int(exponent_bits) - o.exponent_modifier)
     o.exponent = utils.bit_list_to_int(exponent_bits) - o.exponent_modifier
     if o.exponent == -o.exponent_modifier then
       o.hidden_bit = 0

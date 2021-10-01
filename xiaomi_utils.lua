@@ -3,7 +3,6 @@ local capabilities = require "st.capabilities"
 local buf = require "st.buf"
 
 local battery_defaults = require "st.zigbee.defaults.battery_defaults"
-local log = require "log"
 
 local xiaomi_key_map = {
   [0x01] = "battery_mV",
@@ -41,17 +40,18 @@ local function deserialize(data_buf)
     local data_type = data_types.ZigbeeDataType.deserialize(data_buf)
     local data = data_types.parse_data_type(data_type.value, data_buf)
     out.items[index.value] = data
-    log.debug(xiaomi_key_map[index.value] .. " value:" .. tostring(data))
   end
 
   return out
 end
 
 local function emit_battery_event(device, battery_record)
-  local raw_bat_volt = (battery_record.value / 1000)
-  local raw_bat_perc = (raw_bat_volt - 2.5) * 100 / (3.0 - 2.5)
-  local bat_perc = math.floor(math.max(math.min(raw_bat_perc, 100), 0))
-  device:emit_event(capabilities.battery.battery(bat_perc))
+  if device:supports_capability(capabilities.battery, "main") then
+    local raw_bat_volt = (battery_record.value / 1000)
+    local raw_bat_perc = (raw_bat_volt - 2.5) * 100 / (3.0 - 2.5)
+    local bat_perc = math.floor(math.max(math.min(raw_bat_perc, 100), 0))
+    device:emit_event(capabilities.battery.battery(bat_perc))
+  end
 end
 
 local function emit_temperature_event(device, temperature_record)

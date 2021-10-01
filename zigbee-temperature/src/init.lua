@@ -26,6 +26,10 @@ local humidity_value_attr_handler = function(driver, device, value, zb_rx)
   device:emit_event(capabilities.relativeHumidityMeasurement.humidity(percent))
 end
 
+local pressure_value_attr_handler = function(driver, device, value, zb_rx)
+  device:emit_event(capabilities.atmosphericPressureMeasurement.atmosphericPressure(value.value/10))
+end
+
 local zigbee_temp_driver_template = {
   supported_capabilities = {
     capabilities.relativeHumidityMeasurement,
@@ -47,6 +51,9 @@ local zigbee_temp_driver_template = {
       },
       [zcl_clusters.RelativeHumidity.ID] = {
         [zcl_clusters.RelativeHumidity.attributes.MeasuredValue.ID] = humidity_value_attr_handler
+      },
+      [zcl_clusters.PressureMeasurement.ID] = {
+        [zcl_clusters.PressureMeasurement.attributes.MeasuredValue.ID] = pressure_value_attr_handler
       }
     }
   },

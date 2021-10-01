@@ -119,6 +119,18 @@ local blinds_driver_template = {
   lifecycle_handlers = {
     added = added_handler,
   },
+  cluster_configurations = {
+    [capabilities.windowShadeLevel.ID] = { -- have no idea if it works
+      {
+        cluster = 0x0D,
+        attribute = 0x55,
+        minimum_interval = 1,
+        maximum_interval = 600,
+        data_type = data_types.SinglePrecisionFloat,
+        reportable_change = 10
+      }
+    }
+  },
   zigbee_handlers = {
     global = {},
     cluster = {},

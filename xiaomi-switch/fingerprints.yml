@@ -10,23 +10,51 @@ zigbeeManufacturer:
     manufacturer: LUMI
     model: lumi.ctrl_neutral2
     deviceProfileName: switch-button-2
+
   - id: "lumi.switch.b1nacn02"
     deviceLabel: Wall Switch (With Neutral, Single Rocker)
     manufacturer: LUMI
     model: lumi.switch.b1nacn02
     deviceProfileName: switch-neutral-button
+  - id: "lumi.switch.b2nacn02"
+    deviceLabel: Wall Switch (With Neutral, Double Rocker)
+    manufacturer: LUMI
+    model: lumi.switch.b2nacn02
+    deviceProfileName: switch-neutral-button-2
+
   - id: "lumi.switch.l1aeu1"
     deviceLabel: Wall Switch H1 (No Neutral, Single Rocker)
     manufacturer: LUMI
     model: lumi.switch.l1aeu1
     deviceProfileName: switch
+
+  - id: "lumi.sensor_86sw1"
+    deviceLabel: Wall Switch (Single Rocker)
+    manufacturer: LUMI
+    model: lumi.sensor_86sw1
+    deviceProfileName: button
+  - id: "lumi.sensor_86sw2"
+    deviceLabel: Wall Switch (Double Rocker)
+    manufacturer: LUMI
+    model: lumi.sensor_86sw2
+    deviceProfileName: button-2
+  
   - id: "any"
     deviceLabel: lumi.switch.any
     deviceIdentifiers:
       - 0x0104
     deviceProfileName: switch
-  - id: "profile"
-    deviceLabel: profile
-    profile:
+
+zigbeeGeneric:  
+  - id: "switch-generic"
+    deviceLabel: "Zigbee Switch"
+    zigbeeProfiles:
       - 0x0104
+    clusters:
+      server:
+        - 0x0000
+        - 0x0006
+      client:
+        - 0x0000
     deviceProfileName: switch
+  

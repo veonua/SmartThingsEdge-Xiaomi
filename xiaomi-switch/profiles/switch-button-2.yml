@@ -27,15 +27,23 @@ components:
     categories:
     - name: RemoteController
 preferences:
-  - title: "Button 1 detached"
-    name: detach1
+  - title: "Button 1"
+    name: button1
     required: true
-    preferenceType: boolean
+    preferenceType: enumeration
     definition:
-      default: false
-  - title: "Button 2 detached"
-    name: detach2
+      options:
+        0x12: "Switch 1"
+        0x22: "Switch 2"
+        0xFE: "Detached"
+      default: "0x12"
+  - title: "Button 2"
+    name: button2
     required: true
-    preferenceType: boolean
+    preferenceType: enumeration
     definition:
-      default: false
+      options:
+        0x12: "Switch 1"
+        0x22: "Switch 2"
+        0xFE: "Detached"
+      default: "0x22"

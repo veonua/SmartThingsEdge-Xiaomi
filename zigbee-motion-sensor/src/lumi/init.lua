@@ -1,6 +1,5 @@
 local constants = require "st.zigbee.constants"
 local clusters = require "st.zigbee.zcl.clusters"
-local cluster_base = require "st.zigbee.cluster_base"
 local capabilities = require "st.capabilities"
 local log = require "log"
 

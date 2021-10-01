@@ -1,6 +1,11 @@
 zigbeeManufacturer:
-  - id: "LUMI/sens"
+  - id: "lumi.sensor_ht"
     deviceLabel: Xiaomi Temperature Sensor
     manufacturer: LUMI
     model: lumi.sensor_ht
     deviceProfileName: temp-general
+  - id: "lumi.weather"
+    deviceLabel: Aqara Weather
+    manufacturer: LUMI
+    model: lumi.weather
+    deviceProfileName: temp-pressure
