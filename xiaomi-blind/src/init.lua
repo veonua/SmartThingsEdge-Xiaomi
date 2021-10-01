@@ -12,12 +12,9 @@ local mgmt_bind_req = require "st.zigbee.zdo.mgmt_bind_request"
 
 local CLUSTER   = data_types.ClusterId(0xd)
 local ATTRIBUTE = data_types.AttributeId(0x55)
-  
--- local do_configure = function(self, device)
---   local manual_open = device.preferences.manual ? 0 : 1
---   local data = data_types.UInt32(manual_open)
---   device:send(cluster_base.write_attribute(device, CLUSTER_BASIC, 0xFF29, data, [mfgCode: "0x115f"]))
--- end
+
+-- see https://raw.githubusercontent.com/markus-li/Hubitat/release/drivers/expanded/zigbee-aqara-smart-curtain-motor-expanded.groovy
+-- for referance
 
 local function zdo_binding_table_handler(driver, device, zb_rx)
   for _, binding_table in pairs(zb_rx.body.zdo_body.binding_table_entries) do
@@ -109,6 +106,25 @@ local do_refresh = function(self, device)
   device:send( cluster_base.read_attribute(device, CLUSTER, ATTRIBUTE) )
 end
 
+local function info_changed(driver, device, event, args)
+  log.info("info changed: " .. tostring(event))
+  
+  for id, value in pairs(device.preferences) do
+    if args.old_st_store.preferences[id] ~= value then
+      local data = device.preferences[id]
+      
+      if id == "touchStart" then
+        device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, 0xFF29, 0x115F, data_types.Boolean, not data) )
+      elseif id == "reverse" then
+        device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, 0xFF28, 0x115F, data_types.Boolean, not data) )
+      elseif id == "reset" then
+        device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, 0xFF27, 0x115F, data_types.Boolean, true) )
+      end
+
+    end
+  end
+end
+
 local blinds_driver_template = {
   supported_capabilities = {
     capabilities.windowShadeLevel,
@@ -118,6 +134,7 @@ local blinds_driver_template = {
   },
   lifecycle_handlers = {
     added = added_handler,
+    infoChanged = info_changed,
   },
   cluster_configurations = {
     [capabilities.windowShadeLevel.ID] = { -- have no idea if it works

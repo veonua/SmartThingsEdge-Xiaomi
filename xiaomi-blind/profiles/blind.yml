@@ -19,3 +19,15 @@ components:
 preferences:
   - preferenceId: presetPosition
     explicit: true
+  - title: "Touch start"
+    name: touchStart
+    required: true
+    preferenceType: boolean
+    definition: 
+      default: true
+  - title: "Reverse"
+    name: reverse
+    required: true
+    preferenceType: boolean
+    definition: 
+      default: false
