@@ -27,8 +27,7 @@ local function zdo_binding_table_handler(driver, device, zb_rx)
 end
 
 local function added_handler(self, device)
-  local commands = { "open", "close", "pause"}
-  device:emit_event(capabilities.windowShade.supportedWindowShadeCommands({ value = commands }))
+  device:emit_event(capabilities.windowShade.supportedWindowShadeCommands({ value = { "open", "close", "pause"} }))
   device:refresh()
 end
 
@@ -118,7 +117,7 @@ local function info_changed(driver, device, event, args)
       elseif id == "reverse" then
         device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, 0xFF28, 0x115F, data_types.Boolean, not data) )
       elseif id == "reset" then
-        device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, 0xFF27, 0x115F, data_types.Boolean, true) )
+        device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, 0xFF27, 0x115F, data_types.Boolean, false) )
       end
 
     end

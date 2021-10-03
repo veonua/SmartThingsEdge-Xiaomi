@@ -1,3 +1,6 @@
+-- for reference see https://github.com/zigpy/zha-device-handlers/tree/dev/zhaquirks/xiaomi
+-- and https://github.com/Koenkk/zigbee-herdsman-converters/blob/master/devices/xiaomi.js
+
 local data_types = require "st.zigbee.data_types"
 local capabilities = require "st.capabilities"
 local buf = require "st.buf"

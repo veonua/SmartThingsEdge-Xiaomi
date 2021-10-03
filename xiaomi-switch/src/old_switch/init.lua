@@ -3,17 +3,7 @@ local capabilities = require "st.capabilities"
 
 local OnOff = zcl_clusters.OnOff
 local log = require "log"
-
-
-local click_types = {capabilities.button.button.pushed, capabilities.button.button.double, capabilities.button.button.pushed_3x, capabilities.button.button.pushed_4x}
-
-local function first_switch_ep(device)
-  return device:get_field("first_switch_ep")
-end
-
-local function first_button_ep(device)
-  return device:get_field("first_button_ep")
-end
+local utils = require "utils"
 
 function old_button_handler(device, component_id, value)
     local CLICK_TIMER  = string.format("button_timer%d", component_id)
@@ -37,7 +27,7 @@ function old_button_handler(device, component_id, value)
         click_type = button.up
         log.warn("WTF up_counter: " .. tostring(f_up_counter) .. "> down_counter: " .. tostring(f_down_counter))
       else
-        click_type = click_types[f_down_counter]   
+        click_type = utils.click_types[f_down_counter]   
       end
       
       device:emit_event_for_endpoint(component_id, click_type({state_change = true}))
@@ -70,19 +60,21 @@ end
 
 function on_off_attr_handler(driver, device, value, zb_rx)
     local ep = zb_rx.address_header.src_endpoint.value
-    local first_button_ep = first_button_ep(device)
+    local first_button_ep = utils.first_button_ep(device)
 
     if ep < first_button_ep  then
         local attr = capabilities.switch.switch
-        local component_id = ep - first_switch_ep(device) + 1
+        local component_id = ep - utils.first_switch_ep(device) + 1
         device:emit_event_for_endpoint(component_id, value.value and attr.on() or attr.off())
     else
         local click_type = zb_rx.body_length.value>8 and capabilities.button.button.pushed or capabilities.button.button.held
         
         local component_id = ep - first_button_ep + 1
-        log.warn("button " .. tostring(component_id) .. " " .. tostring(click_type))
+        local event = click_type({state_change = true})
+
+        log.warn(" old button " .. tostring(component_id) .. " " .. tostring(event))
         if not value.value then
-            device:emit_event_for_endpoint(component_id, click_type({state_change = true}))
+            device:emit_event_for_endpoint(component_id, event)
         end
         --old_button_handler(device, component_id, value)
     end
@@ -99,7 +91,7 @@ local old_switch_handler = {
         },
     },
     can_handle = function(opts, driver, device)
-        return device:get_field("first_switch_ep") > 0 and device:get_field("first_button_ep") > 0
+        return utils.first_switch_ep(device) > 0 and utils.first_button_ep(device) > 0
     end
 }
 

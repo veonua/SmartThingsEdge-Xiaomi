@@ -1,0 +1,52 @@
+name: plug
+components:
+- id: main
+  capabilities:
+  - id: switch
+    version: 1
+  - id: powerMeter
+    version: 1
+  - id: energyMeter
+    version: 1
+  - id: voltageMeasurement
+    version: 1
+  - id: temperatureAlarm
+    version: 1
+  - id: refresh
+    version: 1
+  - id: configuration
+    version: 1
+  categories:
+  - name: SmartPlug
+preferences:
+  - title: "Power outage memory"
+    name: powerOutageMemory
+    required: true
+    preferenceType: boolean
+    definition: 
+      default: true
+  
+  - title: "Power outage memory"
+    name: powerOutageMemory
+    required: true
+    preferenceType: boolean
+    definition: 
+      default: true
+
+  - title: "Auto Off"
+    desctipyion: "Turn the device automatically off when attached device consumes less than 2W for 20 minutes"
+    name: autoOff
+    required: true
+    preferenceType: boolean
+    definition: 
+      default: false
+
+  - title: "Overload Protection"
+    desctipyion: "Maximum allowed load, turns off if exceeded (100 - 2200 W)"
+    name: overloadProtection
+    required: true
+    preferenceType: number
+    definition:
+      min: 100 
+      max: 2200
+      default: 2200

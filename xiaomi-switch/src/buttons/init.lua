@@ -3,6 +3,7 @@ local capabilities = require "st.capabilities"
 
 local OnOff = zcl_clusters.OnOff
 local log = require "log"
+local utils = require "utils"
 
 function on_off_attr_handler(driver, device, value, zb_rx)
     local click_type = zb_rx.body_length.value>8 and capabilities.button.button.pushed or capabilities.button.button.held
@@ -21,7 +22,7 @@ local button_handler = {
         },
     },
     can_handle = function(opts, driver, device)
-        return device:get_field("first_switch_ep") < 1
+        return utils.first_switch_ep(device) < 1
     end
 }
 
