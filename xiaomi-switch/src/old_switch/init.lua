@@ -91,7 +91,7 @@ local old_switch_handler = {
         },
     },
     can_handle = function(opts, driver, device)
-        return utils.first_switch_ep(device) > 0 and utils.first_button_ep(device) > 0
+        return utils.first_switch_ep(device) > 0 and utils.first_button_ep(device) == 4
     end
 }
 

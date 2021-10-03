@@ -1,0 +1,53 @@
+name: opple-switch
+components:
+  - id: main
+    capabilities:
+    - id: button
+      version: 1
+    - id: switch
+      version: 1
+    - id: refresh
+      version: 1
+    categories:
+    - name: RemoteController
+
+preferences:
+  - title: "Mode"
+    name: operationMode
+    required: true
+    preferenceType: enumeration
+    definition:
+      options:
+        0: "Direct Commands (Bind)"
+        1: "Hub Events"
+      default: "0"
+  - title: "Button"
+    name: button1
+    required: true
+    preferenceType: enumeration
+    definition:
+      options:
+        0x12: "Switch"
+        0xFE: "Detached"
+      default: "0x12"
+
+  - title: "Turn Off indicator light"
+    name: ledDisabledNight
+    required: false
+    preferenceType: boolean
+    definition:
+      default: false
+
+  - title: "Turn Off indicator light"
+    name: ledDisabledNight
+    required: false
+    preferenceType: boolean
+    definition:
+      default: false
+
+  - title: "Power off memory"
+    name: powerOutageMemory
+    required: false
+    preferenceType: boolean
+    definition:
+      default: false

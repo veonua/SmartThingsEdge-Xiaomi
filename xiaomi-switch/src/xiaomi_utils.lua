@@ -1,7 +1,7 @@
 local data_types = require "st.zigbee.data_types"
 local capabilities = require "st.capabilities"
 local buf = require "st.buf"
-
+local log = require "log"
 local battery_defaults = require "st.zigbee.defaults.battery_defaults"
 
 local xiaomi_key_map = {
@@ -75,7 +75,7 @@ local xiaomi_utils = {
 
 function xiaomi_utils.handler(driver, device, value, zb_rx)
   local buff = value.value
-  if value.ID == data_types.CharString.ID then
+  if value.ID == data_types.CharString.ID or value.ID == data_types.OctetString.ID then
     local bytes = value.value
     local message_buf = buf.Reader(bytes)
     
@@ -86,6 +86,9 @@ function xiaomi_utils.handler(driver, device, value, zb_rx)
         event(device, value)
       end
     end
+    log.warn("xiaomi_utils.handler handled:" .. tostring(#xiaomi_data_type.items))
+  else
+    log.warn("xiaomi_utils.handler: unknown data type: " .. tostring (value) )
   end
 end
 

@@ -7,7 +7,6 @@ local devices = {
       "lumi.ctrl_neutral1", "lumi.ctrl_neutral2", "lumi.switch.b1lacn02", "lumi.switch.b2lacn02",
     },
     CONFIGS = {
-      first_switch_ep = 0x0002,
       first_button_ep = 0x0004,
       supported_button_values = {"pushed", "double", "held"}
     }
@@ -17,7 +16,6 @@ local devices = {
       "lumi.switch.b1nacn02", "lumi.switch.b2nacn02", "lumi.switch.n3acn3", "lumi.ctrl_ln1.aq1", "lumi.ctrl_ln2.aq1", "lumi.switch.l3acn3", "lumi.switch.n3acn3",
     },
     CONFIGS = {
-      --first_switch_ep = 0x0001,
       first_button_ep = 0x0005,
       supported_button_values = {"pushed", "double"}
     }
@@ -27,9 +25,8 @@ local devices = {
       "lumi.switch.l1aeu1", 
     },
     CONFIGS = {
-      --first_switch_ep = 0x0001,
-      first_button_ep = 0x0000,
-      supported_button_values = {"pushed"}
+      first_button_ep = 0x0029,
+      supported_button_values = {"pushed", "double"}
     }
   },
   GROUP4 = { 
@@ -37,7 +34,6 @@ local devices = {
       "lumi.sensor_86sw1", "lumi.sensor_86sw2",
     },
     CONFIGS = {
-      --first_switch_ep = 0x0000,
       first_button_ep = 0x0001,
       supported_button_values = {"pushed", "double"}
     }
@@ -76,7 +72,7 @@ configs.get_device_parameters = function(zb_device)
         log.info( "Found config for device: " .. model .. " " .. json.encode(device.CONFIGS) )
         
         if first_button_ep ~= device.CONFIGS.first_button_ep then
-          log.error( "First button endpoint is not correct: " .. first_button_ep .. " " .. device.CONFIGS.first_button_ep )
+          log.warn( "First button endpoint is not correct: " .. first_button_ep .. " " .. device.CONFIGS.first_button_ep )
         end
 
         device.CONFIGS["first_switch_ep"] = first_switch_ep

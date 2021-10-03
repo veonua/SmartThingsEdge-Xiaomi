@@ -22,14 +22,6 @@ local configsMap   = require "configurations"
 local utils = require "utils"
 local click_types = {capabilities.button.button.pushed, capabilities.button.button.double, capabilities.button.button.pushed_3x, capabilities.button.button.pushed_4x}
 
-local function first_switch_ep(device)
-  return device:get_field("first_switch_ep")
-end
-
-local function first_button_ep(device)
-  return device:get_field("first_button_ep")
-end
---
 local function component_to_endpoint(device, component_id)
   local first_switch_ep = utils.first_switch_ep(device)
 
@@ -45,7 +37,7 @@ end
 
 local function endpoint_to_component(device, ep)
   local button_comp
-  if ep == device.fingerprinted_endpoint_id or ep == 0 then --  
+  if ep == device.fingerprinted_endpoint_id or ep < 2 then --  
     button_comp = "main"
   else
     button_comp = string.format("button%d", ep)
@@ -62,10 +54,6 @@ end
 local function voltage_handler(device, value)
   device:emit_event( capabilities.voltageMeasurement.voltage({value=value.value//10, unit="V"}) )
 end
-
-local function resetEnergyMeter(device)
-end
-
 
 
 local device_init = function(self, device)
@@ -98,28 +86,13 @@ function button_attr_handler(driver, device, value, zb_rx)
   local ep = zb_rx.address_header.src_endpoint.value
   
   local click_type = utils.click_types[val]
-  local component_id = ep - first_button_ep(device) + 1
+  local component_id = ep - utils.first_button_ep(device) + 1
 
   if click_type ~= nil then
     device:emit_event_for_endpoint(component_id, click_type({state_change = true})) 
   end
 end
 
-
-local function zdo_binding_table_handler(driver, device, zb_rx)
-  if ~zb_rx.body.zdo_body.binding_table_entries then
-    log.warn("No binding table entries")
-    return
-  end
-
-  log.info("ZDO Binding Table Response")
-  for _, binding_table in pairs(zb_rx.body.zdo_body.binding_table_entries) do
-    if binding_table.dest_addr_mode.value == binding_table.DEST_ADDR_MODE_SHORT then
-      -- send add hub to zigbee group command
-      driver:add_hub_to_zigbee_group(binding_table.dest_addr.value)
-    end
-  end
-end
 
 local function info_changed(driver, device, event, args)
   log.info("info changed: " .. tostring(event))
@@ -128,19 +101,24 @@ local function info_changed(driver, device, event, args)
     if args.old_st_store.preferences[id] ~= value then --and preferences[id] then
       local data = tonumber(device.preferences[id])
       
-      local attr
-      if id == "button1" then
-        attr = 0xFF22
-      elseif id == "button2" then
-        attr = 0xFF23
-      elseif id == "button3" then
-        attr = 0xFF24
-      end
+        local attr
+        if id == "button1" then
+          attr = 0xFF22
+        elseif id == "button2" then
+          attr = 0xFF23
+        elseif id == "button3" then
+          attr = 0xFF24
+        end
 
-      device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, attr, 0x115F, data_types.Uint8, data) )
+        if attr then
+          device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, attr, 0x115F, data_types.Uint8, data) )
+        end
+      end
     end
   end
 end
+
+
 
 xiaomi_utils.xiami_events[0x95] = consumption_handler
 
@@ -171,22 +149,26 @@ local switch_driver_template = {
   zigbee_handlers = {
     global = {},
     cluster = {},
-    zdo = {
-      [mgmt_bind_resp.MGMT_BIND_RESPONSE] = zdo_binding_table_handler
-    },
     attr = {
       [OnOff.ID] = {
         [OnOff.attributes.OnOff.ID] = on_off_attr_handler
       },
-      [MultistateInput] = {
+      [MultistateInput] = { 
         [0x55] = button_attr_handler
       },
+
       [zcl_clusters.basic_id] = {
         [xiaomi_utils.attr_id] = xiaomi_utils.handler
-      }
+      },
+
+      [0XFFC0] = { -- Aqara
+        [0x00F7] = xiaomi_utils.handler
+      },
     }
   },
-  sub_drivers = {require ("buttons"), require ("old_switch")},
+
+  sub_drivers = {require ("buttons"), require ("opple"), require ("old_switch")},
+  
   lifecycle_handlers = {
     init = device_init,
     added = device_init,
