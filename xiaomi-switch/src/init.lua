@@ -80,7 +80,6 @@ local do_refresh = function(self, device)
   device_init(self, device)
 end
 
-
 function button_attr_handler(driver, device, value, zb_rx)
   local val = value.value
   local ep = zb_rx.address_header.src_endpoint.value
@@ -101,18 +100,17 @@ local function info_changed(driver, device, event, args)
     if args.old_st_store.preferences[id] ~= value then --and preferences[id] then
       local data = tonumber(device.preferences[id])
       
-        local attr
-        if id == "button1" then
-          attr = 0xFF22
-        elseif id == "button2" then
-          attr = 0xFF23
-        elseif id == "button3" then
-          attr = 0xFF24
-        end
+      local attr
+      if id == "button1" then
+        attr = 0xFF22
+      elseif id == "button2" then
+        attr = 0xFF23
+      elseif id == "button3" then
+        attr = 0xFF24
+      end
 
-        if attr then
-          device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, attr, 0x115F, data_types.Uint8, data) )
-        end
+      if attr then
+        device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, attr, 0x115F, data_types.Uint8, data) )
       end
     end
   end

@@ -17,7 +17,8 @@ local MultistateInput = 0x0012
 local OPPLE_CLUSTER = 0xFCC0
 
 local OPPLE_FINGERPRINTS = {
-    { mfr = "LUMI", model = "lumi.switch.l1aeu1" }
+    { mfr = "LUMI", model = "lumi.switch.l1aeu1" },
+    { mfr = "LUMI", model = "lumi.remote.b286opcn01" }
 }
 
 local is_opple = function(opts, driver, device)
@@ -31,12 +32,12 @@ end
 
 
 local function zdo_binding_table_handler(driver, device, zb_rx)
+    log.warn("ZDO Binding Table Response")    
     if ~zb_rx.body.zdo_body.binding_table_entries then
       log.warn("No binding table entries")
       return
     end
 
-    log.warn("ZDO Binding Table Response")
     for _, binding_table in pairs(zb_rx.body.zdo_body.binding_table_entries) do
       if binding_table.dest_addr_mode.value == binding_table.DEST_ADDR_MODE_SHORT then
         -- send add hub to zigbee group command
@@ -45,11 +46,18 @@ local function zdo_binding_table_handler(driver, device, zb_rx)
     end
 end
 
+local do_refresh = function(self, device)
+    device:send(cluster_base.read_manufacturer_specific_attribute(device, OPPLE_CLUSTER, 0x0009, 0x115F))
+end
+
 local do_configure = function(self, device)
     local operationMode = device.preferences.operationMode or 0
     operationMode = tonumber(operationMode)
 
     log.info("Configuring Opple device " .. tostring(operationMode))
+
+    -- data_types.id_to_name_map[0xE10] = "OctetString"
+    -- data_types.name_to_id_map["SpecialType"] = 0xE10
 
     device:send(cluster_base.write_manufacturer_specific_attribute(device, OPPLE_CLUSTER, 0x0009, 0x115F, data_types.Uint8, operationMode) )
 
@@ -80,16 +88,17 @@ end
   
 local function info_changed(driver, device, event, args)
     log.info("info changed: " .. tostring(event))
-    
+    -- https://github.com/Koenkk/zigbee-herdsman-converters/blob/master/converters/toZigbee.js for more info
     for id, value in pairs(device.preferences) do
       if args.old_st_store.preferences[id] ~= value then --and preferences[id] then
         local data = tonumber(device.preferences[id])
         
         local attr
         local payload 
-      
+        
         if id == "operationMode" then
-            device:configure()
+            do_configure(driver, device)
+            --device:configure()
         elseif id == "powerOutageMemory" then
             payload = data_types.Boolean(value)
             attr = 0x0201
@@ -100,18 +109,27 @@ local function info_changed(driver, device, event, args)
             attr = 0x0200
             payload = data<0xF0 and 1 or 0
         end
-  
+
         if attr then
-        device:send(cluster_base.write_manufacturer_specific_attribute(device, OPPLE_CLUSTER, attr, 0x115F, data_types.Uint8, payload) )
+            device:send(cluster_base.write_manufacturer_specific_attribute(device, OPPLE_CLUSTER, attr, 0x115F, data_types.Uint8, payload) )
         end
       end
     end
 end
-  
-  
+
+
+local function attr_operation_mode_handler(driver, device, value, zb_rx)
+    log.info("attr_operation_mode_handler " .. tostring(value))
+    device:set_field("operationMode", value.value, {persist = true})
+end
 
 local old_switch_handler = {
-    NAME = "Aqara/Opple/Zigbee3",
+    NAME = "Zigbee3 Aqara/Opple",
+    capability_handlers = {
+        [capabilities.refresh.ID] = {
+          [capabilities.refresh.commands.refresh.NAME] = do_refresh,
+        }
+    },
     zigbee_handlers = {
         -- cluster = {
         --   [OnOff.ID] = {
@@ -119,7 +137,10 @@ local old_switch_handler = {
         --   }
         -- },
         attr = {
-            --[OnOff.ID] = {
+            [OPPLE_CLUSTER] = {
+                [0x0009] = attr_operation_mode_handler,
+            },
+            -- [OnOff.ID] = {
                 --- [0x00F5] = UInt32 0x070000[req_reqNo], 0x03AB5E00 -- probably a debug info, displays who requested on/off
             --}, 
         }

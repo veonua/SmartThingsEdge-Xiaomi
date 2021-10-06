@@ -1,6 +1,7 @@
 name: switch-neutral-button-2
 components:
   - id: main
+    label: "Left button"
     capabilities:
     - id: button
       version: 1
@@ -17,6 +18,7 @@ components:
     categories:
     - name: RemoteController
   - id: button2
+    label: "Right button"
     capabilities:
     - id: switch
       version: 1
@@ -25,6 +27,7 @@ components:
     categories:
     - name: RemoteController
   - id: button3
+    label: "Both buttons"
     capabilities:
     - id: button
       version: 1

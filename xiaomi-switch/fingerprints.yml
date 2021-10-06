@@ -38,6 +38,12 @@ zigbeeManufacturer:
     manufacturer: LUMI
     model: lumi.sensor_86sw2
     deviceProfileName: button-2
+
+  - id: "lumi.remote.b286opcn01"
+    deviceLabel: Wireless Switch (Two Button)
+    manufacturer: LUMI
+    model: lumi.remote.b286opcn01
+    deviceProfileName: opple-button-2
   
   - id: "any"
     deviceLabel: lumi.switch.any
