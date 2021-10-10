@@ -22,7 +22,7 @@ local devices = {
   },
   GROUP3 = {
     MATCHING_MODELS = {
-      "lumi.switch.l1aeu1", 
+      "lumi.switch.l1aeu1", "lumi.switch.l2aeu1", 
     },
     CONFIGS = {
       first_button_ep = 0x0029,

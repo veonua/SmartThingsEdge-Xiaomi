@@ -28,6 +28,13 @@ zigbeeManufacturer:
     model: lumi.switch.l1aeu1
     deviceProfileName: opple-switch
 
+  - id: "lumi.switch.l2aeu1"
+    deviceLabel: Wall Switch H1 (No Neutral, Double Rocker)
+    manufacturer: LUMI
+    model: lumi.switch.l2aeu1
+    deviceProfileName: opple-switch-2
+
+
   - id: "lumi.sensor_86sw1"
     deviceLabel: Wall Switch (Single Rocker)
     manufacturer: LUMI

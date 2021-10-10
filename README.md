@@ -2,8 +2,11 @@
 The early adaptation of the SmartThings Edge drivers from https://github.com/SmartThingsCommunity/SmartThingsEdgeDrivers
 for Xiaomi and Aqara devices
 
-Channel link 
-https://callaway.smartthings.com/channels/609e2190-c8fa-4b9a-9986-62367890277e
+Channel invitation link 
+https://api.smartthings.com/invitation-web/accept?id=5e5b1616-90cf-4383-83ea-a323aac0ed5a
+
+the channel contains the dev version of drivers so most likely it is not stable/not working properly 
+
 
 # Devices to be tested on
 
