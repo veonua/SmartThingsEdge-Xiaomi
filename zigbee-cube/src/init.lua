@@ -16,6 +16,8 @@ local side = 0
 
 local button = capabilities.button.button 
 
+local map_side_to_lightingMode = { "reading", "writing", "computer", "night", "sleepPreparation", "day" }
+
 local map_flip_attribute_to_capability = {
   [0] = button.up,
   [1] = button.up_2x,
@@ -40,11 +42,7 @@ local function added_handler(self, device)
     {"up", "up_2x", "up_3x", "up_4x", "up_5x", "up_6x",
      "pushed", "pushed_2x", "pushed_3x", "pushed_4x", "pushed_5x", "pushed_6x"}))
 
-  local presets = {
-    {id="0", name="front"}
-  }
 
-  device:emit_event(capabilities.mediaPresets.presets({ value = presets }))
 end
 
 local function cube_attr_handler(driver, device, value, zb_rx)
@@ -74,6 +72,7 @@ local function cube_attr_handler(driver, device, value, zb_rx)
     end
   end
 
+  device:emit_event(capabilities.activityLightingMode.lightingMode({ value = map_side_to_lightingMode[side+1] }))
   local reset_motion_status = function()
     device:emit_event(capabilities.motionSensor.motion.inactive())
     device:emit_event(capabilities.accelerationSensor.acceleration.inactive())
@@ -105,6 +104,9 @@ local function rotate_attr_handler(driver, device, value, zb_rx)
   device:set_field(MOTION_RESET_TIMER, motion_reset_timer)
 end
 
+local do_refresh = function(self, device)
+  added_handler(self, device)
+end
 
 local aqara_cube_driver_template = {
   supported_capabilities = {
@@ -118,6 +120,11 @@ local aqara_cube_driver_template = {
   },
   lifecycle_handlers = {
     added = added_handler,
+  },
+  capability_handlers = {
+    [capabilities.refresh.ID] = {
+      [capabilities.refresh.commands.refresh.NAME] = do_refresh,
+    }
   },
   use_defaults = false,
   zigbee_handlers = {

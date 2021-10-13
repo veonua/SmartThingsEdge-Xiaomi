@@ -1,4 +1,9 @@
 zigbeeManufacturer:
+  - id: "lumi/RTCGQ01LM"
+    deviceLabel: Xiaomi Motion Sensor
+    manufacturer: LUMI
+    model: lumi.sensor_motion
+    deviceProfileName: motion-battery
   - id: "lumi/RTCGQ11LM"
     deviceLabel: Aqara Motion Illuminance Sensor
     manufacturer: LUMI
