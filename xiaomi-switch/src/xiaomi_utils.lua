@@ -15,8 +15,10 @@ local xiaomi_key_map = {
   [0x08] = "unknown3",
   [0x09] = "unknown4",
   [0x0a] = "router_id",
-  [0x0b] = "unknown5",
-  [0x0c] = "unknown6",
+  [0x0b] = "unknown_0b",
+  [0x0c] = "unknown_0c",
+  [0x0d] = "unknown_0d",
+  [0x0e] = "unknown_0e",
   [0x64] = "switch1",
   [0x65] = "switch2",
   [0x66] = "pressure",
@@ -40,6 +42,13 @@ local function deserialize(data_buf)
     local data_type = data_types.ZigbeeDataType.deserialize(data_buf)
     local data = data_types.parse_data_type(data_type.value, data_buf)
     out.items[index.value] = data
+    local key = xiaomi_key_map[index.value]
+    if key == nil then
+      log.warn("xiaomi_utils", "Unknown index: ", index.value)
+    else
+      log.debug(xiaomi_key_map[index.value] .. " value:" .. tostring(data))
+    end
+    
   end
 
   return out
@@ -75,7 +84,10 @@ local xiaomi_utils = {
 
 function xiaomi_utils.handler(driver, device, value, zb_rx)
   local buff = value.value
+  log.warn(">> ".. tostring(value.ID))
+
   if value.ID == data_types.CharString.ID or value.ID == data_types.OctetString.ID then
+    log.warn("\\/ \\/ \\/ \\/")
     local bytes = value.value
     local message_buf = buf.Reader(bytes)
     
@@ -86,7 +98,7 @@ function xiaomi_utils.handler(driver, device, value, zb_rx)
         event(device, value)
       end
     end
-    log.warn("xiaomi_utils.handler handled:" .. tostring(#xiaomi_data_type.items))
+    -- log.warn("xiaomi_utils.handler handled: " .. tostring(#xiaomi_data_type.items))
   else
     log.warn("xiaomi_utils.handler: unknown data type: " .. tostring (value) )
   end

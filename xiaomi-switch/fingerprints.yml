@@ -51,13 +51,13 @@ zigbeeManufacturer:
     manufacturer: LUMI
     model: lumi.remote.b286opcn01
     deviceProfileName: opple-button-2
-  
-  - id: "any"
-    deviceLabel: lumi.switch.any
-    deviceIdentifiers:
-      - 0x0104
-    deviceProfileName: switch
 
+  - id: "lumi.remote.b286acn01"
+    deviceLabel: Wireless Switch (Two Button)
+    manufacturer: LUMI
+    model: lumi.remote.b286acn01
+    deviceProfileName: opple-button-2
+  
 zigbeeGeneric:  
   - id: "switch-generic"
     deviceLabel: "Zigbee Switch"

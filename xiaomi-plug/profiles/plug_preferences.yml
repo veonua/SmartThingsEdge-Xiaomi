@@ -1,4 +1,4 @@
-name: plug
+name: plug_prefs
 components:
 - id: main
   capabilities:
@@ -50,3 +50,8 @@ preferences:
       min: 100 
       max: 2200
       default: 2200
+      
+metadata:
+  deviceType: SmartPlug
+  ocfDeviceType: oic.d.smartplug
+  deviceTypeId: SmartPlug  

@@ -6,6 +6,8 @@ local defaults = require "st.zigbee.defaults"
 local log = require "log"
 local xiaomi_utils = require "xiaomi_utils"
 
+local CURRENT_LEVEL = "current_level"
+local DEFAULT_LEVEL = 50
 local side = 0
 -- 0 : front (aqara face up)
 -- 1 : right
@@ -17,32 +19,20 @@ local side = 0
 local button = capabilities.button.button 
 
 local map_side_to_lightingMode = { "reading", "writing", "computer", "night", "sleepPreparation", "day" }
+local map_flip_attribute_to_capability = { button.up, button.up_2x, button.up_3x, button.up_4x, button.up_5x, button.up_6x }
+local map_slide_attribute_to_capability = { button.pushed, button.pushed_2x, button.pushed_3x, button.pushed_4x, button.pushed_5x, button.pushed_6x}
 
-local map_flip_attribute_to_capability = {
-  [0] = button.up,
-  [1] = button.up_2x,
-  [2] = button.up_3x,
-  [3] = button.up_4x,
-  [4] = button.up_5x,
-  [5] = button.up_6x
-}
-
-local map_slide_attribute_to_capability = {
-  [0] = button.pushed,
-  [1] = button.pushed_2x,
-  [2] = button.pushed_3x,
-  [3] = button.pushed_4x,
-  [4] = button.pushed_5x,
-  [5] = button.pushed_6x
-}
+local generate_switch_level_event = function(device, value)
+  device:emit_event(capabilities.switchLevel.level(value))
+  device:set_field(CURRENT_LEVEL, value)
+end
 
 local function added_handler(self, device)
-  device:emit_event(capabilities.button.numberOfButtons({ value=6 }))
+  device:emit_event(capabilities.button.numberOfButtons({ value = 1 }))
   device:emit_event(capabilities.button.supportedButtonValues(
     {"up", "up_2x", "up_3x", "up_4x", "up_5x", "up_6x",
      "pushed", "pushed_2x", "pushed_3x", "pushed_4x", "pushed_5x", "pushed_6x"}))
-
-
+  device:emit_event(capabilities.button.button.pushed({state_change = true}))
 end
 
 local function cube_attr_handler(driver, device, value, zb_rx)
@@ -50,10 +40,9 @@ local function cube_attr_handler(driver, device, value, zb_rx)
   side = val & 0x7
   local action = (val >> 8) & 0xFF
 
-  
   if action == 0x01 then
     device:emit_event(capabilities.motionSensor.motion.active())
-    device:emit_event(map_slide_attribute_to_capability[side]({state_change = true}))
+    device:emit_event(map_slide_attribute_to_capability[side+1]({state_change = true}))
   elseif action == 0x02 then
     device:emit_event(capabilities.tamperAlert.tamper.detected())
   elseif action == 0x00 then
@@ -68,7 +57,7 @@ local function cube_attr_handler(driver, device, value, zb_rx)
         log.info("flip 180* " .. tostring(side))
       end
 
-      device:emit_event(map_flip_attribute_to_capability[side]({state_change = true}))
+      device:emit_event(map_flip_attribute_to_capability[side + 1]({state_change = true}))
     end
   end
 
@@ -86,22 +75,12 @@ local MOTION_RESET_TIMER = "motionResetTimer"
 
 
 local function rotate_attr_handler(driver, device, value, zb_rx)
-  local val = math.floor(value.value * 10) -- between -1800 and 1800
-  log.info("rotate " .. tostring(val))
+  local val = math.floor(value.value) -- between -180 and 180
+  log.info("rotate " .. tostring(val) .. "*")
 
-  device:emit_event(capabilities.threeAxis.threeAxis({value = {val, 0, 0}}))
-  local motion_reset_timer = device:get_field(MOTION_RESET_TIMER)
-  device:emit_event(capabilities.motionSensor.motion.active())
-
-  if motion_reset_timer then
-    device.thread:cancel_timer(motion_reset_timer)
-    device:set_field(MOTION_RESET_TIMER, nil)
-  end
-  local reset_motion_status = function()
-    device:emit_event(capabilities.motionSensor.motion.inactive())
-  end
-  motion_reset_timer = device.thread:call_with_delay(2, reset_motion_status)
-  device:set_field(MOTION_RESET_TIMER, motion_reset_timer)
+  local level = device:get_field(CURRENT_LEVEL) or DEFAULT_LEVEL
+  local new_level = math.max(3, math.min(100, level + math.floor( val / 18 * 6)))
+  generate_switch_level_event(device, new_level)
 end
 
 local do_refresh = function(self, device)
@@ -114,7 +93,6 @@ local aqara_cube_driver_template = {
     capabilities.motionSensor,
     capabilities.mediaPresets,    
     capabilities.accelerationSensor,
-    capabilities.threeAxis,
     capabilities.battery,
     capabilities.temperatureAlarm,
   },

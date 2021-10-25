@@ -9,3 +9,13 @@ zigbeeManufacturer:
     manufacturer: LUMI
     model: lumi.sensor_motion.aq2
     deviceProfileName: motion-battery-illuminance
+
+zigbeeGeneric:
+  - id: "motion-generic"
+    deviceLabel: "Zigbee Motion"
+    zigbeeProfiles: 
+      - 0x0104
+    clusters: 
+      server: 
+        - 0x0406
+    deviceProfileName: motion-battery

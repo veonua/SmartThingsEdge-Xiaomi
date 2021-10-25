@@ -69,7 +69,7 @@ function set_window_shade_level(driver, device, number)
   local prev_level = device:get_field("shadeLevel") or 0
   
   if prev_level == number then
-    log.info("window shade level is already set to %s", number)
+    log.info("window shade level is already set to ", number)
   return end
   
   local sign = 0

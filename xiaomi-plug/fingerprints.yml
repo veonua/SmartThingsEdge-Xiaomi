@@ -24,7 +24,7 @@ zigbeeManufacturer:
     deviceLabel: Xiaomi Zigbee CN Smart Wall Socket
     manufacturer: LUMI
     model: lumi.ctrl_86plug
-    deviceProfileName: plug    
+    deviceProfileName: plug_prefs    
   - id: "lumi.ctrl_86plug.aq1"
     deviceLabel: Aqara Zigbee CN Smart Wall Socket
     manufacturer: LUMI

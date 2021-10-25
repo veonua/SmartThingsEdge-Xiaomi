@@ -31,7 +31,7 @@ local devices = {
   },
   GROUP4 = { 
     MATCHING_MODELS = {
-      "lumi.sensor_86sw1", "lumi.sensor_86sw2", "lumi.remote.b286opcn01"
+      "lumi.sensor_86sw1", "lumi.sensor_86sw2", "lumi.remote.b286opcn01", "lumi.remote.b286acn01"
     },
     CONFIGS = {
       first_button_ep = 0x0001,
@@ -81,7 +81,7 @@ configs.get_device_parameters = function(zb_device)
     end
   end
   
-  log.warn("Did not found config for device: " .. zb_device:get_model())
+  log.warn("Did not found config for device: " .. tostring( zb_device:get_model() ) )
         
   return {
     first_switch_ep = first_switch_ep,

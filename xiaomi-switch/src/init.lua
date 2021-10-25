@@ -5,7 +5,6 @@ local constants = require "st.zigbee.constants"
 local defaults = require "st.zigbee.defaults"
 local log = require "log"
 
-local device_management = require "st.zigbee.device_management"
 local messages = require "st.zigbee.messages"
 local mgmt_bind_resp = require "st.zigbee.zdo.mgmt_bind_response"
 local mgmt_bind_req = require "st.zigbee.zdo.mgmt_bind_request"
@@ -157,10 +156,6 @@ local switch_driver_template = {
 
       [zcl_clusters.basic_id] = {
         [xiaomi_utils.attr_id] = xiaomi_utils.handler
-      },
-
-      [0XFFC0] = { -- Aqara
-        [0x00F7] = xiaomi_utils.handler
       },
     }
   },

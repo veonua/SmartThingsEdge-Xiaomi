@@ -50,3 +50,7 @@ preferences:
         0x22: "Switch 2"
         0xFE: "Detached"
       default: "0x22"
+metadata:
+  deviceType: Switch
+  ocfDeviceType: oic.d.switch
+  deviceTypeId: Switch  

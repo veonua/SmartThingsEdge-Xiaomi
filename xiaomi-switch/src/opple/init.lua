@@ -9,6 +9,8 @@ local mgmt_bind_req = require "st.zigbee.zdo.mgmt_bind_request"
 local zdo_messages = require "st.zigbee.zdo"
 local data_types = require "st.zigbee.data_types"
 local cluster_base = require "st.zigbee.cluster_base"
+local xiaomi_utils = require "xiaomi_utils"
+local device_management = require "st.zigbee.device_management"
 
 local OnOff = zcl_clusters.OnOff
 local PowerConfiguration = zcl_clusters.PowerConfiguration
@@ -19,7 +21,8 @@ local OPPLE_CLUSTER = 0xFCC0
 local OPPLE_FINGERPRINTS = {
     { mfr = "LUMI", model = "lumi.switch.l1aeu1" },
     { mfr = "LUMI", model = "lumi.switch.l2aeu1" },
-    { mfr = "LUMI", model = "lumi.remote.b286opcn01" }
+    { mfr = "LUMI", model = "lumi.remote.b286opcn01" },
+    { mfr = "LUMI", model = "lumi.remote.lumi.remote.b286acn01" }
 }
 
 local is_opple = function(opts, driver, device)
@@ -140,6 +143,7 @@ local old_switch_handler = {
         attr = {
             [OPPLE_CLUSTER] = {
                 [0x0009] = attr_operation_mode_handler,
+                [0x00F7] = xiaomi_utils.handler
             },
             -- [OnOff.ID] = {
                 --- [0x00F5] = UInt32 0x070000[req_reqNo], 0x03AB5E00 -- probably a debug info, displays who requested on/off

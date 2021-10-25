@@ -1,0 +1,4 @@
+name: 'Ikea Window'
+packageKey: 'ikea-window'
+permissions:
+  zigbee: {}

@@ -26,3 +26,7 @@ preferences:
         0x12: "Switch"
         0xFE: "Detached"
       default: "0x12"
+metadata:
+  deviceType: Switch
+  ocfDeviceType: oic.d.switch
+  deviceTypeId: Switch  

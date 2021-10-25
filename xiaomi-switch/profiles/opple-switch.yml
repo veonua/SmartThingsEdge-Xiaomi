@@ -51,3 +51,7 @@ preferences:
     preferenceType: boolean
     definition:
       default: false
+metadata:
+  deviceType: Switch
+  ocfDeviceType: oic.d.switch
+  deviceTypeId: Switch  

@@ -27,7 +27,14 @@ local humidity_value_attr_handler = function(driver, device, value, zb_rx)
 end
 
 local pressure_value_attr_handler = function(driver, device, value, zb_rx)
-  device:emit_event(capabilities.atmosphericPressureMeasurement.atmosphericPressure(value.value/10))
+  local kPa = math.floor(value.value/10)
+  device:emit_event(capabilities.atmosphericPressureMeasurement.atmosphericPressure({value = kPa, unit = "kPa"}))
+end
+
+local function refresh_handler(driver, device, command)
+  device:send(zcl_clusters.TemperatureMeasurement.attributes.MeasuredValue:read(device))
+  device:send(zcl_clusters.RelativeHumidityMeasurement.attributes.MeasuredValue:read(device))
+  device:send(zcl_clusters.PressureMeasurement.attributes.MeasuredValue:read(device))
 end
 
 local zigbee_temp_driver_template = {
@@ -38,10 +45,13 @@ local zigbee_temp_driver_template = {
     capabilities.battery,
     capabilities.temperatureAlarm,
   },
-  use_defaults = false,
+  use_defaults = true,
+  capability_handlers = {
+    [capabilities.refresh.ID] = {
+      [capabilities.refresh.commands.refresh.NAME] = refresh_handler
+    }
+  },
   zigbee_handlers = {
-    global = {},
-    cluster = {},
     attr = {
       [zcl_clusters.basic_id] = {
         [0xFF01] = xiaomi_utils.handler
@@ -60,5 +70,5 @@ local zigbee_temp_driver_template = {
 }
 
 defaults.register_for_default_handlers(zigbee_temp_driver_template, zigbee_temp_driver_template.supported_capabilities)
-local xiaomi_temp = ZigbeeDriver("xiaomi_temp", zigbee_temp_driver_template)
-xiaomi_temp:run()
+local driver = ZigbeeDriver("xiaomi_temp", zigbee_temp_driver_template)
+driver:run()

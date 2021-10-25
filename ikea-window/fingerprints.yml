@@ -1,0 +1,31 @@
+zigbeeManufacturer:
+  - id: "ikea/open_close"
+    deviceLabel: TRADFRI open/close remote
+    manufacturer: IKEA of Sweden
+    model: TRADFRI open/close remote
+    deviceProfileName: up-down-button
+
+  - id: "ikea/fyrtur"
+    deviceLabel: "FYRTUR block-out roller Blind"
+    manufacturer: IKEA of Sweden
+    model: "FYRTUR block-out roller Blind"
+    deviceProfileName: blind
+
+zigbeeGeneric:
+  - id: "window-button"
+    deviceLabel: "Window button"
+    zigbeeProfiles:
+      - 0x0104
+    clusters:
+      client:
+        - 0x0102
+    deviceProfileName: up-down-button
+
+  - id: "window-blinds"
+    deviceLabel: "Window Blinds"
+    zigbeeProfiles:
+      - 0x0104
+    clusters:
+      server:
+        - 0x0102
+    deviceProfileName: blind

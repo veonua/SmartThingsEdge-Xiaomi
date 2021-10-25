@@ -14,6 +14,8 @@ components:
     capabilities:
     - id: button
       version: 1
+    - id: switch
+      version: 1
     categories:
     - name: RemoteController
   - id: button3
@@ -62,3 +64,7 @@ preferences:
     preferenceType: boolean
     definition:
       default: false
+metadata:
+  deviceType: Switch
+  ocfDeviceType: oic.d.switch
+  deviceTypeId: Switch  
