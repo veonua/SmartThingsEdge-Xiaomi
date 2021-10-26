@@ -11,7 +11,7 @@ local messages = require "st.zigbee.messages"
 local mgmt_bind_resp = require "st.zigbee.zdo.mgmt_bind_response"
 local mgmt_bind_req = require "st.zigbee.zdo.mgmt_bind_request"
 local zdo_messages = require "st.zigbee.zdo"
-
+local windowShade_defaults = require "st.zigbee.defaults.windowShade_defaults"
 
 local WindowCovering = zcl_clusters.WindowCovering
 local PowerConfiguration = zcl_clusters.PowerConfiguration
@@ -79,6 +79,16 @@ local do_configure = function(self, device)
   device:send(binding_table_cmd)
 end
 
+function current_lift_percentage_handler(ZigbeeDriver, ZigbeeDevice, value, zb_rx)
+  value.value = 100 - value.value
+  windowShade_defaults.default_current_lift_percentage_handler(ZigbeeDriver, ZigbeeDevice, value, zb_rx)
+end
+
+function window_shade_level_cmd(ZigbeeDriver, ZigbeeDevice, command)
+  local level = 100 - command.args.shadeLevel
+  ZigbeeDevice:send_to_component(command.component, WindowCovering.server.commands.GoToLiftPercentage(ZigbeeDevice, level))
+end
+
 local ikea_window_driver_template = {
   supported_capabilities = {
     capabilities.button,
@@ -88,12 +98,22 @@ local ikea_window_driver_template = {
     capabilities.battery,
     capabilities.refresh,
   },
+  capability_handlers = {
+    [capabilities.windowShadeLevel.ID] = {
+      [capabilities.windowShadeLevel.commands.setShadeLevel.NAME] = window_shade_level_cmd
+    }
+  },
   zigbee_handlers = {
     cluster = {
       [WindowCovering.ID] = {
           [WindowCovering.server.commands.UpOrOpen.ID] = open_command_handler,
           [WindowCovering.server.commands.DownOrClose.ID] = close_command_handler,
           [WindowCovering.server.commands.Stop.ID] = stop_command_handler,
+      }
+    },
+    attr = {
+      [WindowCovering.ID] = {
+        [WindowCovering.attributes.CurrentPositionLiftPercentage.ID] = current_lift_percentage_handler
       }
     },
     zdo = {

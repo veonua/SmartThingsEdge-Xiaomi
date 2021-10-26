@@ -7,8 +7,8 @@ local log = require "log"
 local xiaomi_utils = require "xiaomi_utils"
 
 local CURRENT_LEVEL = "current_level"
+local SIDE = "side"
 local DEFAULT_LEVEL = 50
-local side = 0
 -- 0 : front (aqara face up)
 -- 1 : right
 -- 2 : top
@@ -37,16 +37,17 @@ end
 
 local function cube_attr_handler(driver, device, value, zb_rx)
   local val = value.value 
-  side = val & 0x7
+  local side = val & 0x7
   local action = (val >> 8) & 0xFF
+  local prev_side = device:get_field(SIDE)
 
-  if action == 0x01 then
+  if action == 0x01 then     -- slide
     device:emit_event(capabilities.motionSensor.motion.active())
     device:emit_event(map_slide_attribute_to_capability[side+1]({state_change = true}))
-  elseif action == 0x02 then
+  elseif action == 0x02 then -- knock
     device:emit_event(capabilities.tamperAlert.tamper.detected())
-  elseif action == 0x00 then
-    local prev_side = (val >> 3) & 0x7 
+  elseif action == 0x00 then -- flip
+    prev_side = (val >> 3) & 0x7 
     if side == prev_side and side == 0 then
       device:emit_event(capabilities.accelerationSensor.acceleration.active())
     else
@@ -61,12 +62,16 @@ local function cube_attr_handler(driver, device, value, zb_rx)
     end
   end
 
-  device:emit_event(capabilities.activityLightingMode.lightingMode({ value = map_side_to_lightingMode[side+1] }))
+  if side ~= prev_side then
+    device:emit_event(capabilities.activityLightingMode.lightingMode({ value = map_side_to_lightingMode[side+1] })) -- , state_change = true
+    device:set_field(SIDE, side)
+  end
+  
   local reset_motion_status = function()
     device:emit_event(capabilities.motionSensor.motion.inactive())
     device:emit_event(capabilities.accelerationSensor.acceleration.inactive())
     device:emit_event(capabilities.tamperAlert.tamper.clear())
-  end  
+  end
   motion_reset_timer = device.thread:call_with_delay(2, reset_motion_status)
 end
 
@@ -76,10 +81,10 @@ local MOTION_RESET_TIMER = "motionResetTimer"
 
 local function rotate_attr_handler(driver, device, value, zb_rx)
   local val = math.floor(value.value) -- between -180 and 180
-  log.info("rotate " .. tostring(val) .. "*")
-
   local level = device:get_field(CURRENT_LEVEL) or DEFAULT_LEVEL
-  local new_level = math.max(3, math.min(100, level + math.floor( val / 18 * 6)))
+  local min = 2
+  
+  local new_level = math.max(min, math.min(100, level + math.floor( val / 18 * 6)))
   generate_switch_level_event(device, new_level)
 end
 
