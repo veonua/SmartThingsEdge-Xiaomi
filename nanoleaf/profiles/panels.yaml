@@ -1,0 +1,33 @@
+name: LightPanels
+components:
+- id: main
+  capabilities:
+  - id: switch
+    version: 1
+  - id: switchLevel
+    version: 1
+  - id: mediaPresets
+    version: 1
+  - id: colorControl
+    version: 1
+  - id: colorTemperature
+    version: 1
+  - id: refresh
+    version: 1
+  categories:
+  - name: Light
+preferences:
+  - title: "Token"
+    name: token
+    required: true
+    preferenceType: string
+    definition:
+      minLength: 7
+      maxLength: 15
+      stringType: text
+      default: ""
+metadata:
+  deviceType: Light
+  ocfDeviceType: oic.d.light
+  deviceTypeId: Light
+  

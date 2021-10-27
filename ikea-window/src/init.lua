@@ -17,7 +17,7 @@ local WindowCovering = zcl_clusters.WindowCovering
 local PowerConfiguration = zcl_clusters.PowerConfiguration
 
 local device_added = function(self, device)
-  log.info("device_added: " .. to_string(device))
+  log.info("device_added: " .. tostring(device))
   device:emit_event(capabilities.button.numberOfButtons({value = 1}))
   device:emit_event(capabilities.button.supportedButtonValues({"up", "down", "held"}))
   device:emit_event(capabilities.button.button.held({state_change = true}))
@@ -42,7 +42,7 @@ local function zdo_binding_table_handler(driver, device, zb_rx)
     if binding_table.dest_addr_mode.value == binding_table.DEST_ADDR_MODE_SHORT then
       -- send add hub to zigbee group command
       driver:add_hub_to_zigbee_group(binding_table.dest_addr.value)
-      log.info("add hub to zigbee group: " .. to_string( binding_table.dest_addr.value) )
+      log.info("add hub to zigbee group: " .. tostring( binding_table.dest_addr.value) )
     end
   end
 end

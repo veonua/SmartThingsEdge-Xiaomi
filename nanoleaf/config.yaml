@@ -1,0 +1,5 @@
+name: 'LAN Nanoleaf'
+packageKey: 'LAN-Nanoleaf'
+permissions:
+  lan: {}
+  discovery: {}

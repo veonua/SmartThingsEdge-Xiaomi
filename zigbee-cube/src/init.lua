@@ -96,7 +96,6 @@ local aqara_cube_driver_template = {
   supported_capabilities = {
     capabilities.button,
     capabilities.motionSensor,
-    capabilities.mediaPresets,    
     capabilities.accelerationSensor,
     capabilities.battery,
     capabilities.temperatureAlarm,
