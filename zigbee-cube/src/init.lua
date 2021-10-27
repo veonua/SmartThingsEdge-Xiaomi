@@ -39,8 +39,10 @@ local function cube_attr_handler(driver, device, value, zb_rx)
   local val = value.value 
   local side = val & 0x7
   local action = (val >> 8) & 0xFF
+  local flip_type = (val >> 6) & 0x3
   local prev_side = device:get_field(SIDE)
-
+  log.info("flip_type: ", flip_type, " prev_side: ", prev_side, " side: ", side)
+    
   if action == 0x01 then     -- slide
     device:emit_event(capabilities.motionSensor.motion.active())
     device:emit_event(map_slide_attribute_to_capability[side+1]({state_change = true}))
@@ -48,13 +50,18 @@ local function cube_attr_handler(driver, device, value, zb_rx)
     device:emit_event(capabilities.tamperAlert.tamper.detected())
   elseif action == 0x00 then -- flip
     prev_side = (val >> 3) & 0x7 
-    if side == prev_side and side == 0 then
-      device:emit_event(capabilities.accelerationSensor.acceleration.active())
+    if flip_type == 0 then 
+      if side == 0 and prev_side == 0 then -- shake
+        device:emit_event(capabilities.accelerationSensor.acceleration.active())
+      end
+      prev_side = side
     else
-      local flip_type = (val >> 6) & 0x3
       if flip_type == 1 then
         log.info("flip  90* " .. tostring(prev_side) .. ">" .. tostring(side))
       elseif flip_type == 2 then
+        if side==0 then
+          prev_side = 3 -- because of bug in cube
+        end
         log.info("flip 180* " .. tostring(side))
       end
 
@@ -80,10 +87,16 @@ local MOTION_RESET_TIMER = "motionResetTimer"
 
 
 local function rotate_attr_handler(driver, device, value, zb_rx)
-  local val = math.floor(value.value) -- between -180 and 180
+  local val = value.value -- between -180 and 180
+  local min_sensivity = 10
+  if val > min_sensivity then
+    val = val - min_sensivity
+  elseif val > -min_sensivity then
+    val = val + min_sensivity
+  end
   local level = device:get_field(CURRENT_LEVEL) or DEFAULT_LEVEL
   local min = 2
-  
+  -- utils.clamp_value( level + math.floor( val / 18 * 6), 2, 100)
   local new_level = math.max(min, math.min(100, level + math.floor( val / 18 * 6)))
   generate_switch_level_event(device, new_level)
 end

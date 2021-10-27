@@ -3,18 +3,26 @@ local caps = require('st.capabilities')
 
 -- local imports
 local discovery = require('discovery')
---local lifecycles = require('lifecycles')
 local commands = require('commands')
---local server = require('server')
+local log = require('log')
+
+local function device_removed(self, device)
+  local success, data = commands.send_lan_command(device, 'DELETE', '')
+end
+
+local function device_added(self, device)
+  log.info("dicso.token:".. discovery.token)
+  device:set_field('token', discovery.token, {persist=true})
+  --device:refresh()
+end
 
 --------------------
 -- Driver definition
 local driver =
   Driver(
-    'LAN-Nanoleaf',
+    'Nanoleaf',
     {
       discovery = discovery.start,
-      --lifecycle_handlers = lifecycles,
       supported_capabilities = {
         caps.switch,
         caps.switchLevel,
@@ -22,6 +30,11 @@ local driver =
         caps.mediaPresets,
         caps.refresh
       },
+      lifecycle_handlers = {
+        added = device_added,
+        removed = device_removed
+      },
+      -- removed
       capability_handlers = {
         -- Switch command handler
         [caps.switch.ID] = {

@@ -90,10 +90,27 @@ function command_handler.set_level(_, device, command)
 end
 
 function command_handler.set_color(_, device, command)
-  local hue, sat = math.floor(command.args.color.hue), math.floor(command.args.color.saturation)
+  local hue = math.floor(command.args.color.hue * 360 / 100)
+  local sat = math.floor(command.args.color.saturation)
 
-  local success = command_handler.send_lan_command(device, 'PUT', 'state',
-    {hue={value = hue}, sat={value = sat}})
+  local palette = {
+    { hue= hue, saturation= sat, brightness= 60 },
+    { hue= hue, saturation= sat, brightness= 80 },
+    { hue= hue, saturation= sat, brightness= 100 }
+  }
+  
+  local transTime = { minValue= 0, maxValue= 20 }
+  local delayTime = { minValue= 0, maxValue= 3 }
+  local payload = { write = {
+    command= "display", version= "2.0", animType= "random", 
+    colorType= "HSB", transTime= transTime,  palette= palette --    //delayTime= delayTime,
+  } }
+
+  local success = command_handler.send_lan_command(device, 'PUT', 'effects', payload)
+  
+  -- no animation
+  -- payload = {hue={value = hue}, sat={value = sat}}
+  -- local success = command_handler.send_lan_command(device, 'PUT', 'state', payload)
 
   -- Check if success
   if success then
@@ -131,10 +148,7 @@ end
 ------------------------
 -- Send LAN HTTP Request
 function command_handler.send_lan_command(device, method, path, body)
-  local url = device.device_network_id
-  local token = device:get_field('token') or 'Qthjlg9w7lDCVkAnOfNpcqeWRC1Vq0LD'
-  local dest_url = url..'/api/v1/'.. token .. '/' ..path
-  --local query = neturl.buildQuery(body or {})  --..'?'..query,
+  local dest_url = device.device_network_id .. '/' ..path
   local source
   local payload = ''
   if body then
