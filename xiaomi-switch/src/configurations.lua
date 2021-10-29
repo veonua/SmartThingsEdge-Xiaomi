@@ -31,7 +31,7 @@ local devices = {
   },
   GROUP4 = { 
     MATCHING_MODELS = {
-      "lumi.sensor_86sw1", "lumi.sensor_86sw2", "lumi.remote.b286opcn01", "lumi.remote.b286acn01"
+      "lumi.sensor_86sw1", "lumi.sensor_86sw2", "lumi.remote.b286opcn01", "lumi.remote.b286acn01", "lumi.remote.b28ac1"
     },
     CONFIGS = {
       first_button_ep = 0x0001,

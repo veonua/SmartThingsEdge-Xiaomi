@@ -22,7 +22,8 @@ local OPPLE_FINGERPRINTS = {
     { mfr = "LUMI", model = "lumi.switch.l1aeu1" },
     { mfr = "LUMI", model = "lumi.switch.l2aeu1" },
     { mfr = "LUMI", model = "lumi.remote.b286opcn01" },
-    { mfr = "LUMI", model = "lumi.remote.lumi.remote.b286acn01" }
+    { mfr = "LUMI", model = "lumi.remote.b28ac1" },
+    { mfr = "LUMI", model = "lumi.remote.b286acn01" }
 }
 
 local is_opple = function(opts, driver, device)

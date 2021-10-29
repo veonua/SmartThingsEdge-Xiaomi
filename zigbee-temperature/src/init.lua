@@ -9,6 +9,12 @@ local zcl_clusters = require "st.zigbee.zcl.clusters"
 
 local tempearture_value_attr_handler = function(driver, device, value, zb_rx)
   local temperature = value.value / 100
+
+  if temperature < -99 or temperature > 99 then
+    log.info("Temperature value out of range: " .. temperature)
+    return
+  end
+
   device:emit_event(capabilities.temperatureMeasurement.temperature({ value = temperature, unit = "C" }))
   
   local alarm = "cleared"
@@ -23,7 +29,9 @@ end
 
 local humidity_value_attr_handler = function(driver, device, value, zb_rx)
   local percent = utils.clamp_value(value.value / 100, 0.0, 100.0)
-  device:emit_event(capabilities.relativeHumidityMeasurement.humidity(percent))
+  if percent<99 then -- filter out spurious values
+    device:emit_event(capabilities.relativeHumidityMeasurement.humidity(percent))
+  end
 end
 
 local pressure_value_attr_handler = function(driver, device, value, zb_rx)

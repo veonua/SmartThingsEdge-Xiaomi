@@ -3,9 +3,13 @@ local capabilities = require "st.capabilities"
 local ZigbeeDriver = require "st.zigbee"
 local constants = require "st.zigbee.constants"
 local defaults = require "st.zigbee.defaults"
+local utils = require "st.utils"
+
 local log = require "log"
 local xiaomi_utils = require "xiaomi_utils"
 
+local MOTION_RESET_TIMER = "motionResetTimer"
+local LEVEL_TS  = "level_ts"
 local CURRENT_LEVEL = "current_level"
 local SIDE = "side"
 local DEFAULT_LEVEL = 50
@@ -25,6 +29,7 @@ local map_slide_attribute_to_capability = { button.pushed, button.pushed_2x, but
 local generate_switch_level_event = function(device, value)
   device:emit_event(capabilities.switchLevel.level(value))
   device:set_field(CURRENT_LEVEL, value)
+  device:set_field(LEVEL_TS, os.time())
 end
 
 local function added_handler(self, device)
@@ -39,9 +44,7 @@ local function cube_attr_handler(driver, device, value, zb_rx)
   local val = value.value 
   local side = val & 0x7
   local action = (val >> 8) & 0xFF
-  local flip_type = (val >> 6) & 0x3
   local prev_side = device:get_field(SIDE)
-  log.info("flip_type: ", flip_type, " prev_side: ", prev_side, " side: ", side)
     
   if action == 0x01 then     -- slide
     device:emit_event(capabilities.motionSensor.motion.active())
@@ -49,12 +52,17 @@ local function cube_attr_handler(driver, device, value, zb_rx)
   elseif action == 0x02 then -- knock
     device:emit_event(capabilities.tamperAlert.tamper.detected())
   elseif action == 0x00 then -- flip
+    local flip_type = (val >> 6) & 0x3
     prev_side = (val >> 3) & 0x7 
+    log.debug("flip_type: ", flip_type, " prev_side: ", prev_side, " side: ", side)
+  
     if flip_type == 0 then 
       if side == 0 and prev_side == 0 then -- shake
         device:emit_event(capabilities.accelerationSensor.acceleration.active())
+      else
+        -- just echoing last movement
+        return
       end
-      prev_side = side
     else
       if flip_type == 1 then
         log.info("flip  90* " .. tostring(prev_side) .. ">" .. tostring(side))
@@ -82,23 +90,31 @@ local function cube_attr_handler(driver, device, value, zb_rx)
   motion_reset_timer = device.thread:call_with_delay(2, reset_motion_status)
 end
 
-
-local MOTION_RESET_TIMER = "motionResetTimer"
-
-
 local function rotate_attr_handler(driver, device, value, zb_rx)
   local val = value.value -- between -180 and 180
-  local min_sensivity = 10
-  if val > min_sensivity then
-    val = val - min_sensivity
-  elseif val > -min_sensivity then
-    val = val + min_sensivity
-  end
+  local delta = math.floor( val / 18 * 8) -- 80 percent for every 180*
+  
+  log.debug("rotate: ", val, " delta: ", delta)
+  -- local min_sensivity = 10
+  -- if val > min_sensivity then
+  --   val = val - min_sensivity
+  -- elseif val > -min_sensivity then
+  --   val = val + min_sensivity
+  -- end
   local level = device:get_field(CURRENT_LEVEL) or DEFAULT_LEVEL
-  local min = 2
-  -- utils.clamp_value( level + math.floor( val / 18 * 6), 2, 100)
-  local new_level = math.max(min, math.min(100, level + math.floor( val / 18 * 6)))
+  local new_level = utils.clamp_value( level + delta, 2, 100)
   generate_switch_level_event(device, new_level)
+end
+
+function set_level(_, device, command)
+  local last_rotate = device:get_field(LEVEL_TS) or 0
+  if os.time() - last_rotate < 5 then
+    log.info("ignore dimmer loopback")
+    return
+  end
+
+  device:emit_event(capabilities.switchLevel.level(command.args.level))
+  device:set_field(CURRENT_LEVEL, value)
 end
 
 local do_refresh = function(self, device)
@@ -116,9 +132,13 @@ local aqara_cube_driver_template = {
   lifecycle_handlers = {
     added = added_handler,
   },
+
   capability_handlers = {
     [capabilities.refresh.ID] = {
       [capabilities.refresh.commands.refresh.NAME] = do_refresh,
+    },
+    [capabilities.switchLevel.ID] = {
+      [capabilities.switchLevel.commands.setLevel.NAME] = set_level
     }
   },
   use_defaults = false,
@@ -139,6 +159,6 @@ local aqara_cube_driver_template = {
   },
 }
 
-defaults.register_for_default_handlers(aqara_cube_driver_template, aqara_cube_driver_template.supported_capabilities)
+--defaults.register_for_default_handlers(aqara_cube_driver_template, aqara_cube_driver_template.supported_capabilities)
 local aqara_cube = ZigbeeDriver("aqara_cube", aqara_cube_driver_template)
 aqara_cube:run()
