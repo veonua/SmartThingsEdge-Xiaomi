@@ -6,8 +6,6 @@ local defaults = require "st.zigbee.defaults"
 local log = require "log"
 
 local messages = require "st.zigbee.messages"
-local mgmt_bind_resp = require "st.zigbee.zdo.mgmt_bind_response"
-local mgmt_bind_req = require "st.zigbee.zdo.mgmt_bind_request"
 local zdo_messages = require "st.zigbee.zdo"
 local data_types = require "st.zigbee.data_types"
 local cluster_base = require "st.zigbee.cluster_base"
