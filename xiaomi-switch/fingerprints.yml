@@ -1,80 +1,79 @@
-# see for fingerprints https://github.com/rytilahti/python-miio/issues/699
+# see for fingerprints https://github.com/Koenkk/zigbee-herdsman-converters/blob/master/devices/xiaomi.js
 zigbeeManufacturer:
-  - id: "lumi.ctrl_neutral1"
-    deviceLabel: Wall Switch (No Neutral, Single Rocker)
+  - id: "QBKG04LM"
+    deviceLabel: QBKG04LM Wall Switch (No Neutral, Single Rocker)
     manufacturer: LUMI
     model: lumi.ctrl_neutral1
     deviceProfileName: switch-button
-  - id: "lumi.ctrl_neutral2"
-    deviceLabel: Wall Switch (No Neutral, Double Rocker)
+  - id: "QBKG03LM"
+    deviceLabel: QBKG03LM Wall Switch (No Neutral, Double Rocker)
     manufacturer: LUMI
     model: lumi.ctrl_neutral2
     deviceProfileName: switch-button-2
 
-  - id: "lumi.switch.b1nacn02"
-    deviceLabel: Wall Switch (With Neutral, Single Rocker)
+  - id: "QBKG23LM"
+    deviceLabel: QBKG23LM Wall Switch (With Neutral, Single Rocker)
     manufacturer: LUMI
     model: lumi.switch.b1nacn02
     deviceProfileName: switch-neutral-button
-  - id: "lumi.switch.b2nacn02"
-    deviceLabel: Wall Switch (With Neutral, Double Rocker)
+  - id: "QBKG24LM"
+    deviceLabel: QBKG24LM Wall Switch (With Neutral, Double Rocker)
     manufacturer: LUMI
     model: lumi.switch.b2nacn02
     deviceProfileName: switch-neutral-button-2
 
-  - id: "lumi.switch.l1aeu1"
-    deviceLabel: Wall Switch H1 (No Neutral, Single Rocker)
+  - id: "WS-EUK01"
+    deviceLabel: WS-EUK01 Wall Switch (No Neutral, Single Rocker)
     manufacturer: LUMI
     model: lumi.switch.l1aeu1
     deviceProfileName: opple-switch
-
-  - id: "lumi.switch.l2aeu1"
-    deviceLabel: Wall Switch H1 (No Neutral, Double Rocker)
+  - id: "WS-EUK02"
+    deviceLabel: WS-EUK02 Wall Switch (No Neutral, Double Rocker)
     manufacturer: LUMI
     model: lumi.switch.l2aeu1
     deviceProfileName: opple-switch-2
 
-
-  - id: "lumi.sensor_86sw1"
-    deviceLabel: Wall Switch (Single Rocker)
+  - id: "WXKG03LM_rev1"
+    deviceLabel: WXKG03LM_rev1 Wall Switch (Single Rocker)
     manufacturer: LUMI
     model: lumi.sensor_86sw1
+    deviceProfileName: button 
+  - id: "WXKG03LM_rev2"
+    deviceLabel: WXKG03LM_rev2 Wall Switch (Single Rocker)
+    manufacturer: LUMI
+    model: lumi.remote.b186acn01
     deviceProfileName: button
-  - id: "lumi.sensor_86sw2"
-    deviceLabel: Wall Switch (Double Rocker)
+  - id: "WXKG02LM_rev1"
+    deviceLabel: WXKG02LM_rev1 Wall Switch (Double Rocker)
     manufacturer: LUMI
     model: lumi.sensor_86sw2
     deviceProfileName: button-2
+  - id: "WXKG02LM_rev2"
+    deviceLabel: WXKG02LM_rev2 Wall Switch (Double Rocker)
+    manufacturer: LUMI
+    model: lumi.remote.b286acn01
+    deviceProfileName: button-2
 
-  - id: "lumi.remote.b28ac1"
-    deviceLabel: Wireless Switch
+  - id: "WRS-R02"
+    deviceLabel: WRS-R02 Wireless Switch
     manufacturer: LUMI
     model: lumi.remote.b28ac1
     deviceProfileName: opple-button
 
-  - id: "lumi.remote.b286opcn01"
-    deviceLabel: Wireless Switch (Two Button)
+  - id: "WXCJKG11LM"
+    deviceLabel: WXCJKG11LM Wireless Switch (Two Button)
     manufacturer: LUMI
     model: lumi.remote.b286opcn01
     deviceProfileName: opple-button-2
 
 
-  - id: "lumi.remote.b286acn01"
-    deviceLabel: Wireless Switch (Two Button)
-    manufacturer: LUMI
-    model: lumi.remote.b286acn01
-    deviceProfileName: opple-button-2
-  
-zigbeeGeneric:  
-  - id: "switch-generic"
-    deviceLabel: "Zigbee Switch"
-    zigbeeProfiles:
+  - id: "any"
+    deviceLabel: lumi.switch.any
+    deviceIdentifiers:
       - 0x0104
-    clusters:
-      server:
-        - 0x0000
-        - 0x0006
-      client:
-        - 0x0000
     deviceProfileName: switch
-  
+  - id: "profile"
+    deviceLabel: profile
+    profile:
+      - 0x0104
+    deviceProfileName: switch

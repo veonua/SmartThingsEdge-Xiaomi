@@ -23,7 +23,7 @@ local DEFAULT_LEVEL = 50
 local button = capabilities.button.button 
 
 local map_side_to_lightingMode = { "reading", "writing", "computer", "night", "sleepPreparation", "day" }
-local map_flip_attribute_to_capability = { button.up, button.up_2x, button.up_3x, button.up_4x, button.up_5x, button.up_6x }
+local map_flip_attribute_to_capability  = { button.up,     button.up_2x,     button.up_3x,     button.up_4x,     button.up_5x,     button.up_6x }
 local map_slide_attribute_to_capability = { button.pushed, button.pushed_2x, button.pushed_3x, button.pushed_4x, button.pushed_5x, button.pushed_6x}
 
 local generate_switch_level_event = function(device, value)
@@ -35,9 +35,19 @@ end
 local function added_handler(self, device)
   device:emit_event(capabilities.button.numberOfButtons({ value = 1 }))
   device:emit_event(capabilities.button.supportedButtonValues(
-    {"up", "up_2x", "up_3x", "up_4x", "up_5x", "up_6x",
-     "pushed", "pushed_2x", "pushed_3x", "pushed_4x", "pushed_5x", "pushed_6x"}))
+    { "double", -- double tap
+      "up", "up_2x", "up_3x", "up_4x", "up_5x", "up_6x", -- flip x side up
+      "pushed", "pushed_2x", "pushed_3x", "pushed_4x", "pushed_5x", "pushed_6x" -- slide x side up
+    }))
   device:emit_event(capabilities.button.button.pushed({state_change = true}))
+
+  local components = {"flip90", "flip180", "slide"}
+  for _, comp in ipairs(components) do
+    local component = {id=comp}
+    device:emit_component_event(component, capabilities.button.numberOfButtons({value = 1}))
+    device:emit_component_event(component, capabilities.button.supportedButtonValues({"pushed"}))
+    device:emit_component_event(component, capabilities.button.button.pushed({state_change = true}))
+  end
 end
 
 local function cube_attr_handler(driver, device, value, zb_rx)
@@ -45,49 +55,62 @@ local function cube_attr_handler(driver, device, value, zb_rx)
   local side = val & 0x7
   local action = (val >> 8) & 0xFF
   local prev_side = device:get_field(SIDE)
-    
-  if action == 0x01 then     -- slide
-    device:emit_event(capabilities.motionSensor.motion.active())
-    device:emit_event(map_slide_attribute_to_capability[side+1]({state_change = true}))
-  elseif action == 0x02 then -- knock
-    device:emit_event(capabilities.tamperAlert.tamper.detected())
-  elseif action == 0x00 then -- flip
+
+  local generic_event = capabilities.button.button.pushed({state_change = true})
+
+  if action == 0x00 then -- flip
     local flip_type = (val >> 6) & 0x3
-    prev_side = (val >> 3) & 0x7 
-    log.debug("flip_type: ", flip_type, " prev_side: ", prev_side, " side: ", side)
-  
-    if flip_type == 0 then 
-      if side == 0 and prev_side == 0 then -- shake
+    
+    if flip_type == 0 then  
+      -- final side is unknown
+      side = -1
+      prev_side = -1
+      device:set_field(SIDE, side)
+      
+      if val == 0 then -- shake
         device:emit_event(capabilities.accelerationSensor.acceleration.active())
-      else
-        -- just echoing last movement
-        return
+      elseif val == 2 then -- wake up
+        device:emit_event(capabilities.motionSensor.motion.active())
+      elseif val == 3 then -- toss
+        device:emit_event(capabilities.tamperAlert.tamper.detected())
       end
+
+      local reset_motion_status = function()
+        device:emit_event(capabilities.motionSensor.motion.inactive())
+        device:emit_event(capabilities.accelerationSensor.acceleration.inactive())
+        device:emit_event(capabilities.tamperAlert.tamper.clear())
+      end
+      motion_reset_timer = device.thread:call_with_delay(2, reset_motion_status)
+      return
     else
+      prev_side = (val >> 3) & 0x7 
+      log.debug("flip_type: ", flip_type, " prev_side: ", prev_side, " side: ", side)
+  
       if flip_type == 1 then
         log.info("flip  90* " .. tostring(prev_side) .. ">" .. tostring(side))
+        device:emit_component_event({id="flip90"}, generic_event )
+        
       elseif flip_type == 2 then
         if side==0 then
           prev_side = 3 -- because of bug in cube
         end
         log.info("flip 180* " .. tostring(side))
+        device:emit_component_event({id="flip180"}, generic_event )
       end
 
       device:emit_event(map_flip_attribute_to_capability[side + 1]({state_change = true}))
     end
+  elseif action == 0x01 then -- slide
+    device:emit_event(map_slide_attribute_to_capability[side+1]({state_change = true}))
+    device:emit_component_event({id="slide"}, generic_event )
+  elseif action == 0x02 then -- double tap
+    device:emit_event(capabilities.button.button.double({state_change = true}))
   end
 
   if side ~= prev_side then
     device:emit_event(capabilities.activityLightingMode.lightingMode({ value = map_side_to_lightingMode[side+1] })) -- , state_change = true
     device:set_field(SIDE, side)
   end
-  
-  local reset_motion_status = function()
-    device:emit_event(capabilities.motionSensor.motion.inactive())
-    device:emit_event(capabilities.accelerationSensor.acceleration.inactive())
-    device:emit_event(capabilities.tamperAlert.tamper.clear())
-  end
-  motion_reset_timer = device.thread:call_with_delay(2, reset_motion_status)
 end
 
 local function rotate_attr_handler(driver, device, value, zb_rx)
@@ -95,12 +118,6 @@ local function rotate_attr_handler(driver, device, value, zb_rx)
   local delta = math.floor( val / 18 * 8) -- 80 percent for every 180*
   
   log.debug("rotate: ", val, " delta: ", delta)
-  -- local min_sensivity = 10
-  -- if val > min_sensivity then
-  --   val = val - min_sensivity
-  -- elseif val > -min_sensivity then
-  --   val = val + min_sensivity
-  -- end
   local level = device:get_field(CURRENT_LEVEL) or DEFAULT_LEVEL
   local new_level = utils.clamp_value( level + delta, 2, 100)
   generate_switch_level_event(device, new_level)

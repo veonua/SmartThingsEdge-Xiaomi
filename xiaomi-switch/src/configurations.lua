@@ -1,6 +1,7 @@
 local log = require "log"
 local json = require "dkjson"
 
+-- TODO: split it to 3 drives
 local devices = {
   GROUP1 = {
     MATCHING_MODELS = {
@@ -31,11 +32,21 @@ local devices = {
   },
   GROUP4 = { 
     MATCHING_MODELS = {
-      "lumi.sensor_86sw1", "lumi.sensor_86sw2", "lumi.remote.b286opcn01", "lumi.remote.b286acn01", "lumi.remote.b28ac1"
+      "lumi.sensor_86sw1", "lumi.sensor_86sw2", "lumi.remote.b286opcn01", "lumi.remote.b28ac1"
     },
     CONFIGS = {
       first_button_ep = 0x0001,
       supported_button_values = {"pushed", "double"}
+    }
+  },
+  GROUP5 = { 
+    MATCHING_MODELS = {
+      "lumi.remote.b186acn01", 
+      "lumi.remote.b286acn01",
+    },
+    CONFIGS = {
+      first_button_ep = 0x0001,
+      supported_button_values = {"pushed", "double", "held"}
     }
   },
 }
@@ -62,19 +73,13 @@ end
 configs.get_device_parameters = function(zb_device)
   local eps = zb_device.zigbee_endpoints
   log.info(json.encode(eps))
-  
   local first_switch_ep = find_first_ep(eps, 0x0006)
-  local first_button_ep = find_first_ep(eps, 0x0012)
   
   for _, device in pairs(devices) do
     for _, model in pairs(device.MATCHING_MODELS) do
       if zb_device:get_model() == model then
         log.info( "Found config for device: " .. model .. " " .. json.encode(device.CONFIGS) )
         
-        if first_button_ep ~= device.CONFIGS.first_button_ep then
-          log.warn( "First button endpoint is not correct: " .. first_button_ep .. " " .. device.CONFIGS.first_button_ep )
-        end
-
         device.CONFIGS["first_switch_ep"] = first_switch_ep
         return device.CONFIGS
       end
@@ -82,7 +87,9 @@ configs.get_device_parameters = function(zb_device)
   end
   
   log.warn("Did not found config for device: " .. tostring( zb_device:get_model() ) )
-        
+  
+  local first_button_ep = find_first_ep(eps, 0x0012)
+  
   return {
     first_switch_ep = first_switch_ep,
     first_button_ep = first_button_ep,

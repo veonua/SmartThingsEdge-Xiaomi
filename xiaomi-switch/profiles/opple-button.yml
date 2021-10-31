@@ -19,4 +19,9 @@ preferences:
       options:
         0: "Direct Commands (Bind)"
         1: "Hub Events"
-      default: "0"
+      default: "1"
+
+metadata:
+  deviceType: RemoteController
+  ocfDeviceType: x.com.st.d.remotecontroller
+  deviceTypeId: RemoteController  

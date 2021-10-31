@@ -19,3 +19,8 @@ components:
 preferences:
   - preferenceId: presetPosition
     explicit: true
+
+metadata:
+  deviceType: Blind
+  ocfDeviceType: oic.d.blind
+  deviceTypeId: Blind

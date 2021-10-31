@@ -31,3 +31,8 @@ preferences:
     preferenceType: boolean
     definition: 
       default: false
+
+metadata:
+  deviceType: Blind
+  ocfDeviceType: oic.d.blind
+  deviceTypeId: Blind  

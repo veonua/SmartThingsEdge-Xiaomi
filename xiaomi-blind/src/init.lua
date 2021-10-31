@@ -106,20 +106,26 @@ local do_refresh = function(self, device)
 end
 
 local function info_changed(driver, device, event, args)
-  log.info("info changed: " .. tostring(event))
+  log.info(tostring(event))
   
   for id, value in pairs(device.preferences) do
     if args.old_st_store.preferences[id] ~= value then
       local data = device.preferences[id]
       
+      local attr
+      local val
       if id == "touchStart" then
-        device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, 0xFF29, 0x115F, data_types.Boolean, not data) )
+        val = not data
+        attr = 0xFF29
       elseif id == "reverse" then
-        device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, 0xFF28, 0x115F, data_types.Boolean, not data) )
+        attr = 0xFF28
+        val = not data
       elseif id == "reset" then
-        device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, 0xFF27, 0x115F, data_types.Boolean, false) )
+        attr = 0xFF27
+        val = false
       end
 
+      device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, attr, 0x115F, data_types.Boolean, false) )
     end
   end
 end

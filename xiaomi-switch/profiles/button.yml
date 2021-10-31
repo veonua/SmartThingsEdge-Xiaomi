@@ -13,3 +13,7 @@ components:
     categories:
     - name: RemoteController
     
+metadata:
+  deviceType: RemoteController
+  ocfDeviceType: x.com.st.d.remotecontroller
+  deviceTypeId: RemoteController  

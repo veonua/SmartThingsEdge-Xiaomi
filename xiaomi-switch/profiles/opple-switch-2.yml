@@ -6,6 +6,8 @@ components:
       version: 1
     - id: switch
       version: 1
+    - id: temperatureAlarm
+      version: 1
     - id: refresh
       version: 1
     categories:
@@ -33,7 +35,7 @@ preferences:
       options:
         0: "Direct Commands (Bind)"
         1: "Hub Events"
-      default: "0"
+      default: "1"
   - title: "Button"
     name: button1
     required: true
@@ -43,13 +45,6 @@ preferences:
         0x12: "Switch"
         0xFE: "Detached"
       default: "0x12"
-
-  - title: "Turn Off indicator light"
-    name: ledDisabledNight
-    required: false
-    preferenceType: boolean
-    definition:
-      default: false
 
   - title: "Turn Off indicator light"
     name: ledDisabledNight

@@ -6,6 +6,8 @@ components:
       version: 1
     - id: switch
       version: 1
+    - id: temperatureAlarm
+      version: 1
     - id: refresh
       version: 1
     categories:
@@ -20,7 +22,7 @@ preferences:
       options:
         0: "Direct Commands (Bind)"
         1: "Hub Events"
-      default: "0"
+      default: "1"
   - title: "Button"
     name: button1
     required: true
@@ -37,20 +39,14 @@ preferences:
     preferenceType: boolean
     definition:
       default: false
-
-  - title: "Turn Off indicator light"
-    name: ledDisabledNight
-    required: false
-    preferenceType: boolean
-    definition:
-      default: false
-
+      
   - title: "Power off memory"
     name: powerOutageMemory
     required: false
     preferenceType: boolean
     definition:
       default: false
+
 metadata:
   deviceType: Switch
   ocfDeviceType: oic.d.switch

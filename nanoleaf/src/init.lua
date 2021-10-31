@@ -34,18 +34,14 @@ local driver =
         added = device_added,
         removed = device_removed
       },
-      -- removed
       capability_handlers = {
-        -- Switch command handler
         [caps.switch.ID] = {
           [caps.switch.commands.on.NAME] = commands.on_off,
           [caps.switch.commands.off.NAME] = commands.on_off
         },
-        -- Switch Level command handler
         [caps.switchLevel.ID] = {
           [caps.switchLevel.commands.setLevel.NAME] = commands.set_level
         },
-        -- Color Control command handler
         [caps.colorControl.ID] = {
           [caps.colorControl.commands.setColor.NAME] = commands.set_color
         },
@@ -55,7 +51,6 @@ local driver =
         [caps.mediaPresets.ID] = {
           [caps.mediaPresets.commands.playPreset.NAME] = commands.playPreset
         },
-        -- Refresh command handler
         [caps.refresh.ID] = {
           [caps.refresh.commands.refresh.NAME] = commands.refresh
         }
