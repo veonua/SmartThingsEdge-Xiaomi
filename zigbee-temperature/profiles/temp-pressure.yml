@@ -23,3 +23,8 @@ preferences:
     explicit: true
   - preferenceId: tempOffset
     explicit: true
+
+metadata:
+  deviceType: Thermostat	
+  ocfDeviceType: oic.d.thermostat
+  deviceTypeId: Thermostat	
