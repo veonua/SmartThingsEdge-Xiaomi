@@ -1,6 +1,7 @@
 name: button-2
 components:
   - id: main
+    label: "Left"
     capabilities:
     - id: button
       version: 1
@@ -13,12 +14,14 @@ components:
     categories:
     - name: RemoteController
   - id: button2
+    label: "Right"
     capabilities:
     - id: button
       version: 1
     categories:
     - name: RemoteController
   - id: button3
+    label: "Both buttons"
     capabilities:
     - id: button
       version: 1

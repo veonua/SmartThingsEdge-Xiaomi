@@ -36,7 +36,7 @@ local function occupancy_attr_handler(driver, device, occupancy, zb_rx)
     log.debug("no motion")
     device:emit_event(capabilities.motionSensor.motion.inactive())
   end
-  motion_reset_timer = device.thread:call_with_delay(60, reset_motion_status)
+  motion_reset_timer = device.thread:call_with_delay(20, reset_motion_status)
   device:set_field(MOTION_RESET_TIMER, motion_reset_timer)
 end
 

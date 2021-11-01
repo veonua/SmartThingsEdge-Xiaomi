@@ -1,0 +1,21 @@
+0104	0000		01 01 0000 00 3C39	00 00 0000	0A	01 050042126C756D692E73656E736F725F6D6F74696F6E
+0104	0000 		01 01 0000 00 750C 	00 01 1234 	0A	01 02FF4C0600100121E50B21A801240000000000217C002060
+0104	0000 		01 01 0000 00 750C 	00 00 0000 	0A 	01 050042126C756D692E73656E736F725F6D61676E6574
+0104	0000		01 01 0000 00 889E	00 01 1234	0A	01 02FF4C0600100121BD0B21A84324010000000021A1002058
+profile clusterId	EP EP options senderId   manuId command dir 
+0104    0008 		0A 01 0140 00 EC9A 	00 00 0000 	0B 	01 0400
+                                              
+0104	0102		01 FF 0000 01 B2D7 01	00 0000 00 00
+0104    0000        01 01 0000 00 94BF 00   01 1234 0A 01 02FF4C0600100121DB0B21A813240100000000211600205E
+
+
+zigbee.parse decodes this as:
+
+SmartShield(clusterId: 0x0008, command: 0x0b, data:
+[0x04, 0x00], destinationEndpoint: 0x01, direction: 0x01,
+isClusterSpecific: false, isManufacturerSpecific: false, manufacturerId:
+0x0000, messageType: 0x00, number: null, options: 0x0140, profileId:
+0x0104, senderShortId: 0xec9a, sourceEndpoint: 0x0a, text: null)
+
+
+SmartShield(text: null, manufacturerId: 0x1234, direction: 0x01, data: [0x02, 0xff, 0x4c, 0x06, 0x00, 0x10, 0x01, 0x21, 0xdb, 0x0b, 0x21, 0xa8, 0x13, 0x24, 0x04, 0x00, 0x00, 0x00, 0x00, 0x21, 0x16, 0x00, 0x20, 0x5e], number: null, isManufacturerSpecific: true, messageType: 0x00, senderShortId: 0x94bf, isClusterSpecific: false, sourceEndpoint: 0x01, profileId: 0x0104, command: 0x0a, clusterId: 0x0000, destinationEndpoint: 0x01, options: 0x0000)

@@ -1,7 +1,7 @@
 name: switch-button-2
 components:
   - id: main
-    label: "Left button"
+    label: "Left"
     capabilities:
     - id: button
       version: 1
@@ -14,7 +14,7 @@ components:
     categories:
     - name: RemoteController
   - id: button2
-    label: "Right button"
+    label: "Right"
     capabilities:
     - id: switch
       version: 1
@@ -30,7 +30,7 @@ components:
     categories:
     - name: RemoteController
 preferences:
-  - title: "Button 1"
+  - title: "Left button"
     name: button1
     required: true
     preferenceType: enumeration
@@ -40,7 +40,7 @@ preferences:
         0x22: "Switch 2"
         0xFE: "Detached"
       default: "0x12"
-  - title: "Button 2"
+  - title: "Right button"
     name: button2
     required: true
     preferenceType: enumeration
