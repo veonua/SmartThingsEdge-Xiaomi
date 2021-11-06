@@ -65,6 +65,10 @@ local do_configure = function(self, device)
 
     device:send(cluster_base.write_manufacturer_specific_attribute(device, OPPLE_CLUSTER, 0x0009, 0x115F, data_types.Uint8, operationMode) )
 
+    -- turn on the "multiple clicks" mode, otherwise the only "single click" events.
+    -- if value is 1 - there will be single clicks, 2 - multiple.
+    device:send(cluster_base.write_manufacturer_specific_attribute(device, OPPLE_CLUSTER, 0x0125, 0x115F, data_types.Uint8, 0x02) ) 
+    
     if operationMode == 1 then -- hub
         device:send(OnOff.attributes.OnOff:configure_reporting(device, 30, 3600)) 
         device:send(PowerConfiguration.attributes.BatteryPercentageRemaining:configure_reporting(device, 30, 21600, 1))

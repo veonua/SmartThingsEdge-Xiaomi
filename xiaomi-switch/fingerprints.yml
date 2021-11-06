@@ -55,10 +55,10 @@ zigbeeManufacturer:
     deviceProfileName: button-2
 
   - id: "WRS-R02"
-    deviceLabel: WRS-R02 Wireless Switch
+    deviceLabel: WRS-R02 Wireless Switch (Two Button)
     manufacturer: LUMI
     model: lumi.remote.b28ac1
-    deviceProfileName: opple-button
+    deviceProfileName: opple-button-2
 
   - id: "WXCJKG11LM"
     deviceLabel: WXCJKG11LM Wireless Switch (Two Button)

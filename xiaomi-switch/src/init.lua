@@ -17,7 +17,6 @@ local MultistateInput = 0x0012
 local xiaomi_utils = require "xiaomi_utils"
 local configsMap   = require "configurations"
 local utils = require "utils"
-local click_types = {capabilities.button.button.pushed, capabilities.button.button.double, capabilities.button.button.pushed_3x, capabilities.button.button.pushed_4x}
 
 local function component_to_endpoint(device, component_id)
   local first_switch_ep = utils.first_switch_ep(device)
@@ -81,7 +80,7 @@ function button_attr_handler(driver, device, value, zb_rx)
   local val = value.value
   local ep = zb_rx.address_header.src_endpoint.value
   
-  local click_type = utils.click_types[val]
+  local click_type = utils.click_types[val+1]
   local component_id = ep - utils.first_button_ep(device) + 1
 
   if click_type ~= nil then
@@ -91,6 +90,7 @@ end
 
 
 local function info_changed(driver, device, event, args)
+  -- todo: move it to old_switch driver
   log.info("info changed: " .. tostring(event))
   
   for id, value in pairs(device.preferences) do

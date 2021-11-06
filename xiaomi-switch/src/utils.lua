@@ -12,6 +12,7 @@ function utils.first_button_ep(device)
 end
 
 utils.click_types = {
+    capabilities.button.button.held,
     capabilities.button.button.pushed, 
     capabilities.button.button.double, 
     capabilities.button.button.pushed_3x, 

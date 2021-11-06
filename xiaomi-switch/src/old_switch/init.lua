@@ -4,6 +4,7 @@ local capabilities = require "st.capabilities"
 local OnOff = zcl_clusters.OnOff
 local log = require "log"
 local utils = require "utils"
+local json = require "dkjson"
 
 function old_button_handler(device, component_id, value)
     local CLICK_TIMER  = string.format("button_timer%d", component_id)
@@ -67,13 +68,18 @@ function on_off_attr_handler(driver, device, value, zb_rx)
         local component_id = ep - utils.first_switch_ep(device) + 1
         device:emit_event_for_endpoint(component_id, value.value and attr.on() or attr.off())
     else
-        local click_type = zb_rx.body_length.value>8 and capabilities.button.button.pushed or capabilities.button.button.held
+        log.warn("on_off_attr_handler", "value:", json.encode(value))
+        local press_type = zb_rx.body_length.value>8 and capabilities.button.button.pushed or capabilities.button.button.held
         
         local component_id = ep - first_button_ep + 1
-        local event = click_type({state_change = true})
+        local event = press_type({state_change = true})
 
-        log.warn(" old button " .. tostring(component_id) .. " " .. tostring(event))
+        local text = zb_rx.body_length.value>8 and "pushed" or "held"
+        log.warn(" old button " .. tostring(component_id) .. " " .. tostring(text))
+
         if not value.value then
+            -- press = off/on in the same message
+            -- hold  = off, pause, on. so we emit only off
             device:emit_event_for_endpoint(component_id, event)
         end
         --old_button_handler(device, component_id, value)
