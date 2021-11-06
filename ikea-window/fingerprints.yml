@@ -13,7 +13,7 @@ zigbeeManufacturer:
 
 zigbeeGeneric:
   - id: "window-button"
-    deviceLabel: "Window button"
+    deviceLabel: "Window button 0x117C"
     zigbeeProfiles:
       - 0x0104
     clusters:
