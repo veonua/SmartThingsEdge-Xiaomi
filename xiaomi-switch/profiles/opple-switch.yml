@@ -20,8 +20,8 @@ preferences:
     preferenceType: enumeration
     definition:
       options:
-        0: "Direct Commands (Bind)"
-        1: "Hub Events"
+        0: "Light Commands (Bind to Group)"
+        1: "Button Events (Normal)"
       default: "1"
   - title: "Button"
     name: button1

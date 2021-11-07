@@ -9,15 +9,15 @@ local log = require "log"
 local zcl_clusters = require "st.zigbee.zcl.clusters"
 local WindowCovering = zcl_clusters.WindowCovering
 local PowerConfiguration = zcl_clusters.PowerConfiguration
+local Groups = zcl_clusters.Groups
 
+
+local zigbee_utils = require "zigbee_utils"
 
 local device_management = require "st.zigbee.device_management"
 local messages = require "st.zigbee.messages"
 local mgmt_bind_resp = require "st.zigbee.zdo.mgmt_bind_response"
-local mgmt_bind_req = require "st.zigbee.zdo.mgmt_bind_request"
 local zdo_messages = require "st.zigbee.zdo"
-
-
 
 
 local function zdo_binding_table_handler(driver, device, zb_rx)
@@ -35,38 +35,22 @@ end
 
 local function do_configure(self, device)
   log.info("do_configure")
-  device:send(device_management.build_bind_request(device, PowerConfiguration.ID, self.environment_info.hub_zigbee_eui))
-  device:send(device_management.build_bind_request(device, WindowCovering.ID, self.environment_info.hub_zigbee_eui))
+  -- device:send(device_management.build_bind_request(device, PowerConfiguration.ID, self.environment_info.hub_zigbee_eui))
+  -- device:send(device_management.build_bind_request(device, WindowCovering.ID, self.environment_info.hub_zigbee_eui))
 
-  device:send(PowerConfiguration.attributes.BatteryPercentageRemaining:configure_reporting(device, 30, 21600, 1))
-  device:send(WindowCovering.attributes.CurrentPositionLiftPercentage:configure_reporting(device, 5, 21600, 1))
-  
-  -- Read binding table
-  local addr_header = messages.AddressHeader(
-    constants.HUB.ADDR,
-    constants.HUB.ENDPOINT,
-    device:get_short_address(),
-    device.fingerprinted_endpoint_id,
-    constants.ZDO_PROFILE_ID,
-    mgmt_bind_req.BINDING_TABLE_REQUEST_CLUSTER_ID
-  )
-  local binding_table_req = mgmt_bind_req.MgmtBindRequest(0) -- Single argument of the start index to query the table
-  local message_body = zdo_messages.ZdoMessageBody({
-                                                   zdo_body = binding_table_req
-                                                 })
-  local binding_table_cmd = messages.ZigbeeMessageTx({
-                                                     address_header = addr_header,
-                                                     body = message_body
-                                                   })
-  device:send(binding_table_cmd)
+  -- device:send(PowerConfiguration.attributes.BatteryPercentageRemaining:configure_reporting(device, 30, 21600, 1))
+  -- device:send(WindowCovering.attributes.CurrentPositionLiftPercentage:configure_reporting(device, 5, 21600, 1))
+
+  device:send(zigbee_utils.build_read_binding_table(device))
 end
 
+local do_refresh = function(self, device)
+  zigbee_utils.print_clusters(device)
+  device:send(Groups.server.commands.GetGroupMembership(device, {}))  
+end
 
 function battery_perc_attr_handler(driver, device, value, zb_rx)
-  device:emit_event_for_endpoint(
-      zb_rx.address_header.src_endpoint.value,
-      capabilities.battery.battery(value.value)
-  )
+  device:emit_event_for_endpoint(zb_rx.address_header.src_endpoint.value, capabilities.battery.battery(value.value))
 end
 
 local ikea_window_driver_template = {
@@ -77,6 +61,11 @@ local ikea_window_driver_template = {
     capabilities.windowShadePreset,
     capabilities.battery,
     capabilities.refresh,
+  },
+  capability_handlers = {
+    [capabilities.refresh.ID] = {
+      [capabilities.refresh.commands.refresh.NAME] = do_refresh,
+    }
   },
   zigbee_handlers = {
     attr = {

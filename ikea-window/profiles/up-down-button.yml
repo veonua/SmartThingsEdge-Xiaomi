@@ -10,6 +10,15 @@ components:
     version: 1
   categories:
   - name: RemoteController
+preferences:
+- title: "Group"
+  name: group
+  required: true
+  preferenceType: integer
+  definition:
+    minimum: 0
+    maximum: 65535
+    default: 0
 
 metadata:
   deviceType: RemoteController

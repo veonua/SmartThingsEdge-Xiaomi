@@ -11,21 +11,20 @@ zigbeeManufacturer:
     model: "FYRTUR block-out roller Blind"
     deviceProfileName: blind
 
+  - id: "ikea/TRADFRI remote control"
+    deviceLabel: "IKEA remote control"
+    manufacturer: IKEA of Sweden
+    model: TRADFRI remote control
+    deviceProfileName: switch-battery-level
+
 zigbeeGeneric:
   - id: "window-button"
-    deviceLabel: "Window button 0x117C"
+    deviceLabel: "TRADFRI open/close remote"
     zigbeeProfiles:
       - 0x0104
+    deviceIdentifiers:
+      - 0x0203
     clusters:
       client:
         - 0x0102
     deviceProfileName: up-down-button
-
-  - id: "window-blinds"
-    deviceLabel: "Window Blinds"
-    zigbeeProfiles:
-      - 0x0104
-    clusters:
-      server:
-        - 0x0102
-    deviceProfileName: blind

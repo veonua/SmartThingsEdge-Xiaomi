@@ -11,15 +11,24 @@ components:
     categories:
     - name: RemoteController
 preferences:
-  - title: "Mode"
-    name: operationMode
-    required: true
-    preferenceType: enumeration
-    definition:
-      options:
-        0: "Direct Commands (Bind)"
-        1: "Hub Events"
-      default: "1"
+- title: "Mode"
+  description: "press a button to wake up the device"
+  name: operationMode
+  required: true
+  preferenceType: enumeration
+  definition:
+    options:
+      0: "Light Commands (Bind to Group)"
+      1: "Button Events (Normal)"
+    default: "1"
+- title: "Group"
+  name: group
+  required: false
+  preferenceType: integer
+  definition:
+    minimum: 0
+    maximum: 65535
+    default: 0
 
 metadata:
   deviceType: RemoteController

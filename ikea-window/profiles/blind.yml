@@ -17,8 +17,16 @@ components:
   categories:
   - name: Blind
 preferences:
-  - preferenceId: presetPosition
-    explicit: true
+- preferenceId: presetPosition
+  explicit: true
+- title: "Group"
+  name: group
+  required: true
+  preferenceType: integer
+  definition:
+    minimum: 0
+    maximum: 65535
+    default: 0
 
 metadata:
   deviceType: Blind

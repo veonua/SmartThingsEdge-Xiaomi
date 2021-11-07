@@ -1,5 +1,6 @@
 local log = require "log"
 local json = require "dkjson"
+local zigbee_utils = require "zigbee_utils"
 
 -- TODO: split it to 3 drives
 local devices = {
@@ -32,7 +33,7 @@ local devices = {
   },
   GROUP4 = { 
     MATCHING_MODELS = {
-      "lumi.sensor_86sw1", "lumi.sensor_86sw2", "lumi.remote.b286opcn01", "lumi.remote.b28ac1"
+      "lumi.sensor_86sw1", "lumi.sensor_86sw2", "lumi.remote.b28ac1"
     },
     CONFIGS = {
       first_button_ep = 0x0001,
@@ -41,6 +42,7 @@ local devices = {
   },
   GROUP5 = { 
     MATCHING_MODELS = {
+      "lumi.remote.b286opcn01", 
       "lumi.remote.b186acn01", 
       "lumi.remote.b286acn01",
     },
@@ -71,8 +73,8 @@ function find_first_ep(eps, cluster)
 end
 
 configs.get_device_parameters = function(zb_device)
+  zigbee_utils.print_clusters(zb_device)
   local eps = zb_device.zigbee_endpoints
-  log.info(json.encode(eps))
   local first_switch_ep = find_first_ep(eps, 0x0006)
   
   for _, device in pairs(devices) do

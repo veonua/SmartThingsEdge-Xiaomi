@@ -35,8 +35,7 @@ end
 
 local function info_changed(driver, device, event, args)
   log.info(">>info changed: " .. tostring(event))
-  local eps = device.zigbee_endpoints
-  log.info(json.encode(eps))
+  log.info(json.encode(device.zigbee_endpoints))
 
   for id, value in pairs(device.preferences) do
     if args.old_st_store.preferences[id] ~= value then

@@ -5,8 +5,8 @@ local constants = require "st.zigbee.constants"
 local defaults = require "st.zigbee.defaults"
 local log = require "log"
 
-local messages = require "st.zigbee.messages"
-local zdo_messages = require "st.zigbee.zdo"
+local mgmt_bind_resp = require "st.zigbee.zdo.mgmt_bind_response"
+
 local data_types = require "st.zigbee.data_types"
 local cluster_base = require "st.zigbee.cluster_base"
 
@@ -14,9 +14,11 @@ local OnOff = zcl_clusters.OnOff
 local PowerConfiguration = zcl_clusters.PowerConfiguration
 local MultistateInput = 0x0012
 
+local st_utils = require "st.utils"
 local xiaomi_utils = require "xiaomi_utils"
 local configsMap   = require "configurations"
 local utils = require "utils"
+
 
 local function component_to_endpoint(device, component_id)
   local first_switch_ep = utils.first_switch_ep(device)
@@ -62,7 +64,7 @@ local device_init = function(self, device)
   device:set_field("first_switch_ep", configs.first_switch_ep, {persist = true})
   device:set_field("first_button_ep", configs.first_button_ep, {persist = true})
 
-  event = capabilities.button.supportedButtonValues(configs.supportedButtonValues)
+  event = capabilities.button.supportedButtonValues(configs.supported_button_values)
   device:emit_event(event)
   for i = 2, 5 do
     if not device:component_exists(string.format("button%d", i)) then
@@ -80,6 +82,11 @@ function button_attr_handler(driver, device, value, zb_rx)
   local val = value.value
   local ep = zb_rx.address_header.src_endpoint.value
   
+  if val == 255 then
+    log.info("button released, no such st event")
+    return
+  end
+
   local click_type = utils.click_types[val+1]
   local component_id = ep - utils.first_button_ep(device) + 1
 
@@ -88,32 +95,16 @@ function button_attr_handler(driver, device, value, zb_rx)
   end
 end
 
-
-local function info_changed(driver, device, event, args)
-  -- todo: move it to old_switch driver
-  log.info("info changed: " .. tostring(event))
+local function zdo_binding_table_handler(driver, device, zb_rx)
+  log.warn("ZDO Binding Table Response")    
   
-  for id, value in pairs(device.preferences) do
-    if args.old_st_store.preferences[id] ~= value then --and preferences[id] then
-      local data = tonumber(device.preferences[id])
-      
-      local attr
-      if id == "button1" then
-        attr = 0xFF22
-      elseif id == "button2" then
-        attr = 0xFF23
-      elseif id == "button3" then
-        attr = 0xFF24
-      end
-
-      if attr then
-        device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, attr, 0x115F, data_types.Uint8, data) )
-      end
+  for _, binding_table in pairs(zb_rx.body.zdo_body.binding_table_entries) do
+    if binding_table.dest_addr_mode.value == binding_table.DEST_ADDR_MODE_SHORT then
+      driver:add_hub_to_zigbee_group(binding_table.dest_addr.value)
+      log.info("add hub to zigbee group: " .. tostring( binding_table.dest_addr.value) )
     end
   end
 end
-
-
 
 xiaomi_utils.xiami_events[0x95] = consumption_handler
 
@@ -135,7 +126,7 @@ local switch_driver_template = {
         cluster = MultistateInput,
         attribute = 0x55,
         minimum_interval = 100,
-        maximum_interval = 600,
+        maximum_interval = 3600,
         data_type = Uint16,
         reportable_change = 1
       }
@@ -144,6 +135,9 @@ local switch_driver_template = {
   zigbee_handlers = {
     global = {},
     cluster = {},
+    zdo = {
+      [mgmt_bind_resp.MGMT_BIND_RESPONSE] = zdo_binding_table_handler
+    },
     attr = {
       [OnOff.ID] = {
         [OnOff.attributes.OnOff.ID] = on_off_attr_handler
@@ -151,7 +145,6 @@ local switch_driver_template = {
       [MultistateInput] = { 
         [0x55] = button_attr_handler
       },
-
       [zcl_clusters.basic_id] = {
         [xiaomi_utils.attr_id] = xiaomi_utils.handler
       },

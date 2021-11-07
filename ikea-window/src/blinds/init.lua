@@ -2,6 +2,7 @@ local zcl_clusters = require "st.zigbee.zcl.clusters"
 local capabilities = require "st.capabilities"
 
 local WindowCovering = zcl_clusters.WindowCovering
+local Groups = zcl_clusters.Groups
 local windowShade_defaults = require "st.zigbee.defaults.windowShade_defaults"
 
 local json = require "dkjson"
@@ -11,7 +12,7 @@ local can_handle = function(opts, driver, device)
     return device:supports_server_cluster(WindowCovering.ID)
 end
 
-local function added_handler(self, device)
+local function device_added(self, device)
     device:emit_event(capabilities.windowShade.supportedWindowShadeCommands({ value = { "open", "close", "pause"} }))
     device:refresh()
 end
@@ -27,11 +28,25 @@ function window_shade_level_cmd(ZigbeeDriver, ZigbeeDevice, command)
 end
 
 
--- local function do_configure(self, device)
---     device:send(device_management.build_bind_request(device, WindowCovering.ID, self.environment_info.hub_zigbee_eui))
---     device:send(WindowCovering.attributes.CurrentPositionLiftPercentage:configure_reporting(device, 5, 21600, 1))
+local function info_changed(driver, device, event, args)
+    log.info(tostring(event))
+    
+    for id, value in pairs(device.preferences) do
+      if args.old_st_store.preferences[id] ~= value then
+        local data = device.preferences[id]
+        
+        if id == "group" then
+            device:send(Groups.server.commands.AddGroup(device, data, "Group"..tostring(data)))
+        end
+      end
+    end
+  end
+  
+local function do_configure(self, device)
+   device:send(device_management.build_bind_request(device, WindowCovering.ID, self.environment_info.hub_zigbee_eui))
+   device:send(WindowCovering.attributes.CurrentPositionLiftPercentage:configure_reporting(device, 5, 21600, 1))
 --     super:do_configure
--- end
+end
 
 
 local blinds_handler = {
@@ -44,7 +59,8 @@ local blinds_handler = {
         capabilities.refresh,
     },
     lifecycle_handlers = {
-        added = added_handler,
+        added = device_added,
+        infoChanged = info_changed,
     },
     capability_handlers = {
         [capabilities.windowShadeLevel.ID] = {

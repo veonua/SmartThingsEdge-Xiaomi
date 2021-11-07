@@ -6,45 +6,6 @@ zigbeeManufacturer:
     deviceProfileName: water-temp-tempalarm-battery
 
 zigbeeGeneric:
-  - id: "contact-generic"
-    deviceLabel: "Zigbee Contact Sensor"
-    zigbeeProfiles:
-      - 0x0104
-    deviceIdentifiers:
-      - 0x0000
-    clusters:
-      server:
-        - 0x0000
-      client:
-        - 0x0000
-    deviceProfileName: water-temp-tempalarm-battery
-    
-  - id: "any00"
-    deviceLabel: lumi.any.00
-    deviceIdentifiers:
-      - 0x0000
-    deviceProfileName: water-temp-tempalarm-battery
-
-  - id: "any1234"
-    deviceLabel: lumi.any.1234
-    deviceIdentifiers:
-      - 0x1234
-    deviceProfileName: water-temp-tempalarm-battery
-
   - id: "any"
-    deviceLabel: lumi.any
-    zigbeeProfiles:
-      - 0x0104
-    deviceProfileName: water-temp-tempalarm-battery
-
-  - id: "anyp00"
-    deviceLabel: lumi.anyp00
-    zigbeeProfiles:
-      - 0x0000
-    deviceProfileName: water-temp-tempalarm-battery
-
-  - id: "any0104"
-    deviceLabel: lumi.any.00104
-    deviceIdentifiers:
-      - 0x0104
+    deviceLabel: any
     deviceProfileName: water-temp-tempalarm-battery

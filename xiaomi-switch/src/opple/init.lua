@@ -5,16 +5,15 @@ local capabilities = require "st.capabilities"
 local OnOff = zcl_clusters.OnOff
 local log = require "log"
 local utils = require "utils"
-local mgmt_bind_resp = require "st.zigbee.zdo.mgmt_bind_response"
-local mgmt_bind_req = require "st.zigbee.zdo.mgmt_bind_request"
-local zdo_messages = require "st.zigbee.zdo"
 local data_types = require "st.zigbee.data_types"
 local cluster_base = require "st.zigbee.cluster_base"
 local xiaomi_utils = require "xiaomi_utils"
+local zigbee_utils = require "zigbee_utils"
 local device_management = require "st.zigbee.device_management"
 
 local OnOff = zcl_clusters.OnOff
 local PowerConfiguration = zcl_clusters.PowerConfiguration
+local Groups = zcl_clusters.Groups
 
 local OPPLE_CLUSTER = 0xFCC0
 
@@ -34,26 +33,18 @@ local is_opple = function(opts, driver, device)
     return false
 end
 
-
-local function zdo_binding_table_handler(driver, device, zb_rx)
-    log.warn("ZDO Binding Table Response")    
-    if ~zb_rx.body.zdo_body.binding_table_entries then
-      log.warn("No binding table entries")
-      return
-    end
-
-    for _, binding_table in pairs(zb_rx.body.zdo_body.binding_table_entries) do
-      if binding_table.dest_addr_mode.value == binding_table.DEST_ADDR_MODE_SHORT then
-        -- send add hub to zigbee group command
-        driver:add_hub_to_zigbee_group(binding_table.dest_addr.value)
-      end
-    end
-end
-
 local do_refresh = function(self, device)
     device:send(cluster_base.read_manufacturer_specific_attribute(device, OPPLE_CLUSTER, 0x0009, 0x115F))
+    zigbee_utils.print_clusters(device)
+    --device:send(Groups.server.commands.GetGroupMembership(device, {}))
+    device:send( zigbee_utils.build_read_binding_table(device) )
 end
 
+
+-- Zigbee 3 device supports two operation modes:
+-- 0: Direct mode that is not supported by ST well, and it sends switch, light, color commands directly to the device or group.
+--    Binding request is mandatory, in other way commands will be sent to all connected devices
+-- 1: Normal mode which sends button click messages to the hub, and actions can be reprogrammed by the user
 local do_configure = function(self, device)
     local operationMode = device.preferences.operationMode or 1
     operationMode = tonumber(operationMode)
@@ -64,35 +55,16 @@ local do_configure = function(self, device)
     data_types.name_to_id_map["SpecialType"] = 0xE10
 
     device:send(cluster_base.write_manufacturer_specific_attribute(device, OPPLE_CLUSTER, 0x0009, 0x115F, data_types.Uint8, operationMode) )
-
-    -- turn on the "multiple clicks" mode, otherwise the only "single click" events.
-    -- if value is 1 - there will be single clicks, 2 - multiple.
-    device:send(cluster_base.write_manufacturer_specific_attribute(device, OPPLE_CLUSTER, 0x0125, 0x115F, data_types.Uint8, 0x02) ) 
-    
-    if operationMode == 1 then -- hub
-        device:send(OnOff.attributes.OnOff:configure_reporting(device, 30, 3600)) 
-        device:send(PowerConfiguration.attributes.BatteryPercentageRemaining:configure_reporting(device, 30, 21600, 1))
-    elseif data == 0 then      -- bind
-        device:send(device_management.build_bind_request(device, OnOff.ID, self.environment_info.hub_zigbee_eui))
-        -- Read binding table
-        local addr_header = messages.AddressHeader(
-            constants.HUB.ADDR,
-            constants.HUB.ENDPOINT,
-            device:get_short_address(),
-            device.fingerprinted_endpoint_id,
-            constants.ZDO_PROFILE_ID,
-            mgmt_bind_req.BINDING_TABLE_REQUEST_CLUSTER_ID
-        )
-        local binding_table_req = mgmt_bind_req.MgmtBindRequest(0) -- Single argument of the start index to query the table
-        local message_body = zdo_messages.ZdoMessageBody({
-                                                        zdo_body = binding_table_req
-                                                    })
-        local binding_table_cmd = messages.ZigbeeMessageTx({
-                                                        address_header = addr_header,
-                                                        body = message_body
-                                                        })
-        device:send(binding_table_cmd)
+    if operationMode == 1 then -- button events
+        -- turn on the "multiple clicks" mode, otherwise the only "single click" events.
+        -- if value is 1 - there will be single clicks, 2 - multiple.
+        device:send(cluster_base.write_manufacturer_specific_attribute(device, OPPLE_CLUSTER, 0x0125, 0x115F, data_types.Uint8, 0x02) ) 
+    elseif data == 0 then      -- light group binding
+        device:send( device_management.build_bind_request(device, OnOff.ID, self.environment_info.hub_zigbee_eui) )
+        device:send( zigbee_utils.build_read_binding_table(device) ) 
     end
+
+    device:send(PowerConfiguration.attributes.BatteryPercentageRemaining:configure_reporting(device, 30, 21600, 1))
 end
 
 local function info_changed(driver, device, event, args)
@@ -162,9 +134,6 @@ local switch_handler = {
     lifecycle_handlers = {
         infoChanged = info_changed,
         doConfigure = do_configure,
-    },
-    zdo = {
-        [mgmt_bind_resp.MGMT_BIND_RESPONSE] = zdo_binding_table_handler
     },
     can_handle = is_opple
 }

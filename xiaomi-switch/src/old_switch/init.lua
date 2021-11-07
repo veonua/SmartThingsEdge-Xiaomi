@@ -28,7 +28,7 @@ function old_button_handler(device, component_id, value)
         click_type = button.up
         log.warn("WTF up_counter: " .. tostring(f_up_counter) .. "> down_counter: " .. tostring(f_down_counter))
       else
-        click_type = utils.click_types[f_down_counter]   
+        click_type = utils.click_types[f_down_counter+1]   
       end
       
       device:emit_event_for_endpoint(component_id, click_type({state_change = true}))
@@ -68,7 +68,7 @@ function on_off_attr_handler(driver, device, value, zb_rx)
         local component_id = ep - utils.first_switch_ep(device) + 1
         device:emit_event_for_endpoint(component_id, value.value and attr.on() or attr.off())
     else
-        log.warn("on_off_attr_handler", "value:", json.encode(value))
+        log.warn("on_off_attr_handler value:", value.value)
         local press_type = zb_rx.body_length.value>8 and capabilities.button.button.pushed or capabilities.button.button.held
         
         local component_id = ep - first_button_ep + 1
@@ -86,6 +86,26 @@ function on_off_attr_handler(driver, device, value, zb_rx)
     end
 end
 
+local function info_changed(driver, device, event, args)
+    for id, value in pairs(device.preferences) do
+        if args.old_st_store.preferences[id] ~= value then --and preferences[id] then
+        local data = tonumber(device.preferences[id])
+        
+        local attr
+        if id == "button1" then
+            attr = 0xFF22
+        elseif id == "button2" then
+            attr = 0xFF23
+        elseif id == "button3" then
+            attr = 0xFF24
+        end
+
+        if attr then
+            device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, attr, 0x115F, data_types.Uint8, data) )
+        end
+        end
+    end
+end
 
 local old_switch_handler = {
     NAME = "Old Switch Handler",
@@ -95,6 +115,9 @@ local old_switch_handler = {
                 [OnOff.attributes.OnOff.ID] = on_off_attr_handler
             }
         },
+    },
+    lifecycle_handlers = {
+        infoChanged = info_changed,
     },
     can_handle = function(opts, driver, device)
         return utils.first_switch_ep(device) > 0 and utils.first_button_ep(device) == 4

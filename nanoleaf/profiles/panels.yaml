@@ -16,16 +16,6 @@ components:
     version: 1
   categories:
   - name: Light
-preferences:
-  - title: "Token"
-    name: token
-    required: true
-    preferenceType: string
-    definition:
-      minLength: 7
-      maxLength: 15
-      stringType: text
-      default: ""
 metadata:
   deviceType: Light
   ocfDeviceType: oic.d.light
