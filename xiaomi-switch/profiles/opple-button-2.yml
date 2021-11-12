@@ -41,11 +41,12 @@ preferences:
 - title: "Group"
   name: group
   required: false
-  preferenceType: integer
+  preferenceType: string
   definition:
-    minimum: 0
-    maximum: 65535
-    default: 0
+    stringType: text
+    minLength: 1
+    maxLength: 5
+    default: "0"
 
 
 metadata:

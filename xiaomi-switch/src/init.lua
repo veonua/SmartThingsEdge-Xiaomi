@@ -22,23 +22,31 @@ local utils = require "utils"
 
 local function component_to_endpoint(device, component_id)
   local first_switch_ep = utils.first_switch_ep(device)
-
+  
   if component_id == "main" then
     return first_switch_ep -- device.fingerprinted_endpoint_id -- 
   else
     local ep_num = component_id:match("button(%d)")
     local res = ep_num and tonumber(ep_num - 1 + first_switch_ep) or device.fingerprinted_endpoint_id
-    log.info("component_to_endpoint", component_id, res)
+    --log.info("component:", component_id, "> ep:", res)
     return res
   end
 end
 
 local function endpoint_to_component(device, ep)
-  local button_comp
-  if ep == device.fingerprinted_endpoint_id or ep < 2 then --  
-    button_comp = "main"
+  local first_switch_ep = utils.first_switch_ep(device)
+  local first_button_ep = utils.first_button_ep(device)
+  
+  local comp_id
+  if ep >= first_button_ep then
+    comp_id = ep - first_button_ep
   else
-    button_comp = string.format("button%d", ep)
+    comp_id = ep - first_switch_ep
+  end
+
+  local button_comp = "main"
+  if comp_id > 0 then
+    button_comp = string.format("button%d", comp_id + 1)
   end
 
   return button_comp
@@ -67,10 +75,16 @@ local device_init = function(self, device)
   event = capabilities.button.supportedButtonValues(configs.supported_button_values)
   device:emit_event(event)
   for i = 2, 5 do
-    if not device:component_exists(string.format("button%d", i)) then
+    local comp_id = string.format("button%d", i)
+    if not device:component_exists(comp_id) then
+      local last_button_ep = configs.first_button_ep +i -2
+      device:set_field("last_button_ep", last_button_ep, {persist = true})
+      log.info("last_button_ep:", last_button_ep)
       break
     end
-    device:emit_event_for_endpoint(i, event)
+    
+    local comp = device.profile.components[comp_id]
+    device:emit_component_event(comp, event)
   end
 end
 
@@ -80,7 +94,6 @@ end
 
 function button_attr_handler(driver, device, value, zb_rx)
   local val = value.value
-  local ep = zb_rx.address_header.src_endpoint.value
   
   if val == 255 then
     log.info("button released, no such st event")
@@ -88,10 +101,10 @@ function button_attr_handler(driver, device, value, zb_rx)
   end
 
   local click_type = utils.click_types[val+1]
-  local component_id = ep - utils.first_button_ep(device) + 1
+  --local component_id = ep - utils.first_button_ep(device) + 1
 
   if click_type ~= nil then
-    device:emit_event_for_endpoint(component_id, click_type({state_change = true})) 
+    utils.emit_button_event(device, zb_rx.address_header.src_endpoint.value, click_type({state_change = true}))
   end
 end
 
@@ -139,9 +152,6 @@ local switch_driver_template = {
       [mgmt_bind_resp.MGMT_BIND_RESPONSE] = zdo_binding_table_handler
     },
     attr = {
-      [OnOff.ID] = {
-        [OnOff.attributes.OnOff.ID] = on_off_attr_handler
-      },
       [MultistateInput] = { 
         [0x55] = button_attr_handler
       },
@@ -151,7 +161,7 @@ local switch_driver_template = {
     }
   },
 
-  sub_drivers = {require ("buttons"), require ("opple"), require ("old_switch")},
+  sub_drivers = { require ("buttons"), require ("opple"), require ("old_switch"), require("WXKG01LM") },
   
   lifecycle_handlers = {
     init = device_init,

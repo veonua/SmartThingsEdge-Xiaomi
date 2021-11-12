@@ -2,7 +2,6 @@
 local zcl_clusters = require "st.zigbee.zcl.clusters"
 local capabilities = require "st.capabilities"
 
-local OnOff = zcl_clusters.OnOff
 local log = require "log"
 local utils = require "utils"
 local data_types = require "st.zigbee.data_types"
@@ -12,6 +11,8 @@ local zigbee_utils = require "zigbee_utils"
 local device_management = require "st.zigbee.device_management"
 
 local OnOff = zcl_clusters.OnOff
+local Level = zcl_clusters.Level
+local ColorControl = zcl_clusters.ColorControl
 local PowerConfiguration = zcl_clusters.PowerConfiguration
 local Groups = zcl_clusters.Groups
 
@@ -59,12 +60,18 @@ local do_configure = function(self, device)
         -- turn on the "multiple clicks" mode, otherwise the only "single click" events.
         -- if value is 1 - there will be single clicks, 2 - multiple.
         device:send(cluster_base.write_manufacturer_specific_attribute(device, OPPLE_CLUSTER, 0x0125, 0x115F, data_types.Uint8, 0x02) ) 
-    elseif data == 0 then      -- light group binding
-        device:send( device_management.build_bind_request(device, OnOff.ID, self.environment_info.hub_zigbee_eui) )
-        device:send( zigbee_utils.build_read_binding_table(device) ) 
+    elseif operationMode == 0 then      -- light group binding
+        --device:send( device_management.build_bind_request(device, OnOff.ID, self.environment_info.hub_zigbee_eui) )
+        local group = device.preferences.group or 1
+        group = tonumber(group)
+
+        --device:send(zigbee_utils.build_bind_request(device, OnOff.ID, group))
+        device:send(zigbee_utils.build_bind_request(device, Level.ID, group))
+        device:send(zigbee_utils.build_bind_request(device, ColorControl.ID, group))
+        device:send(zigbee_utils.build_read_binding_table(device)) 
     end
 
-    device:send(PowerConfiguration.attributes.BatteryPercentageRemaining:configure_reporting(device, 30, 21600, 1))
+    --device:send(PowerConfiguration.attributes.BatteryPercentageRemaining:configure_reporting(device, 30, 21600, 1))
 end
 
 local function info_changed(driver, device, event, args)
@@ -80,7 +87,10 @@ local function info_changed(driver, device, event, args)
         
         if id == "operationMode" then
             do_configure(driver, device)
-            --device:configure()
+        elseif id == "group" then
+            device:send(zigbee_utils.build_bind_request(device, OnOff.ID, data))
+            device:send(zigbee_utils.build_bind_request(device, Level.ID, data))
+            device:send(zigbee_utils.build_bind_request(device, ColorControl.ID, data))
         elseif id == "powerOutageMemory" then
             payload = data_types.validate_or_build_type(data==1, data_types.Boolean, id)
             attr = 0x0201

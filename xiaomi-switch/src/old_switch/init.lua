@@ -1,4 +1,6 @@
 local zcl_clusters = require "st.zigbee.zcl.clusters"
+local cluster_base = require "st.zigbee.cluster_base"
+local data_types = require "st.zigbee.data_types"
 local capabilities = require "st.capabilities"
 
 local OnOff = zcl_clusters.OnOff
@@ -6,10 +8,10 @@ local log = require "log"
 local utils = require "utils"
 local json = require "dkjson"
 
-function old_button_handler(device, component_id, value)
-    local CLICK_TIMER  = string.format("button_timer%d", component_id)
-    local UP_COUNTER   = string.format("up_counter%d"  , component_id)
-    local DOWN_COUNTER = string.format("down_counter%d", component_id)
+function old_button_handler(device, endpoint, value)
+    local CLICK_TIMER  = string.format("button_timer%d", endpoint)
+    local UP_COUNTER   = string.format("up_counter%d"  , endpoint)
+    local DOWN_COUNTER = string.format("down_counter%d", endpoint)
     
     local click_timer = device:get_field(CLICK_TIMER)
     local down_counter = device:get_field(DOWN_COUNTER)
@@ -31,7 +33,7 @@ function old_button_handler(device, component_id, value)
         click_type = utils.click_types[f_down_counter+1]   
       end
       
-      device:emit_event_for_endpoint(component_id, click_type({state_change = true}))
+      utils.emit_button_event(device, endpoint, event)
       device:set_field(CLICK_TIMER, nil)
       device:set_field(DOWN_COUNTER, 0)
       device:set_field(UP_COUNTER, 0)
@@ -63,24 +65,19 @@ function on_off_attr_handler(driver, device, value, zb_rx)
     local ep = zb_rx.address_header.src_endpoint.value
     local first_button_ep = utils.first_button_ep(device)
 
-    if ep < first_button_ep  then
+    if ep < first_button_ep  then -- handled by default handler
         local attr = capabilities.switch.switch
-        local component_id = ep - utils.first_switch_ep(device) + 1
-        device:emit_event_for_endpoint(component_id, value.value and attr.on() or attr.off())
+        device:emit_event_for_endpoint(ep, value.value and attr.on() or attr.off())
     else
-        log.warn("on_off_attr_handler value:", value.value)
-        local press_type = zb_rx.body_length.value>8 and capabilities.button.button.pushed or capabilities.button.button.held
-        
-        local component_id = ep - first_button_ep + 1
-        local event = press_type({state_change = true})
-
+        local press_type = zb_rx.body_length.value>8 and capabilities.button.button.pushed or capabilities.button.button.held        
         local text = zb_rx.body_length.value>8 and "pushed" or "held"
-        log.warn(" old button " .. tostring(component_id) .. " " .. tostring(text))
+        
+        log.warn(" old button " .. tostring(text), value.value)
 
         if not value.value then
             -- press = off/on in the same message
             -- hold  = off, pause, on. so we emit only off
-            device:emit_event_for_endpoint(component_id, event)
+            utils.emit_button_event(device, ep, press_type({state_change = true}))
         end
         --old_button_handler(device, component_id, value)
     end
@@ -89,20 +86,20 @@ end
 local function info_changed(driver, device, event, args)
     for id, value in pairs(device.preferences) do
         if args.old_st_store.preferences[id] ~= value then --and preferences[id] then
-        local data = tonumber(device.preferences[id])
-        
-        local attr
-        if id == "button1" then
-            attr = 0xFF22
-        elseif id == "button2" then
-            attr = 0xFF23
-        elseif id == "button3" then
-            attr = 0xFF24
-        end
+            local data = tonumber(device.preferences[id])
+            
+            local attr
+            if id == "button1" then
+                attr = 0xFF22
+            elseif id == "button2" then
+                attr = 0xFF23
+            elseif id == "button3" then
+                attr = 0xFF24
+            end
 
-        if attr then
-            device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, attr, 0x115F, data_types.Uint8, data) )
-        end
+            if attr then
+                device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, attr, 0x115F, data_types.Uint8, data) )
+            end
         end
     end
 end

@@ -55,7 +55,7 @@ local function info_changed(driver, device, event, args)
         payload = data_types.Boolean(value)
         attr = 0x0202
       elseif id == "ledDisabledNight" then
-        if device.get_model() == "ZNCZ11LM" then
+        if device:get_model() == "ZNCZ11LM" then
           payload = data_types.OctetString( value and 
             { 0xaa, 0x80, 0x05, 0xd1, 0x47, 0x00, 0x03, 0x10, 0x00} or
             { 0xaa, 0x80, 0x05, 0xd1, 0x47, 0x01, 0x03, 0x10, 0x01} )

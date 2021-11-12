@@ -2,15 +2,24 @@ local log = require "log"
 local json = require "dkjson"
 local zigbee_utils = require "zigbee_utils"
 
--- TODO: split it to 3 drives
+-- TODO: split it to drivers
 local devices = {
+  WXKG01LM = {
+    MATCHING_MODELS = {
+      "lumi.sensor_switch",
+    },
+    CONFIGS = {
+      first_button_ep = 0x0004,
+      supported_button_values = {"pushed", "held", "pushed_2x", "pushed_3x", "pushed_4x", "pushed_5x"}
+    }
+  },
   GROUP1 = {
     MATCHING_MODELS = {
       "lumi.ctrl_neutral1", "lumi.ctrl_neutral2", "lumi.switch.b1lacn02", "lumi.switch.b2lacn02",
     },
     CONFIGS = {
       first_button_ep = 0x0004,
-      supported_button_values = {"pushed", "double", "held"}
+      supported_button_values = {"pushed", "pushed_2x", "held"}
     }
   },
   GROUP2 = {
@@ -19,7 +28,7 @@ local devices = {
     },
     CONFIGS = {
       first_button_ep = 0x0005,
-      supported_button_values = {"pushed", "double"}
+      supported_button_values = {"pushed", "pushed_2x"}
     }
   },
   GROUP3 = {
@@ -28,27 +37,28 @@ local devices = {
     },
     CONFIGS = {
       first_button_ep = 0x0029,
-      supported_button_values = {"pushed", "double"}
+      supported_button_values = {"pushed", "pushed_2x"}
     }
   },
   GROUP4 = { 
     MATCHING_MODELS = {
-      "lumi.sensor_86sw1", "lumi.sensor_86sw2", "lumi.remote.b28ac1"
+      "lumi.sensor_86sw1", "lumi.sensor_86sw2",
     },
     CONFIGS = {
       first_button_ep = 0x0001,
-      supported_button_values = {"pushed", "double"}
+      supported_button_values = {"pushed"}
     }
   },
   GROUP5 = { 
     MATCHING_MODELS = {
       "lumi.remote.b286opcn01", 
+      "lumi.remote.b28ac1",
       "lumi.remote.b186acn01", 
       "lumi.remote.b286acn01",
     },
     CONFIGS = {
       first_button_ep = 0x0001,
-      supported_button_values = {"pushed", "double", "held"}
+      supported_button_values = {"pushed", "pushed_2x", "held"}
     }
   },
 }

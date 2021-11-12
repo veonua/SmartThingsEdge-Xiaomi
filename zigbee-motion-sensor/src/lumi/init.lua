@@ -8,18 +8,19 @@ local ZIGBEE_LUMI_MOTION_SENSOR_FINGERPRINTS = {
     { mfr = "LUMI", model = "lumi.sensor_motion" },
     { mfr = "LUMI", model = "lumi.sensor_motion.aq2" }
 }
+local MOTION_RESET_TIMER = "motionResetTimer"
+
 
 local is_zigbee_lumi_motion_sensor = function(opts, driver, device)
   for _, fingerprint in ipairs(ZIGBEE_LUMI_MOTION_SENSOR_FINGERPRINTS) do
       if device:get_manufacturer() == fingerprint.mfr and device:get_model() == fingerprint.model then
-          return true
+        return true
       end
   end
   return true
 end
 
 
-local MOTION_RESET_TIMER = "motionResetTimer"
 
 local function occupancy_attr_handler(driver, device, occupancy, zb_rx)
   log.debug("occupancy_attr_handler " .. tostring(occupancy))
@@ -36,7 +37,8 @@ local function occupancy_attr_handler(driver, device, occupancy, zb_rx)
     log.debug("no motion")
     device:emit_event(capabilities.motionSensor.motion.inactive())
   end
-  motion_reset_timer = device.thread:call_with_delay(20, reset_motion_status)
+
+  motion_reset_timer = device.thread:call_with_delay(61, reset_motion_status)
   device:set_field(MOTION_RESET_TIMER, motion_reset_timer)
 end
 

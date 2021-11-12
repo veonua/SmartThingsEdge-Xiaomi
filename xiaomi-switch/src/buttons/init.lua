@@ -8,7 +8,7 @@ local utils = require "utils"
 function on_off_attr_handler(driver, device, value, zb_rx)
     local click_type = zb_rx.body_length.value>8 and capabilities.button.button.pushed or capabilities.button.button.held
     if not value.value then
-        device:emit_event_for_endpoint(zb_rx.address_header.src_endpoint.value, click_type({state_change = true}))
+        utils.emit_button_event(device, zb_rx.address_header.src_endpoint.value, click_type({state_change = true}))
     end
 end
 
@@ -22,7 +22,7 @@ local button_handler = {
         },
     },
     can_handle = function(opts, driver, device)
-        return utils.first_switch_ep(device) < 1
+        return utils.first_switch_ep(device) < 1 and device:get_model() ~= "lumi.sensor_switch"
     end
 }
 

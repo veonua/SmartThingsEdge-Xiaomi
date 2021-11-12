@@ -66,14 +66,8 @@ zigbeeManufacturer:
     model: lumi.remote.b286opcn01
     deviceProfileName: opple-button-2
 
-
-  - id: "any"
-    deviceLabel: lumi.switch.any
-    deviceIdentifiers:
-      - 0x0104
-    deviceProfileName: switch
-  - id: "profile"
-    deviceLabel: profile
-    profile:
-      - 0x0104
-    deviceProfileName: switch
+  - id: "WXKG01LM"
+    deviceLabel: WXKG01LM Wireless Switch
+    manufacturer: LUMI
+    model: lumi.sensor_switch
+    deviceProfileName: button

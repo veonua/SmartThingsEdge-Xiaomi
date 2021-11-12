@@ -9,6 +9,8 @@ local zigbee_utils = require "zigbee_utils"
 
 local do_refresh = function(self, device)
   zigbee_utils.print_clusters(device)
+
+  local Groups = zcl_clusters.Groups
   device:send(Groups.server.commands.GetGroupMembership(device, {}))  
 end
 
