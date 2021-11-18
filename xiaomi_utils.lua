@@ -18,11 +18,11 @@ local xiaomi_key_map = {
   [0x08] = "unknown3",
   [0x09] = "unknown4",
   [0x0a] = "router_id",
-  [0x0b] = "unknown5",
+  [0x0b] = "illuminance",
   [0x0c] = "unknown6",
-  [0x64] = "user1", -- switch/temp/open/position
-  [0x65] = "user2", -- switch2/humidity
-  [0x66] = "pressure",
+  [0x64] = "user1", -- switch/temp/open/position/gas_density
+  [0x65] = "user2", -- switch2/humidity/brightness
+  [0x66] = "user3", -- pressure/color_temp
   [0x6e] = "button1",
   [0x6f] = "button2",
   [0x95] = "consumption", -- Wh 
@@ -70,7 +70,8 @@ local function emit_temperature_event(device, temperature_record)
 end
 
 local xiaomi_utils = {
-  attr_id = 0xFF01,
+  attr_id  = 0xFF01,
+  attr_id2 = 0xFF02,
   xiami_events = {
     [0x01] = emit_battery_event,
     [0x03] = emit_temperature_event,
@@ -79,7 +80,7 @@ local xiaomi_utils = {
 
 function xiaomi_utils.handler(driver, device, value, zb_rx)
   local buff = value.value
-  if value.ID == data_types.CharString.ID then
+  if value.ID == data_types.CharString.ID or value.ID == data_types.OctetString.ID then
     local bytes = value.value
     local message_buf = buf.Reader(bytes)
     
@@ -90,7 +91,20 @@ function xiaomi_utils.handler(driver, device, value, zb_rx)
         event(device, value)
       end
     end
+    -- log.warn("xiaomi_utils.handler handled: " .. tostring(#xiaomi_data_type.items))
+  else
+    log.warn("xiaomi_utils.handler: unknown data type: " .. tostring (value) )
   end
+end
+
+function xiaomi_utils.handlerFF02(driver, device, value, zb_rx)
+  if value.ID ~= data_types.Structure then
+    log.error("xiaomi_utils.handlerFF02: unknown data type: " .. tostring (value) )
+    return
+  end
+
+  log.warn("xiaomi_utils.handlerFF02: " .. tostring(value.value))
+  --[Boolean: true, Uint16: 0x0BD1 (3025), Uint16: 0x13A8(5032), Uint40: 0x0000000001, Uint16: 0x0014(20), Uint8: 0x5B(91)] > > > >
 end
 
 return xiaomi_utils

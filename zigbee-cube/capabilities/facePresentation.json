@@ -1,0 +1,134 @@
+{
+    "dashboard": {
+        "states": [
+            {
+                "label": "{{cubeFace.value}}",
+                "alternatives": [
+                    {
+                        "key": "up",
+                        "value": "up",
+                        "type": "active"
+                    },
+                    {
+                        "key": "down",
+                        "value": "down",
+                        "type": "active"
+                    },
+                    {
+                        "key": "left",
+                        "value": "left",
+                        "type": "active"
+                    },
+                    {
+                        "key": "right",
+                        "value": "right",
+                        "type": "active"
+                    },
+                    {
+                        "key": "front",
+                        "value": "front",
+                        "type": "active"
+                    },
+                    {
+                        "key": "back",
+                        "value": "back",
+                        "type": "active"
+                    }
+                ]
+            }
+        ],
+        "actions": [],
+        "basicPlus": []
+    },
+    "detailView": [
+        {
+            "label": "Face",
+            "displayType": "list",
+            "list": {
+                "state": {
+                    "value": "cubeFace.value",
+                    "alternatives": [
+                        {
+                            "key": "up",
+                            "value": "up",
+                            "type": "active"
+                        },
+                        {
+                            "key": "down",
+                            "value": "down",
+                            "type": "active"
+                        },
+                        {
+                            "key": "left",
+                            "value": "left",
+                            "type": "active"
+                        },
+                        {
+                            "key": "right",
+                            "value": "right",
+                            "type": "active"
+                        },
+                        {
+                            "key": "front",
+                            "value": "front",
+                            "type": "active"
+                        },
+                        {
+                            "key": "back",
+                            "value": "back",
+                            "type": "active"
+                        }
+                    ]
+                }
+            },
+            "state": null
+        }
+    ],
+    "automation": {
+        "conditions": [
+            {
+                "label": "Cube Face",
+                "displayType": "list",
+                "list": {
+                    "alternatives": [
+                        {
+                            "key": "up",
+                            "value": "up",
+                            "type": "active"
+                        },
+                        {
+                            "key": "down",
+                            "value": "down",
+                            "type": "active"
+                        },
+                        {
+                            "key": "left",
+                            "value": "left",
+                            "type": "active"
+                        },
+                        {
+                            "key": "right",
+                            "value": "right",
+                            "type": "active"
+                        },
+                        {
+                            "key": "front",
+                            "value": "front",
+                            "type": "active"
+                        },
+                        {
+                            "key": "back",
+                            "value": "back",
+                            "type": "active"
+                        }
+                    ],
+                    "value": "cubeFace.value"
+                }
+            }
+        ],
+        "actions": [
+        ]
+    },
+    "id": "cubeFace",
+    "version": 1
+}

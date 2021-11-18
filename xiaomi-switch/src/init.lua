@@ -124,6 +124,7 @@ xiaomi_utils.xiami_events[0x95] = consumption_handler
 local switch_driver_template = {
   supported_capabilities = {
     capabilities.switch,
+    capabilities.powerMeter,
     capabilities.temperatureAlarm,
     capabilities.refresh,
   },

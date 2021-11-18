@@ -8,6 +8,12 @@ local socket = require "socket"
 
 local CLICK_TIMER = "timer"
 
+local FINGERPRINTS = {
+    { mfr = "LUMI", model = "lumi.sensor_switch" },
+    { mfr = "LUMI", model = "lumi.sensor_switch.aq2" },
+}
+
+
 function on_off_attr_handler(driver, device, value, zb_rx)
     local held = function()
         device:emit_event(capabilities.button.button.held({state_change = true}))
@@ -38,7 +44,7 @@ function multi_click_handler(driver, device, zb_rx)
 end
 
 local wxkg_handler = {
-    NAME = "WXKG01LM",
+    NAME = "WXKG?1LM",
     zigbee_handlers = {
         attr = {
             [OnOff.ID] = {
@@ -48,7 +54,12 @@ local wxkg_handler = {
         },
     },
     can_handle = function(opts, driver, device)
-        return device:get_model() == "lumi.sensor_switch"
+        for _, fingerprint in ipairs(FINGERPRINTS) do
+            if (device:get_model() == fingerprint) then
+                return true
+            end
+        end
+        return false
     end
 }
 

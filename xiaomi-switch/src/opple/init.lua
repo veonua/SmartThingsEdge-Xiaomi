@@ -19,15 +19,14 @@ local Groups = zcl_clusters.Groups
 local OPPLE_CLUSTER = 0xFCC0
 
 local OPPLE_FINGERPRINTS = {
-    { mfr = "LUMI", model = "lumi.switch.l1aeu1" },
-    { mfr = "LUMI", model = "lumi.switch.l2aeu1" },
-    { mfr = "LUMI", model = "lumi.remote.b286opcn01" },
-    { mfr = "LUMI", model = "lumi.remote.b28ac1" },
+    { mfr = "LUMI", model = "^lumi.switch.l.aeu1" },
+    { mfr = "LUMI", model = "^lumi.remote.b..aus01" },
+    { mfr = "LUMI", model = "^lumi.remote.b28" },
 }
 
 local is_opple = function(opts, driver, device)
     for _, fingerprint in ipairs(OPPLE_FINGERPRINTS) do
-        if device:get_manufacturer() == fingerprint.mfr and device:get_model() == fingerprint.model then
+        if (device:get_model():find(fingerprint.model) ~= nil) then
             return true
         end
     end
@@ -71,7 +70,9 @@ local do_configure = function(self, device)
         device:send(zigbee_utils.build_read_binding_table(device)) 
     end
 
-    --device:send(PowerConfiguration.attributes.BatteryPercentageRemaining:configure_reporting(device, 30, 21600, 1))
+    if device:supports_capability(capabilities.battery, "main") then
+        device:send(PowerConfiguration.attributes.BatteryPercentageRemaining:configure_reporting(device, 30, 21600, 1))
+    end
 end
 
 local function info_changed(driver, device, event, args)

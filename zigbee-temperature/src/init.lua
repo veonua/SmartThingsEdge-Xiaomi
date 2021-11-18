@@ -6,6 +6,7 @@ local utils = require "st.utils"
 local log = require "log"
 local xiaomi_utils = require "xiaomi_utils"
 local zcl_clusters = require "st.zigbee.zcl.clusters"
+local atmos_Pressure = capabilities ["legendabsolute60149.atmosPressure"]
 
 local tempearture_value_attr_handler = function(driver, device, value, zb_rx)
   local temperature = value.value / 100
@@ -35,13 +36,14 @@ local humidity_value_attr_handler = function(driver, device, value, zb_rx)
 end
 
 local pressure_value_attr_handler = function(driver, device, value, zb_rx)
-  local kPa = math.floor(value.value/10)
-  device:emit_event(capabilities.atmosphericPressureMeasurement.atmosphericPressure({value = kPa, unit = "kPa"}))
+  local mBar = value.value
+  device:emit_event(capabilities.atmosphericPressureMeasurement.atmosphericPressure({value = math.floor(mBar/10), unit = "kPa"}))
+  device:emit_event(atmos_Pressure.atmosPressure(mBar))
 end
 
 local function refresh_handler(driver, device, command)
   device:send(zcl_clusters.TemperatureMeasurement.attributes.MeasuredValue:read(device))
-  device:send(zcl_clusters.RelativeHumidityMeasurement.attributes.MeasuredValue:read(device))
+  device:send(zcl_clusters.RelativeHumidity.attributes.MeasuredValue:read(device))
   device:send(zcl_clusters.PressureMeasurement.attributes.MeasuredValue:read(device))
 end
 
@@ -62,7 +64,7 @@ local zigbee_temp_driver_template = {
   zigbee_handlers = {
     attr = {
       [zcl_clusters.basic_id] = {
-        [0xFF01] = xiaomi_utils.handler
+        [xiaomi_utils.attr_id] = xiaomi_utils.handler
       },
       [zcl_clusters.TemperatureMeasurement.ID] = {
         [zcl_clusters.TemperatureMeasurement.attributes.MeasuredValue.ID] = tempearture_value_attr_handler

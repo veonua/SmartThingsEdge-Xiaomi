@@ -1,0 +1,52 @@
+{
+    "id": "cubeFace",
+    "version": 1,
+    "status": "proposed",
+    "name": "Cube Face",
+    "attributes": {
+        "face": {
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "value": {
+                        "type": "string",
+                        "enum": [
+                            "up",
+                            "right",
+                            "front",
+                            "down",
+                            "left", 
+                            "bottom"
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "value"
+                ]
+            },
+            "enumCommands": []
+        }
+    },
+    "commands": {
+        "setFace": {
+            "arguments": [
+                {
+                    "name": "face",
+                    "optional": false,
+                    "schema": {
+                        "type": "string",
+                        "enum": [
+                            "up",
+                            "right",
+                            "front",
+                            "down",
+                            "left", 
+                            "bottom"
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+}

@@ -4,9 +4,9 @@ local zigbee_utils = require "zigbee_utils"
 
 -- TODO: split it to drivers
 local devices = {
-  WXKG01LM = {
+  WXKGX1LM = {
     MATCHING_MODELS = {
-      "lumi.sensor_switch",
+      "lumi.sensor_switch", "lumi.sensor_switch.aq2"
     },
     CONFIGS = {
       first_button_ep = 0x0004,
@@ -53,6 +53,7 @@ local devices = {
     MATCHING_MODELS = {
       "lumi.remote.b286opcn01", 
       "lumi.remote.b28ac1",
+      "lumi.remote.b1acn01",
       "lumi.remote.b186acn01", 
       "lumi.remote.b286acn01",
     },
