@@ -13,18 +13,9 @@ local LEVEL_TS  = "level_ts"
 local CURRENT_LEVEL = "current_level"
 local SIDE = "side"
 local DEFAULT_LEVEL = 50
--- 0 : front (aqara face up)
--- 1 : right
--- 2 : top
--- 3 : back
--- 4 : left
--- 5 : bottom
 
-local button = capabilities.button.button 
-
-local map_side_to_lightingMode = { "reading", "writing", "computer", "night", "sleepPreparation", "day" }
-local map_flip_attribute_to_capability  = { button.up,     button.up_2x,     button.up_3x,     button.up_4x,     button.up_5x,     button.up_6x }
-local map_slide_attribute_to_capability = { button.pushed, button.pushed_2x, button.pushed_3x, button.pushed_4x, button.pushed_5x, button.pushed_6x}
+local cube = capabilities["winterdictionary35590.cube"]
+local map_side_to_name = { "up", "left", "front", "down", "right", "back" }
 
 local generate_switch_level_event = function(device, value)
   device:emit_event(capabilities.switchLevel.level(value))
@@ -33,21 +24,18 @@ local generate_switch_level_event = function(device, value)
 end
 
 local function added_handler(self, device)
-  device:emit_event(capabilities.button.numberOfButtons({ value = 1 }))
-  device:emit_event(capabilities.button.supportedButtonValues(
-    { "double", -- double tap
-      "up", "up_2x", "up_3x", "up_4x", "up_5x", "up_6x", -- flip x side up
-      "pushed", "pushed_2x", "pushed_3x", "pushed_4x", "pushed_5x", "pushed_6x" -- slide x side up
-    }))
-  device:emit_event(capabilities.button.button.pushed({state_change = true}))
+  log.info("Added device: " .. device:get_model())
+end
 
-  local components = {"flip90", "flip180", "slide"}
-  for _, comp in ipairs(components) do
-    local component = {id=comp}
-    device:emit_component_event(component, capabilities.button.numberOfButtons({value = 1}))
-    device:emit_component_event(component, capabilities.button.supportedButtonValues({"pushed"}))
-    device:emit_component_event(component, capabilities.button.button.pushed({state_change = true}))
+
+local function emit_action_event(device, action, state_change)
+  local event = cube.action(action)
+  if state_change==false then
+    event.state_change = false
+  else
+    event.state_change = true
   end
+  device:emit_event(event)
 end
 
 local function cube_attr_handler(driver, device, value, zb_rx)
@@ -55,8 +43,6 @@ local function cube_attr_handler(driver, device, value, zb_rx)
   local side = val & 0x7
   local action = (val >> 8) & 0xFF
   local prev_side = device:get_field(SIDE)
-
-  local generic_event = capabilities.button.button.pushed({state_change = true})
 
   if action == 0x00 then -- flip
     local flip_type = (val >> 6) & 0x3
@@ -68,17 +54,16 @@ local function cube_attr_handler(driver, device, value, zb_rx)
       device:set_field(SIDE, side)
       
       if val == 0 then -- shake
-        device:emit_event(capabilities.accelerationSensor.acceleration.active())
+        emit_action_event(device, "shake")
       elseif val == 2 then -- wake up
         device:emit_event(capabilities.motionSensor.motion.active())
       elseif val == 3 then -- toss
-        device:emit_event(capabilities.tamperAlert.tamper.detected())
+        emit_action_event(device, "toss")
       end
 
       local reset_motion_status = function()
         device:emit_event(capabilities.motionSensor.motion.inactive())
-        device:emit_event(capabilities.accelerationSensor.acceleration.inactive())
-        device:emit_event(capabilities.tamperAlert.tamper.clear())
+        --emit_action_event(device, "Ready", false)
       end
       motion_reset_timer = device.thread:call_with_delay(2, reset_motion_status)
       return
@@ -88,39 +73,41 @@ local function cube_attr_handler(driver, device, value, zb_rx)
   
       if flip_type == 1 then
         log.info("flip  90* " .. tostring(prev_side) .. ">" .. tostring(side))
-        device:emit_component_event({id="flip90"}, generic_event )
+        emit_action_event(device, "flip90")
         
       elseif flip_type == 2 then
         if side==0 then
           prev_side = 3 -- because of bug in cube
         end
         log.info("flip 180* " .. tostring(side))
-        device:emit_component_event({id="flip180"}, generic_event )
+        emit_action_event(device, "flip180")
       end
-
-      device:emit_event(map_flip_attribute_to_capability[side + 1]({state_change = true}))
     end
   elseif action == 0x01 then -- slide
-    device:emit_event(map_slide_attribute_to_capability[side+1]({state_change = true}))
-    device:emit_component_event({id="slide"}, generic_event )
+    emit_action_event(device, "slide")
   elseif action == 0x02 then -- double tap
-    device:emit_event(capabilities.button.button.double({state_change = true}))
+    emit_action_event(device, "tap")
   end
 
   if side ~= prev_side then
-    device:emit_event(capabilities.activityLightingMode.lightingMode({ value = map_side_to_lightingMode[side+1] })) -- , state_change = true
     device:set_field(SIDE, side)
+    event = cube.face(map_side_to_name[side+1])
+    --event.state_change = true
+    device:emit_event(event)   
   end
 end
 
+
 local function rotate_attr_handler(driver, device, value, zb_rx)
-  local val = value.value -- between -180 and 180
+  local val = math.floor(value.value + 0.5) -- between -180 and 180
   local delta = math.floor( val / 18 * 8) -- 80 percent for every 180*
   
   log.debug("rotate: ", val, " delta: ", delta)
   local level = device:get_field(CURRENT_LEVEL) or DEFAULT_LEVEL
   local new_level = utils.clamp_value( level + delta, 2, 100)
   generate_switch_level_event(device, new_level)
+
+  device:emit_event( cube.rotation( val ) )
 end
 
 function set_level(_, device, command)
@@ -140,9 +127,7 @@ end
 
 local aqara_cube_driver_template = {
   supported_capabilities = {
-    capabilities.button,
     capabilities.motionSensor,
-    capabilities.accelerationSensor,
     capabilities.battery,
     capabilities.temperatureAlarm,
   },
@@ -176,6 +161,5 @@ local aqara_cube_driver_template = {
   },
 }
 
---defaults.register_for_default_handlers(aqara_cube_driver_template, aqara_cube_driver_template.supported_capabilities)
 local aqara_cube = ZigbeeDriver("aqara_cube", aqara_cube_driver_template)
 aqara_cube:run()

@@ -1,0 +1,279 @@
+{
+    "dashboard": {
+        "states": [
+            {
+                "label": "{{face.value}}",
+                "alternatives": [
+                    {
+                        "key": "up",
+                        "value": "Up",
+                        "type": "active"
+                    },
+                    {
+                        "key": "down",
+                        "value": "Down",
+                        "type": "active"
+                    },
+                    {
+                        "key": "left",
+                        "value": "Left",
+                        "type": "active"
+                    },
+                    {
+                        "key": "right",
+                        "value": "Right",
+                        "type": "active"
+                    },
+                    {
+                        "key": "front",
+                        "value": "Front",
+                        "type": "active"
+                    },
+                    {
+                        "key": "back",
+                        "value": "Back",
+                        "type": "active"
+                    }
+                ]
+            }
+        ],
+        "actions": [],
+        "basicPlus": []
+    },
+    "detailView": [
+        {
+            "label": "Face",
+            "displayType": "state",
+            "state": {
+                "label": "{{face.value}}",
+                "alternatives": [
+                    {
+                        "key": "up",
+                        "value": "Up",
+                        "type": "active"
+                    },
+                    {
+                        "key": "down",
+                        "value": "Down",
+                        "type": "active"
+                    },
+                    {
+                        "key": "left",
+                        "value": "Left",
+                        "type": "active"
+                    },
+                    {
+                        "key": "right",
+                        "value": "Right",
+                        "type": "active"
+                    },
+                    {
+                        "key": "front",
+                        "value": "Front",
+                        "type": "active"
+                    },
+                    {
+                        "key": "back",
+                        "value": "Back",
+                        "type": "active"
+                    }
+                ]
+            }
+        },
+        {
+            "label": "State",
+            "displayType": "state",
+            "state": {
+                "label": "{{action.value}}",
+                "alternatives": [
+                    {
+                        "key": "slide",
+                        "value": "Slide",
+                        "type": "active"
+                    },
+                    {
+                        "key": "tap",
+                        "value": "Tap",
+                        "type": "active"
+                    },
+                    {
+                        "key": "shake",
+                        "value": "Shake",
+                        "type": "active"
+                    },
+                    {
+                        "key": "toss",
+                        "value": "Toss",
+                        "type": "active"
+                    },
+                    {
+                        "key": "flip90",
+                        "value": "Flip 90°",
+                        "type": "active"
+                    },
+                    {
+                        "key": "flip180",
+                        "value": "Flip 180°",
+                        "type": "active"
+                    },
+                    {
+                        "key": "Ready",
+                        "value": "___PO_CODE_CAPABILITY.SMARTTHINGS.BUTTON_DEFAULT_STANDBY",
+                        "type": "inactive"
+                    }
+                ]
+            }
+        },
+        {
+            "label": "State",
+            "displayType": "state",
+            "state": {
+                "label": "{{action.value}}",
+                "alternatives": [
+                    {
+                        "key": "slide",
+                        "value": "Slide",
+                        "type": "active"
+                    },
+                    {
+                        "key": "tap",
+                        "value": "Tap",
+                        "type": "active"
+                    },
+                    {
+                        "key": "shake",
+                        "value": "Shake",
+                        "type": "active"
+                    },
+                    {
+                        "key": "toss",
+                        "value": "Toss",
+                        "type": "active"
+                    },
+                    {
+                        "key": "flip90",
+                        "value": "Flip 90°",
+                        "type": "active"
+                    },
+                    {
+                        "key": "flip180",
+                        "value": "Flip 180°",
+                        "type": "active"
+                    },
+                    {
+                        "key": "Ready",
+                        "value": "___PO_CODE_CAPABILITY.SMARTTHINGS.BUTTON_DEFAULT_STANDBY",
+                        "type": "inactive"
+                    }
+                ]
+            }
+        },
+        {
+            "label": "Rotation",
+            "displayType": "state",
+            "state": {
+                "label": "{{rotation.value}} {{rotation.unit}}"
+            }
+        }
+    ],
+    "automation": {
+        "conditions": [
+            {
+                "label": "Action",
+                "displayType": "list",
+                "list": {
+                    "alternatives": [
+                        {
+                            "key": "flip90",
+                            "value": "Flip 90°",
+                            "type": "active"
+                        },
+                        {
+                            "key": "flip180",
+                            "value": "Flip 180°",
+                            "type": "active"
+                        },
+                        {
+                            "key": "slide",
+                            "value": "Slide",
+                            "type": "active"
+                        },
+                        {
+                            "key": "tap",
+                            "value": "Tap",
+                            "type": "active"
+                        },
+                        {
+                            "key": "shake",
+                            "value": "Shake",
+                            "type": "active"
+                        },
+                        {
+                            "key": "toss",
+                            "value": "Toss",
+                            "type": "active"
+                        }
+                    ],
+                    "value": "action.value"
+                    },
+                    "emphasis": true
+            },
+            {
+                "label": "Rotate",
+                "displayType": "slider",
+                "slider": {
+                    "value": "rotation.value",
+                    "range": [
+                        -180,
+                        180
+                    ],
+                    "step": 15
+                },
+                "value": "rotation.value"
+            },
+            {
+                "label": "Cube Face",
+                "displayType": "list",
+                "list": {
+                    "alternatives": [
+                        {
+                            "key": "up",
+                            "value": "Up (Logo)",
+                            "type": "active"
+                        },
+                        {
+                            "key": "down",
+                            "value": "Down",
+                            "type": "active"
+                        },
+                        {
+                            "key": "left",
+                            "value": "Left",
+                            "type": "active"
+                        },
+                        {
+                            "key": "right",
+                            "value": "Right",
+                            "type": "active"
+                        },
+                        {
+                            "key": "front",
+                            "value": "Front",
+                            "type": "active"
+                        },
+                        {
+                            "key": "back",
+                            "value": "Back",
+                            "type": "active"
+                        }
+                    ],
+                    "value": "face.value"
+                }
+            }
+        ],
+        "actions": [
+        ]
+    },
+    "id": "winterdictionary35590.cube",
+    "version": 1
+}

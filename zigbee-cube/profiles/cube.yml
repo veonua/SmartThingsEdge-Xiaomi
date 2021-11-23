@@ -2,17 +2,11 @@ name: cube
 components:
 - id: main
   capabilities:
-  - id: activityLightingMode
+  - id: winterdictionary35590.cube
     version: 1
   - id: switchLevel
     version: 1
-  - id: button
-    version: 1
   - id: motionSensor
-    version: 1
-  - id: accelerationSensor
-    version: 1
-  - id: tamperAlert
     version: 1
   - id: refresh
     version: 1
@@ -22,27 +16,6 @@ components:
     version: 1
   categories:
   - name: MultiFunctionalSensor
-- id: slide
-  label: Slide
-  capabilities:
-  - id: button
-    version: 1
-  categories:
-  - name: RemoteController
-- id: flip90
-  label: Flip 90*
-  capabilities:
-  - id: button
-    version: 1
-  categories:
-  - name: RemoteController
-- id: flip180
-  label: Flip 180*
-  capabilities:
-  - id: button
-    version: 1
-  categories:
-  - name: RemoteController
 
 metadata:
   deviceType: MultiFunctionalSensor	
