@@ -66,7 +66,6 @@ local function create_device(driver, token, device)
   local model        = st:sub(del+1)
   
   local location = device['location'] .. "/api/v1/" .. token
-  --location = location:sub(8,-1)
   
   log.info('===== DEVICE : '..manufacturer..' '..model ..' @ '..location)
   

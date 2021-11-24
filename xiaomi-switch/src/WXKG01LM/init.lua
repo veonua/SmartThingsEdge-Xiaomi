@@ -55,7 +55,7 @@ local wxkg_handler = {
     },
     can_handle = function(opts, driver, device)
         for _, fingerprint in ipairs(FINGERPRINTS) do
-            if (device:get_model() == fingerprint) then
+            if (device:get_model() == fingerprint.model) then
                 return true
             end
         end

@@ -66,27 +66,10 @@ local devices = {
 
 local configs = {}
 
-function find_first_ep(eps, cluster)
-  local tkeys = {}
-  for k in pairs(eps) do table.insert(tkeys, k) end
-  table.sort(tkeys)
-  
-  for _, k in ipairs(tkeys) do 
-    local ep = eps[k]
-    for _, clus in ipairs(ep.server_clusters) do
-      if clus == cluster then
-        return ep.id
-      end
-    end
-  end
-
-  return 0
-end
-
 configs.get_device_parameters = function(zb_device)
   zigbee_utils.print_clusters(zb_device)
   local eps = zb_device.zigbee_endpoints
-  local first_switch_ep = find_first_ep(eps, 0x0006)
+  local first_switch_ep = zigbee_utils.find_first_ep(eps, 0x0006) or 0
   
   for _, device in pairs(devices) do
     for _, model in pairs(device.MATCHING_MODELS) do
@@ -99,10 +82,13 @@ configs.get_device_parameters = function(zb_device)
     end
   end
   
-  log.warn("Did not found config for device: " .. tostring( zb_device:get_model() ) )
-  
-  local first_button_ep = find_first_ep(eps, 0x0012)
-  
+  log.warn("No configuration found for device: " .. zb_device:get_model() )
+  local first_button_ep = zigbee_utils.find_first_ep(eps, 0x0012)
+  if first_button_ep == nil then
+    log.warn("No Multistate Input for device: " .. zb_device:get_model() )
+    first_button_ep = 100
+  end
+
   return {
     first_switch_ep = first_switch_ep,
     first_button_ep = first_button_ep,

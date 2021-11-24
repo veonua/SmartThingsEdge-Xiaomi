@@ -10,8 +10,6 @@ local mgmt_bind_resp = require "st.zigbee.zdo.mgmt_bind_response"
 local data_types = require "st.zigbee.data_types"
 local cluster_base = require "st.zigbee.cluster_base"
 
-local OnOff = zcl_clusters.OnOff
-local PowerConfiguration = zcl_clusters.PowerConfiguration
 local MultistateInput = 0x0012
 
 local st_utils = require "st.utils"
@@ -65,27 +63,29 @@ end
 local device_init = function(self, device)
   device:set_component_to_endpoint_fn(component_to_endpoint)
   device:set_endpoint_to_component_fn(endpoint_to_component)
-
-  device:emit_event(capabilities.button.numberOfButtons({ value=2 }))
   local configs = configsMap.get_device_parameters(device)
 
   device:set_field("first_switch_ep", configs.first_switch_ep, {persist = true})
   device:set_field("first_button_ep", configs.first_button_ep, {persist = true})
 
-  event = capabilities.button.supportedButtonValues(configs.supported_button_values)
-  device:emit_event(event)
-  for i = 2, 5 do
-    local comp_id = string.format("button%d", i)
-    if not device:component_exists(comp_id) then
-      local last_button_ep = configs.first_button_ep +i -2
-      device:set_field("last_button_ep", last_button_ep, {persist = true})
-      log.info("last_button_ep:", last_button_ep)
-      break
+  if device:supports_capability(capabilities.button, "main") then
+    device:emit_event(capabilities.button.numberOfButtons({ value=2 }))
+    event = capabilities.button.supportedButtonValues(configs.supported_button_values)
+    device:emit_event(event)
+    for i = 2, 5 do
+      local comp_id = string.format("button%d", i)
+      if not device:component_exists(comp_id) then
+        local last_button_ep = configs.first_button_ep +i -2
+        device:set_field("last_button_ep", last_button_ep, {persist = true})
+        log.info("last_button_ep:", last_button_ep)
+        break
+      end
+      
+      local comp = device.profile.components[comp_id]
+      device:emit_component_event(comp, event)
     end
-    
-    local comp = device.profile.components[comp_id]
-    device:emit_component_event(comp, event)
   end
+  
 end
 
 local do_refresh = function(self, device)
@@ -105,6 +105,28 @@ function button_attr_handler(driver, device, value, zb_rx)
 
   if click_type ~= nil then
     utils.emit_button_event(device, zb_rx.address_header.src_endpoint.value, click_type({state_change = true}))
+  end
+end
+
+local function info_changed(driver, device, event, args)
+  -- xiaomi_switch_operation_mode_basic
+  for id, value in pairs(device.preferences) do
+      if args.old_st_store.preferences[id] ~= value then --and preferences[id] then
+          local data = tonumber(device.preferences[id])
+          
+          local attr
+          if id == "button1" then
+              attr = 0xFF22
+          elseif id == "button2" then
+              attr = 0xFF23
+          elseif id == "button3" then
+              attr = 0xFF24
+          end
+
+          if attr then
+              device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, attr, 0x115F, data_types.Uint8, data) )
+          end
+      end
   end
 end
 

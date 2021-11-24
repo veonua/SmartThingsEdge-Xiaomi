@@ -5,8 +5,13 @@ local caps = require('st.capabilities')
 local discovery = require('discovery')
 local commands = require('commands')
 local log = require('log')
+---
+local level_Steps = caps["legendabsolute60149.levelSteps"]
+local color_Temperature_Steps = caps["legendabsolute60149.colorTemperatureSteps"]
+
 
 local function device_removed(self, device)
+  log.warn("!!! Device removed: " .. device.device_network_id)
   local success, data = commands.send_lan_command(device, 'DELETE', '')
 end
 
@@ -51,6 +56,15 @@ local driver =
         [caps.mediaPresets.ID] = {
           [caps.mediaPresets.commands.playPreset.NAME] = commands.playPreset
         },
+        ---
+
+        [level_Steps.ID] = {
+          [level_Steps.commands.setLevelSteps.ID] = commands.level_Steps_handler,
+        },
+        [color_Temperature_Steps.ID] = {
+          [color_Temperature_Steps.commands.setColorTempSteps.ID] = commands.color_Temperature_Steps_handler,
+        },
+        ---
         [caps.refresh.ID] = {
           [caps.refresh.commands.refresh.NAME] = commands.refresh
         }

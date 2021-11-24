@@ -4,6 +4,8 @@
 local data_types = require "st.zigbee.data_types"
 local capabilities = require "st.capabilities"
 local buf = require "st.buf"
+local utils = require "st.utils"
+local log = require "log"
 
 local battery_defaults = require "st.zigbee.defaults.battery_defaults"
 
@@ -52,13 +54,24 @@ local function emit_battery_event(device, battery_record)
   if device:supports_capability(capabilities.battery, "main") then
     local raw_bat_volt = (battery_record.value / 1000)
     local raw_bat_perc = (raw_bat_volt - 2.5) * 100 / (3.0 - 2.5)
-    --utils.clamp_value()
-    local bat_perc = math.floor(math.max(math.min(raw_bat_perc, 100), 0))
+    local bat_perc = utils.clamp_value(raw_bat_perc, 0, 100)
     device:emit_event(capabilities.battery.battery(bat_perc))
   end
 end
 
+local function emit_signal_event(device, rssi_db, lqi)
+  log.info("xiaomi_utils.lua: emit_signal_event", rssi_db, lqi)
+  if device:supports_capability(capabilities.signalStrength, "main") then
+    device:emit_event(capabilities.signalStrength.rssi(rssi_db))
+    device:emit_event(capabilities.signalStrength.lqi(lqi))
+  end
+end
+
 local function emit_temperature_event(device, temperature_record)
+  if device:supports_capability(capabilities.temperatureAlarm, "main") == false then
+    return
+  end
+
   local temperature = temperature_record.value
   local alarm = capabilities.temperatureAlarm.temperatureAlarm.cleared()
   if temperature > 60 then
@@ -91,6 +104,8 @@ function xiaomi_utils.handler(driver, device, value, zb_rx)
         event(device, value)
       end
     end
+
+    emit_signal_event(device, xiaomi_data_type.items[0x05].value, xiaomi_data_type.items[0x06].value)
     -- log.warn("xiaomi_utils.handler handled: " .. tostring(#xiaomi_data_type.items))
   else
     log.warn("xiaomi_utils.handler: unknown data type: " .. tostring (value) )
@@ -98,12 +113,12 @@ function xiaomi_utils.handler(driver, device, value, zb_rx)
 end
 
 function xiaomi_utils.handlerFF02(driver, device, value, zb_rx)
-  if value.ID ~= data_types.Structure then
+  if value.ID ~= data_types.Structure.ID then
     log.error("xiaomi_utils.handlerFF02: unknown data type: " .. tostring (value) )
     return
   end
 
-  log.warn("xiaomi_utils.handlerFF02: " .. tostring(value.value))
+  log.warn("xiaomi_utils.handlerFF02: " .. tostring(value))
   --[Boolean: true, Uint16: 0x0BD1 (3025), Uint16: 0x13A8(5032), Uint40: 0x0000000001, Uint16: 0x0014(20), Uint8: 0x5B(91)] > > > >
 end
 

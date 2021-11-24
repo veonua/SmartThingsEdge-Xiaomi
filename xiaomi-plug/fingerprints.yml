@@ -4,6 +4,12 @@ zigbeeManufacturer:
     manufacturer: LUMI
     model: lumi.plug
     deviceProfileName: plug
+  - id: "lumi.plug.maeu01"
+    deviceLabel: Xiaomi CN Plug
+    manufacturer: LUMI
+    model: lumi.plug.maeu01
+    deviceProfileName: plug_prefs
+
   - id: "lumi.plug.mmeu01"
     deviceLabel: Xiaomi EU Plug
     manufacturer: LUMI

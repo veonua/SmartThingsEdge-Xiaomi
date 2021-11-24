@@ -52,7 +52,7 @@ id_to_name_map[0x000C] = "AnalogInput"
 id_to_name_map[0x0010] = "BinaryOutput"
 id_to_name_map[0x0012] = "MultistateInput"
 id_to_name_map[0xFCC0] = "AqaraOpple"
-id_to_name_map[0xFC57] = "WorkWithAllHubs"
+
 
 local function clusters_to_string(name, cluster_table)
   local res = name.."["

@@ -20,7 +20,6 @@ local OPPLE_CLUSTER = 0xFCC0
 
 local OPPLE_FINGERPRINTS = {
     { mfr = "LUMI", model = "^lumi.switch.l.aeu1" },
-    { mfr = "LUMI", model = "^lumi.remote.b..aus01" },
     { mfr = "LUMI", model = "^lumi.remote.b28" },
 }
 
@@ -60,7 +59,6 @@ local do_configure = function(self, device)
         -- if value is 1 - there will be single clicks, 2 - multiple.
         device:send(cluster_base.write_manufacturer_specific_attribute(device, OPPLE_CLUSTER, 0x0125, 0x115F, data_types.Uint8, 0x02) ) 
     elseif operationMode == 0 then      -- light group binding
-        --device:send( device_management.build_bind_request(device, OnOff.ID, self.environment_info.hub_zigbee_eui) )
         local group = device.preferences.group or 1
         group = tonumber(group)
 

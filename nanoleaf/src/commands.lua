@@ -17,14 +17,12 @@ end
 -- Ping command
 function command_handler.ping(address, port, device)
   local ping_data = {ip=address, port=port, ext_uuid=device.id}
-  return command_handler.send_lan_command(
-    device, 'POST', 'ping', ping_data)
+  return command_handler.send_lan_command(device, 'POST', 'ping', ping_data)
 end
 ------------------
 -- Refresh command
 function command_handler.refresh(_, device)
-  local success, data = command_handler.send_lan_command(
-    device, 'GET', 'state')
+  local success, data = command_handler.send_lan_command(device, 'GET', 'state')
 
   -- Check success
   if success then
@@ -45,8 +43,7 @@ function command_handler.refresh(_, device)
     device:offline()
   end
 
-  local success, data = command_handler.send_lan_command(
-    device, 'GET', 'effects/effectsList')
+  local success, data = command_handler.send_lan_command(device, 'GET', 'effects/effectsList')
   if success then
     local raw_data = json.decode(table.concat(data))
     local presets = {}
@@ -60,8 +57,7 @@ end
 
 function command_handler.on_off(_, device, command)
   local on_off = command.command == 'on'
-  local success = command_handler.send_lan_command(device, 'PUT', 'state', 
-    {on={value=on_off}} )
+  local success = command_handler.send_lan_command(device, 'PUT', 'state', {on={value=on_off}} )
 
   if success then
     if on_off then
@@ -74,8 +70,7 @@ end
 
 function command_handler.set_level(_, device, command)
   local lvl = command.args.level
-  local success = command_handler.send_lan_command( device, 'PUT', 'state',   
-    {brightness = {value = lvl }})
+  local success = command_handler.send_lan_command( device, 'PUT', 'state', {brightness = {value = lvl }})
 
   if success then
     if lvl == 0 then
@@ -108,10 +103,6 @@ function command_handler.set_color(_, device, command)
 
   local success = command_handler.send_lan_command(device, 'PUT', 'effects', payload)
   
-  -- no animation
-  -- payload = {hue={value = hue}, sat={value = sat}}
-  -- local success = command_handler.send_lan_command(device, 'PUT', 'state', payload)
-
   -- Check if success
   if success then
     device:emit_event(caps.switch.switch.on())
@@ -145,10 +136,60 @@ function command_handler.playPreset(_, device, command)
   log.error('no response from device')
 end
 
+----
+local capabilities = require('st.capabilities')
+local level_Steps = capabilities["legendabsolute60149.levelSteps"]
+local color_Temperature_Steps = capabilities["legendabsolute60149.colorTemperatureSteps"]
+
+function command_handler.level_Steps_handler(_, device, command)
+
+  ---- next level calculation  
+  print("Level Steps Value =", command.args.value)
+  local level = command.args.value
+  device:emit_event(level_Steps.levelSteps(level))
+  level = math.floor( level + device:get_latest_state("main", capabilities.switchLevel.ID, capabilities.switchLevel.level.NAME) )
+  if level > 100 then 
+    level = 100
+  elseif level < 0 then
+    level =0
+  end
+
+  command.args.level = level
+  command_handler.set_level(_, device, command)
+  --local success = command_handler.send_lan_command( device, 'PUT', 'state', {brightness = {value = level }})
+end
+
+
+function command_handler.color_Temperature_Steps_handler(self, device, command)
+    ---Next Color Temperature calculation
+    local colorTemp = command.args.value
+    device:emit_event(color_Temperature_Steps.colorTempSteps(colorTemp))
+    print("Last Color Temperature =", device:get_latest_state("main", capabilities.colorTemperature.ID, capabilities.colorTemperature.colorTemperature.NAME))
+    colorTemp = colorTemp + device:get_latest_state("main", capabilities.colorTemperature.ID, capabilities.colorTemperature.colorTemperature.NAME)
+    if colorTemp > 6000 then
+      colorTemp = 6000
+    elseif colorTemp < 2700 then
+      colorTemp = 2700
+    end
+    print("colorTemp", colorTemp)
+
+    --local success = command_handler.send_lan_command(device, 'PUT', 'state', {ct={value = colorTemp}})
+    --device:emit_event(capabilities.colorTemperature.colorTemperature(math.floor(colorTemp)))
+    command.args.temperature = math.floor(colorTemp)
+    command_handler.set_temp(_, device, command)
+end
+
 ------------------------
 -- Send LAN HTTP Request
 function command_handler.send_lan_command(device, method, path, body)
-  local dest_url = device.device_network_id .. '/' ..path
+  
+  local device_network_id = device.device_network_id
+  if device_network_id == "http://192.168.0.155:16021/api/v1/b7uFIgZ1MywU0r6FW6ECPxMqAnHm3BgZ" then
+    log.info("patch of fly")
+    device_network_id = "http://192.168.0.155:16021/api/v1/fvTBDLvOXYJ2UR6mQz7P6oSqYfLrmViU"
+  end
+ 
+  local dest_url = device_network_id .. '/' ..path
   local source
   local payload = ''
   if body then

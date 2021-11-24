@@ -25,13 +25,6 @@ preferences:
     preferenceType: boolean
     definition: 
       default: true
-  
-  - title: "Power outage memory"
-    name: powerOutageMemory
-    required: true
-    preferenceType: boolean
-    definition: 
-      default: true
 
   - title: "Auto Off"
     desctipyion: "Turn the device automatically off when attached device consumes less than 2W for 20 minutes"

@@ -98,7 +98,6 @@ local plug_driver_template = {
     capabilities.voltageMeasurement,
     capabilities.refresh,
   },
-  use_defaults = false,
   lifecycle_handlers = {
     infoChanged = info_changed,
   },
