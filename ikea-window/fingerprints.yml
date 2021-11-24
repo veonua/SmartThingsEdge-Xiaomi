@@ -15,7 +15,13 @@ zigbeeManufacturer:
     deviceLabel: "IKEA remote control"
     manufacturer: IKEA of Sweden
     model: TRADFRI remote control
-    deviceProfileName: switch-battery-level
+    deviceProfileName: up-down-button
+
+  - id: "ikea/Stryrbar"
+    deviceLabel: "Ikea Stryrbar"
+    manufacturer: IKEA of Sweden
+    model: Remote Control N2
+    deviceProfileName: up-down-button
 
 zigbeeGeneric:
   - id: "window-button"

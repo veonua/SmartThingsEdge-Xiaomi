@@ -1,5 +1,7 @@
 local zcl_clusters = require "st.zigbee.zcl.clusters"
 local capabilities = require "st.capabilities"
+local device_management = require "st.zigbee.device_management"
+local zigbee_utils = require "zigbee_utils"
 
 local WindowCovering = zcl_clusters.WindowCovering
 local Groups = zcl_clusters.Groups
@@ -46,6 +48,7 @@ local function do_configure(self, device)
    device:send(device_management.build_bind_request(device, WindowCovering.ID, self.environment_info.hub_zigbee_eui))
    device:send(WindowCovering.attributes.CurrentPositionLiftPercentage:configure_reporting(device, 5, 21600, 1))
 --     super:do_configure
+   zigbee_utils.send_read_binding_table(device)
 end
 
 

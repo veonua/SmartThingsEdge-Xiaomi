@@ -20,6 +20,10 @@ local mgmt_bind_resp = require "st.zigbee.zdo.mgmt_bind_response"
 local zdo_messages = require "st.zigbee.zdo"
 
 
+local function zdo_unbinding_table_handler(driver, device, zb_rx)
+  log.warn("zdo_unbinding_table_handler", json.encode(zb_rx.body.zdo_body))
+end
+
 local function zdo_binding_table_handler(driver, device, zb_rx)
   log.warn("zdo_binding_table_handler")
   for _, binding_table in pairs(zb_rx.body.zdo_body.binding_table_entries) do
@@ -35,17 +39,12 @@ end
 
 local function do_configure(self, device)
   log.info("do_configure")
-  -- device:send(device_management.build_bind_request(device, PowerConfiguration.ID, self.environment_info.hub_zigbee_eui))
-  -- device:send(device_management.build_bind_request(device, WindowCovering.ID, self.environment_info.hub_zigbee_eui))
-
-  -- device:send(PowerConfiguration.attributes.BatteryPercentageRemaining:configure_reporting(device, 30, 21600, 1))
-  -- device:send(WindowCovering.attributes.CurrentPositionLiftPercentage:configure_reporting(device, 5, 21600, 1))
-
-  device:send(zigbee_utils.build_read_binding_table(device))
+  zigbee_utils.send_read_binding_table(device)
 end
 
 local do_refresh = function(self, device)
   zigbee_utils.print_clusters(device)
+  zigbee_utils.send_read_binding_table(device)
   device:send(Groups.server.commands.GetGroupMembership(device, {}))  
 end
 
@@ -74,7 +73,8 @@ local ikea_window_driver_template = {
       }
     },
     zdo = {
-      [mgmt_bind_resp.MGMT_BIND_RESPONSE] = zdo_binding_table_handler
+      [mgmt_bind_resp.MGMT_BIND_RESPONSE] = zdo_binding_table_handler,
+      [0x8022] = zdo_unbinding_table_handler
     }
   },
   lifecycle_handlers = {
