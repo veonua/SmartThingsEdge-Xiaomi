@@ -9,7 +9,16 @@ local data_types = require "st.zigbee.data_types"
 local cluster_base = require "st.zigbee.cluster_base"
 local json = require "dkjson"
 
+local DeviceTemperatureConfiguration = zcl_clusters.DeviceTemperatureConfiguration
+
+
+local function added_handler(self, device)
+  -- https://github.com/veonua/SmartThingsEdge-Xiaomi/issues/6
+  device:set_field(constants.SIMPLE_METERING_DIVISOR_KEY, 1000, {persists= true}) 
+end
+
 local function temp_attr_handler(driver, device, value, zb_rx)
+  device:emit_event(capabilities.temperatureMeasurement.temperature({ value = value.value, unit = "C"}) )
 end
 
 local function attr_handler0C(driver, device, value, zb_rx)
@@ -99,6 +108,7 @@ local plug_driver_template = {
     capabilities.refresh,
   },
   lifecycle_handlers = {
+    added = added_handler,
     infoChanged = info_changed,
   },
   zigbee_handlers = {
@@ -108,8 +118,8 @@ local plug_driver_template = {
       [zcl_clusters.basic_id] = {
         [xiaomi_utils.attr_id] = xiaomi_utils.handler
       },
-      [0002] = {
-        [0x00] = temp_attr_handler,
+      [DeviceTemperatureConfiguration.ID] = {
+        [DeviceTemperatureConfiguration.attributes.CurrentTemperature.ID] = temp_attr_handler,
       },
       [0x0C] = {
         [0x0055] = attr_handler0C

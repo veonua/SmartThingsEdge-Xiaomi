@@ -5,7 +5,7 @@ zigbeeManufacturer:
     model: lumi.plug
     deviceProfileName: plug
   - id: "lumi.plug.maeu01"
-    deviceLabel: Xiaomi CN Plug
+    deviceLabel: Aqara Zigbee EU Smart Outlet
     manufacturer: LUMI
     model: lumi.plug.maeu01
     deviceProfileName: plug_prefs
