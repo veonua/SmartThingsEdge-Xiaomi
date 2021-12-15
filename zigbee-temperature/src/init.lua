@@ -37,7 +37,7 @@ end
 
 local pressure_value_attr_handler = function(driver, device, value, zb_rx)
   local mBar = value.value
-  device:emit_event(capabilities.atmosphericPressureMeasurement.atmosphericPressure({value = math.floor(mBar/10), unit = "kPa"}))
+  device:emit_event(capabilities.atmosphericPressureMeasurement.atmosphericPressure({value = utils.round(mBar/10), unit = "kPa"}))
   device:emit_event(atmos_Pressure.atmosPressure(mBar))
 end
 

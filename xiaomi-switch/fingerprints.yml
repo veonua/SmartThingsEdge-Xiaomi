@@ -21,6 +21,13 @@ zigbeeManufacturer:
     manufacturer: LUMI
     model: lumi.switch.b2nacn02
     deviceProfileName: switch-neutral-button-2
+  
+  - id: "QBKG26LM"
+    deviceLabel: QBKG26LM Wall Switch (With Neutral, Triple Rocker)
+    manufacturer: LUMI
+    model: lumi.switch.n3acn3
+    deviceProfileName: switch-neutral-button-2
+
 
   - id: "WXKG01LM"
     deviceLabel: WXKG01LM Wireless Switch

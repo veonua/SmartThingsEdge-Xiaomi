@@ -11,16 +11,22 @@ zigbeeManufacturer:
     model: "FYRTUR block-out roller Blind"
     deviceProfileName: blind
 
-  - id: "ikea/TRADFRI remote control"
-    deviceLabel: "IKEA remote control"
-    manufacturer: IKEA of Sweden
-    model: TRADFRI remote control
-    deviceProfileName: up-down-button
-
   - id: "ikea/Stryrbar"
     deviceLabel: "Ikea Stryrbar"
     manufacturer: IKEA of Sweden
     model: Remote Control N2
+    deviceProfileName: four-buttons-battery
+
+  - id: "ikea/TRADFRI rem"
+    deviceLabel: IKEA Remote Control
+    manufacturer: IKEA of Sweden
+    model: TRADFRI remote control
+    deviceProfileName: five-buttons-battery
+
+  - id: "KE/TRADFRIopenclose"
+    deviceLabel: IKEA Remote Control
+    manufacturer: KE
+    model: TRADFRI open/close remote
     deviceProfileName: up-down-button
 
 zigbeeGeneric:

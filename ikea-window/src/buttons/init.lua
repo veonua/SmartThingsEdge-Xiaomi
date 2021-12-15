@@ -26,10 +26,54 @@ local can_handle = function(opts, driver, device)
 end
 
 local device_added = function(self, device)
+  local supported_button_values = {"held", "up", "down"}
   device:emit_event(btn_cap.numberOfButtons({value = 1}))
-  device:emit_event(btn_cap.supportedButtonValues({"held", "up", "down"}))
+  device:emit_event(btn_cap.supportedButtonValues(supported_button_values))
   device:emit_event(button.held())
+
+  for comp_name, comp in pairs(device.profile.components) do
+    if comp_name ~= "main" then
+      device:emit_component_event(comp, capabilities.button.supportedButtonValues(supported_button_values))
+      device:emit_component_event(comp, capabilities.button.numberOfButtons({value = 1}))
+    end
+  end
 end
+
+---
+function build_button_handler(button_name, pressed_type)
+  return function(driver, device, zb_rx)
+    local additional_fields = {
+      state_change = true
+    }
+    local event = pressed_type(additional_fields)
+    local comp = device.profile.components[button_name]
+    if comp ~= nil then
+      device:emit_component_event(comp, event)
+    else
+      log.warn("Attempted to emit button event for unknown button: " .. button_name)
+    end
+  end
+end
+
+function build_button_payload_handler(pressed_type)
+  return function(driver, device, zb_rx)
+    local additional_fields = {
+      state_change = true
+    }
+    local bytes = zb_rx.body.zcl_body.body_bytes
+    local payload_id = bytes:byte(1)
+    local button_name =
+      payload_id == 0x00 and "button2" or "button4"
+    local event = pressed_type(additional_fields)
+    local comp = device.profile.components[button_name]
+    if comp ~= nil then
+      device:emit_component_event(comp, event)
+    else
+      log.warn("Attempted to emit button event for unknown button: " .. button_name)
+    end
+  end
+end
+---
 
 function open_command_handler(driver, device, zb_rx)
   device:emit_event(button.up({state_change = true}))
@@ -54,6 +98,18 @@ function press_handler(driver, device, zb_rx)
   -- 00 01 0D 00
   -- 01 01 0D 00
   -- 02 01 00 00 -- release
+end
+
+function left_right_held_handler(driver, device, zb_rx)
+  log.debug("Handling Tradfri left/right button HELD, value: " .. zb_rx.body.zcl_body.body_bytes:byte(1))
+  local btn = zb_rx.body.zcl_body.body_bytes:byte(1)
+  local btn_map = {button.down_hold, button.up_hold}
+  local event = btn_map[btn+1]
+  if event then
+    device:emit_event(event({state_change = true}))
+  end
+
+  --device:emit_event(capabilities.button.button.held({ state_change = true }))
 end
 
 function hold_handler(driver, device, zb_rx)
@@ -112,11 +168,27 @@ local handler = {
           [WindowCovering.server.commands.Stop.ID] = stop_command_handler,
       },
       [Scenes.ID] = {
-        [Scenes.server.commands.StoreScene.ID] = scenes_handler,
-        [Scenes.server.commands.RecallScene.ID] = scenes_handler,
         [0x07] = press_handler,
+        [0x08] = left_right_held_handler,
         [0x09] = hold_handler
-      }
+      },
+      [OnOff.ID] = {
+        [OnOff.server.commands.On.ID] = build_button_handler("button1", capabilities.button.button.pushed),
+        [OnOff.server.commands.Off.ID] = build_button_handler("button3", capabilities.button.button.pushed),
+        [OnOff.server.commands.Toggle.ID] = build_button_handler("button5", capabilities.button.button.pushed)
+      },
+      [Level.ID] = {
+        [Level.server.commands.Move.ID] = build_button_handler("button3", capabilities.button.button.held),
+        [Level.server.commands.Step.ID] = build_button_handler("button3", capabilities.button.button.pushed),
+        [Level.server.commands.MoveWithOnOff.ID] = build_button_handler("button1", capabilities.button.button.held),
+        [Level.server.commands.StepWithOnOff.ID] = build_button_handler("button1", capabilities.button.button.pushed)
+        [Level.server.commands.StopWithOnOff.ID] = build_button_handler("button1", capabilities.button.button.held)
+      },
+      -- Manufacturer command id used in ikea
+      -- [Scenes.ID] = {
+      --   [0x07] = build_button_payload_handler(capabilities.button.button.pushed),
+      --   [0x08] = build_button_payload_handler(capabilities.button.button.held)
+      -- }
     },
   },
   can_handle = can_handle

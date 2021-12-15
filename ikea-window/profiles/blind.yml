@@ -12,6 +12,8 @@ components:
     version: 1
   - id: battery
     version: 1
+  - id: firmwareUpdate
+    version: 1
   - id: refresh
     version: 1
   categories:
@@ -21,7 +23,7 @@ preferences:
   explicit: true
 - title: "Group"
   name: group
-  required: true
+  required: false
   preferenceType: integer
   definition:
     minimum: 0

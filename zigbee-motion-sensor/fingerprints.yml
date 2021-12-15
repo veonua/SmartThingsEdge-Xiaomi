@@ -9,6 +9,11 @@ zigbeeManufacturer:
     manufacturer: LUMI
     model: lumi.sensor_motion.aq2
     deviceProfileName: motion-battery-illuminance
+  - id: "ikea/motion"
+    deviceLabel: IKEA motion Sensor
+    manufacturer: IKEA of Sweden
+    model: TRADFRI motion sensor
+    deviceProfileName: motion-battery
   
 zigbeeGeneric:
   - id: "motion-generic"

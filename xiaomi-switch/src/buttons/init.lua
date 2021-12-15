@@ -7,8 +7,44 @@ local utils = require "utils"
 
 function on_off_attr_handler(driver, device, value, zb_rx)
     local click_type = zb_rx.body_length.value>8 and capabilities.button.button.pushed or capabilities.button.button.held
-    if not value.value then
-        utils.emit_button_event(device, zb_rx.address_header.src_endpoint.value, click_type({state_change = true}))
+    
+    endpoint = zb_rx.address_header.src_endpoint.value
+    
+    local CLICK_TIMER  = string.format("button_timer%d", endpoint)
+    local DOWN_COUNTER = string.format("down_counter%d", endpoint)
+    
+    local down_counter = device:get_field(DOWN_COUNTER)
+    local click_timer = device:get_field(CLICK_TIMER)
+    
+    local timer_func = function()
+        local f_down_counter = device:get_field(DOWN_COUNTER)
+        local button = capabilities.button.button
+        log.warn("down_counter: " .. tostring(f_down_counter))
+  
+        local click_type
+        click_type = utils.click_types[f_down_counter+1]   
+        
+        if click_type then
+            utils.emit_button_event(device, endpoint, click_type({state_change = true}))
+        end
+
+        device:set_field(CLICK_TIMER, nil)
+        device:set_field(DOWN_COUNTER, 0)
+    end
+
+    if click_timer then
+        if value.value then
+            down_counter = down_counter + 1
+            device:set_field(DOWN_COUNTER, down_counter)
+        end
+    else
+        if value.value then
+            timer = device.thread:call_with_delay(1, timer_func)
+            device:set_field(CLICK_TIMER, timer)
+            device:set_field(DOWN_COUNTER, 1)
+        else
+            log.warn("stray up event, from previous held?")
+        end
     end
 end
 

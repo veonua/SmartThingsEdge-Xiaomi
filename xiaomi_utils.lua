@@ -54,7 +54,7 @@ local function emit_battery_event(device, battery_record)
   if device:supports_capability(capabilities.battery, "main") then
     local raw_bat_volt = (battery_record.value / 1000)
     local raw_bat_perc = (raw_bat_volt - 2.5) * 100 / (3.0 - 2.5)
-    local bat_perc = utils.clamp_value(raw_bat_perc, 0, 100)
+    local bat_perc = utils.round( utils.clamp_value(raw_bat_perc, 0, 100) )
     device:emit_event(capabilities.battery.battery(bat_perc))
   end
 end
@@ -105,7 +105,13 @@ function xiaomi_utils.handler(driver, device, value, zb_rx)
       end
     end
 
-    emit_signal_event(device, xiaomi_data_type.items[0x05].value, xiaomi_data_type.items[0x06].value)
+    local rssi_db = xiaomi_data_type.items[0x05]
+    local lqi = xiaomi_data_type.items[0x06]
+    if rssi_db ~= nil and lqi ~= nil then
+      emit_signal_event(device, rssi_db.value, lqi.value)
+      -- emit_signal_event(device, xiaomi_data_type.items[0x05].value, xiaomi_data_type.items[0x06].value)
+    end
+    
     -- log.warn("xiaomi_utils.handler handled: " .. tostring(#xiaomi_data_type.items))
   else
     log.warn("xiaomi_utils.handler: unknown data type: " .. tostring (value) )
