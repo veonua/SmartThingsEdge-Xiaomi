@@ -47,7 +47,7 @@ function old_button_handler(device, endpoint, value)
             up_counter = up_counter + 1
             device:set_field(UP_COUNTER, up_counter)
         end
-        else
+    else
         if not value.value then
             timer = device.thread:call_with_delay(1, held)
             device:emit_event_for_endpoint(component_id, capabilities.button.button.down())
@@ -78,13 +78,39 @@ function on_off_attr_handler(driver, device, value, zb_rx)
             -- hold  = off, pause, on. so we emit only off
             utils.emit_button_event(device, ep, press_type({state_change = true}))
         end
-        --old_button_handler(device, component_id, value)
-        --
-        -- device:remove_monitored_attribute(0006, 000)
-        --        
+        --old_button_handler(device, component_id, value)       
     end
 end
 
+--
+
+local function info_changed(driver, device, event, args)
+    -- xiaomi_switch_operation_mode_basic
+    for id, value in pairs(device.preferences) do
+        if args.old_st_store.preferences[id] ~= value then --and preferences[id] then
+            local data = tonumber(device.preferences[id])
+            
+            local attr
+            if id == "button1" then
+                attr = 0xFF22
+            elseif id == "button2" then
+                attr = 0xFF23
+            elseif id == "button3" then
+                attr = 0xFF24
+            end
+  
+            if attr then
+                device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, attr, 0x115F, data_types.Uint8, data) )
+            end
+        end
+    end
+end
+
+local function do_configure(self, device)
+    log.info("do_configure")
+    device:remove_monitored_attribute(OnOff.ID, OnOff.attributes.OnOff.ID)
+end
+  
 -- 
 
 local old_switch_handler = {
@@ -95,6 +121,10 @@ local old_switch_handler = {
                 [OnOff.attributes.OnOff.ID] = on_off_attr_handler
             }
         },
+    },
+    lifecycle_handlers = {
+        infoChanged = info_changed,
+        doConfigure = do_configure,
     },
     can_handle = function(opts, driver, device)
         return utils.first_switch_ep(device) > 0 and utils.first_button_ep(device) == 4

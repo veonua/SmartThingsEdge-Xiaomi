@@ -72,6 +72,11 @@ zigbeeManufacturer:
     manufacturer: LUMI
     model: lumi.remote.b286opcn01
     deviceProfileName: opple-button-2
+  - id: "WXCJKG13LM"
+    deviceLabel: WXCJKG13LM Wireless Switch (Six Button)
+    manufacturer: LUMI
+    model: lumi.remote.b686opcn01
+    deviceProfileName: opple-button-6
 
   - id: "WS-EUK01"
     deviceLabel: WS-EUK01 Wall Switch (No Neutral, Single Rocker)

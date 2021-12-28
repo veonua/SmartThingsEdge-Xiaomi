@@ -72,7 +72,7 @@ local device_init = function(self, device)
     device:emit_event(capabilities.button.numberOfButtons({ value=2 }))
     event = capabilities.button.supportedButtonValues(configs.supported_button_values)
     device:emit_event(event)
-    for i = 2, 5 do
+    for i = 2, 10 do
       local comp_id = string.format("button%d", i)
       if not device:component_exists(comp_id) then
         local last_button_ep = configs.first_button_ep +i -2
@@ -108,28 +108,6 @@ function button_attr_handler(driver, device, value, zb_rx)
   end
 end
 
-local function info_changed(driver, device, event, args)
-  -- xiaomi_switch_operation_mode_basic
-  for id, value in pairs(device.preferences) do
-      if args.old_st_store.preferences[id] ~= value then --and preferences[id] then
-          local data = tonumber(device.preferences[id])
-          
-          local attr
-          if id == "button1" then
-              attr = 0xFF22
-          elseif id == "button2" then
-              attr = 0xFF23
-          elseif id == "button3" then
-              attr = 0xFF24
-          end
-
-          if attr then
-              device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, attr, 0x115F, data_types.Uint8, data) )
-          end
-      end
-  end
-end
-
 local function zdo_binding_table_handler(driver, device, zb_rx)
   log.warn("ZDO Binding Table Response")    
   
@@ -155,7 +133,6 @@ local switch_driver_template = {
       [capabilities.refresh.commands.refresh.NAME] = do_refresh,
     }
   },
-  use_defaults = false,
   cluster_configurations = {
     [capabilities.button.ID] = { -- have no idea if it works
       {
@@ -189,8 +166,6 @@ local switch_driver_template = {
   lifecycle_handlers = {
     init = device_init,
     added = device_init,
-    infoChanged = info_changed,
-    doConfigure = do_configure,
   }
 }
 

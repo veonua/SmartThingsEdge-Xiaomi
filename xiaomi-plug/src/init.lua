@@ -14,7 +14,8 @@ local DeviceTemperatureConfiguration = zcl_clusters.DeviceTemperatureConfigurati
 
 local function added_handler(self, device)
   -- https://github.com/veonua/SmartThingsEdge-Xiaomi/issues/6
-  device:set_field(constants.SIMPLE_METERING_DIVISOR_KEY, 1000, {persists= true}) 
+  device:set_field(constants.SIMPLE_METERING_DIVISOR_KEY, 10, {persists= true})        -- Current Summation Delivered
+  device:set_field(constants.ELECTRICAL_MEASUREMENT_DIVISOR_KEY, 10, {persists= true}) -- Active Power
 end
 
 local function temp_attr_handler(driver, device, value, zb_rx)
@@ -97,6 +98,7 @@ end
 
 xiaomi_utils.xiami_events[0x95] = consumption_handler
 xiaomi_utils.xiami_events[0x96] = voltage_handler
+
 
 local plug_driver_template = {
   supported_capabilities = {

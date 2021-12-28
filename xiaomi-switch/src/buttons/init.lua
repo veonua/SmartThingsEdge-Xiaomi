@@ -39,7 +39,7 @@ function on_off_attr_handler(driver, device, value, zb_rx)
         end
     else
         if value.value then
-            timer = device.thread:call_with_delay(1, timer_func)
+            timer = device.thread:call_with_delay(0.4, timer_func)
             device:set_field(CLICK_TIMER, timer)
             device:set_field(DOWN_COUNTER, 1)
         else
