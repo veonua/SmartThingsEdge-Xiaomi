@@ -19,7 +19,7 @@ local devices = {
     },
     CONFIGS = {
       first_button_ep = 0x0004,
-      supported_button_values = {"pushed", "pushed_2x", "held"}
+      supported_button_values = {"pushed", "held"}
     }
   },
   GROUP2 = {
@@ -49,10 +49,18 @@ local devices = {
       supported_button_values = {"pushed", "pushed_2x", "pushed_3x"}
     }
   },
+  OPPLE = {
+    MATCHING_MODELS = {
+      "lumi.remote.b286opcn01", "lumi.remote.b686opcn01", 
+    },
+    CONFIGS = {
+      first_button_ep = 0x0001,
+      supported_button_values = {"pushed", "pushed_2x", "held"}
+    }
+  },
   GROUP5 = { 
     MATCHING_MODELS = {
-      "lumi.remote.b286opcn01",
-      "lumi.remote.b686opcn01", 
+      "lumi.sensor_switch.aq3",
       "lumi.remote.b28ac1",
       "lumi.remote.b1acn01",
       "lumi.remote.b186acn01", 

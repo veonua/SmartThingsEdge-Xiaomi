@@ -22,7 +22,7 @@ components:
       version: 1
     categories:
     - name: RemoteController
-  - id: button3
+  - id: group1
     label: "Both buttons"
     capabilities:
     - id: button

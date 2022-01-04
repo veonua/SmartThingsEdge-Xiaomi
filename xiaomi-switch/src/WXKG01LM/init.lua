@@ -37,7 +37,7 @@ function multi_click_handler(driver, device, zb_rx)
         val = 5 
     end
 
-    local click_type = utils.click_types[val+1]
+    local click_type = utils.click_types[val]
     if click_type then
         device:emit_event(click_type({state_change = true}))
     end

@@ -30,7 +30,7 @@ function old_button_handler(device, endpoint, value)
         click_type = button.up
         log.warn("WTF up_counter: " .. tostring(f_up_counter) .. "> down_counter: " .. tostring(f_down_counter))
       else
-        click_type = utils.click_types[f_down_counter+1]   
+        click_type = utils.click_types[f_down_counter]   
       end
       
       utils.emit_button_event(device, endpoint, event)
@@ -105,11 +105,6 @@ local function info_changed(driver, device, event, args)
         end
     end
 end
-
-local function do_configure(self, device)
-    log.info("do_configure")
-    device:remove_monitored_attribute(OnOff.ID, OnOff.attributes.OnOff.ID)
-end
   
 -- 
 
@@ -124,7 +119,6 @@ local old_switch_handler = {
     },
     lifecycle_handlers = {
         infoChanged = info_changed,
-        doConfigure = do_configure,
     },
     can_handle = function(opts, driver, device)
         return utils.first_switch_ep(device) > 0 and utils.first_button_ep(device) == 4

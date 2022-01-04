@@ -22,7 +22,7 @@ function on_off_attr_handler(driver, device, value, zb_rx)
         log.warn("down_counter: " .. tostring(f_down_counter))
   
         local click_type
-        click_type = utils.click_types[f_down_counter+1]   
+        click_type = utils.click_types[f_down_counter]   
         
         if click_type then
             utils.emit_button_event(device, endpoint, click_type({state_change = true}))
