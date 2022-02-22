@@ -99,7 +99,7 @@ end
 
 
 local function rotate_attr_handler(driver, device, value, zb_rx)
-  local val = math.floor(value.value + 0.5) -- between -180 and 180
+  local val = utils.round( utils.clamp_value(value.value, -180, 180) ) -- between -180 and 180
   local delta = math.floor( val / 18 * 8) -- 80 percent for every 180*
   
   log.debug("rotate: ", val, " delta: ", delta)
@@ -107,7 +107,12 @@ local function rotate_attr_handler(driver, device, value, zb_rx)
   local new_level = utils.clamp_value( level + delta, 2, 100)
   generate_switch_level_event(device, new_level)
 
-  device:emit_event( cube.rotation( val ) )
+  local event = cube.rotation(val)
+  event.state_change = true
+  device:emit_event( event )
+
+  --- to force run subsequent actions  
+  device:emit_event( cube.rotation(0) )
 end
 
 function set_level(_, device, command)

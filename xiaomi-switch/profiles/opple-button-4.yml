@@ -1,0 +1,57 @@
+name: opple-button-4
+components:
+  - id: main
+    capabilities:
+    - id: button
+      version: 1
+    - id: refresh
+      version: 1
+    - id: battery
+      version: 1
+    categories:
+    - name: RemoteController
+  - id: button2
+    capabilities:
+    - id: button
+      version: 1
+    categories:
+    - name: RemoteController
+  - id: button3
+    capabilities:
+    - id: button
+      version: 1
+    categories:
+    - name: RemoteController
+  - id: button4
+    capabilities:
+    - id: button
+      version: 1
+    categories:
+    - name: RemoteController
+  
+preferences:
+- title: "Mode"
+  description: "press a button to wake up the device"
+  name: operationMode
+  required: true
+  preferenceType: enumeration
+  definition:
+    options:
+      0: "Light Commands (Bind to Group)"
+      1: "Button Events (Normal)"
+    default: "1"
+- title: "Group"
+  name: group
+  required: false
+  preferenceType: string
+  definition:
+    stringType: text
+    minLength: 1
+    maxLength: 5
+    default: "0"
+
+
+metadata:
+  deviceType: RemoteController
+  ocfDeviceType: x.com.st.d.remotecontroller
+  deviceTypeId: RemoteController  

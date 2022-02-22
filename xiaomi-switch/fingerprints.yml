@@ -10,7 +10,16 @@ zigbeeManufacturer:
     manufacturer: LUMI
     model: lumi.ctrl_neutral1
     deviceProfileName: switch-button
-  
+  - id: "QBKG21LM"
+    deviceLabel: QBKG21LM Wall Switch (No Neutral, Single Rocker)
+    manufacturer: LUMI
+    model:  lumi.switch.b1lacn02
+    deviceProfileName: switch-button
+  - id: "QBKG22LM"
+    deviceLabel: QBKG22LM Wall Switch (No Neutral, Double Rocker)
+    manufacturer: LUMI
+    model:  lumi.switch.b2lacn02
+    deviceProfileName: switch-button-2
   - id: "QBKG23LM"
     deviceLabel: QBKG23LM Wall Switch (With Neutral, Single Rocker)
     manufacturer: LUMI
@@ -54,7 +63,11 @@ zigbeeManufacturer:
     manufacturer: LUMI
     model: lumi.remote.b286acn01
     deviceProfileName: button-2
-    
+  - id: "WXKG06LM"
+    deviceLabel: WXKG06LM Wall Switch (Single Rocker)
+    manufacturer: LUMI
+    model: lumi.remote.b186acn02
+    deviceProfileName: button   
   - id: "WXKG11LM"
     deviceLabel: WXKG11LM Wireless Switch (Single Rocker)
     manufacturer: LUMI

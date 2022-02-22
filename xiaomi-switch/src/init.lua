@@ -26,7 +26,7 @@ local function component_to_endpoint(device, component_id)
     return first_switch_ep -- device.fingerprinted_endpoint_id -- 
   else
     local ep_num = component_id:match("button(%d)")
-    local res = ep_num and tonumber(ep_num - 1 + first_switch_ep) or device.fingerprinted_endpoint_id
+    local res = ep_num and tonumber(ep_num) - 1 + first_switch_ep or device.fingerprinted_endpoint_id
     -- log.info("component:", component_id, "> ep:", res)
     return res
   end
@@ -59,6 +59,10 @@ end
 
 
 local function consumption_handler(device, value)
+  if value.value < 3 then
+    log.info("consumption:", value.value)
+    return
+  end
   device:emit_event( capabilities.energyMeter.energy({value=value.value, unit="Wh"}) )
 end
 

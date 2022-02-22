@@ -1,6 +1,7 @@
 name: switch-2
 components:
 - id: main
+  label: "Left"
   capabilities:
   - id: switch
     version: 1

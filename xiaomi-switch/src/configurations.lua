@@ -51,7 +51,7 @@ local devices = {
   },
   OPPLE = {
     MATCHING_MODELS = {
-      "lumi.remote.b286opcn01", "lumi.remote.b686opcn01", 
+      "lumi.remote.b286opcn01", "lumi.remote.b486opcn01", "lumi.remote.b686opcn01", 
     },
     CONFIGS = {
       first_button_ep = 0x0001,

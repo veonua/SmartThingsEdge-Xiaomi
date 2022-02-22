@@ -51,6 +51,7 @@ local function emit_battery_event(device, battery_record)
   local raw_bat_volt = (battery_record.value / 1000)
   local raw_bat_perc = (raw_bat_volt - 2.5) * 100 / (3.0 - 2.5)
   local bat_perc = math.floor(math.max(math.min(raw_bat_perc, 100), 0))
+  device:emit_event(capabilities.voltageMeasurement.voltage({value=raw_bat_volt, unit="V"}))
   device:emit_event(capabilities.battery.battery(bat_perc))
 end
 

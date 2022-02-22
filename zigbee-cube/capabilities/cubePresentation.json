@@ -227,7 +227,7 @@
                         -180,
                         180
                     ],
-                    "step": 15
+                    "step": 5
                 },
                 "value": "rotation.value"
             },
@@ -275,5 +275,5 @@
         ]
     },
     "id": "winterdictionary35590.cube",
-    "version": 1
+    "version": 2
 }
