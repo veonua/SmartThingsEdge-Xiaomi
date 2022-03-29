@@ -16,9 +16,6 @@ components:
       version: 1
   categories:
     - name: RemoteController  
-preferences:
-  - preferenceId: detached
-    explicit: true
 metadata:
   deviceType: Switch
   ocfDeviceType: oic.d.switch

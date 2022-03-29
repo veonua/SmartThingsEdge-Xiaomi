@@ -142,21 +142,16 @@ local level_Steps = capabilities["legendabsolute60149.levelSteps"]
 local color_Temperature_Steps = capabilities["legendabsolute60149.colorTemperatureSteps"]
 
 function command_handler.level_Steps_handler(_, device, command)
-
-  ---- next level calculation  
-  print("Level Steps Value =", command.args.value)
   local level = command.args.value
   device:emit_event(level_Steps.levelSteps(level))
-  level = math.floor( level + device:get_latest_state("main", capabilities.switchLevel.ID, capabilities.switchLevel.level.NAME) )
-  if level > 100 then 
-    level = 100
-  elseif level < 0 then
-    level =0
-  end
-
+  
+  local prev_level = device:get_latest_state("main", caps.switchLevel.ID, caps.switchLevel.level.NAME)
+  
+  level = utils.round( utils.clamp_value( math.floor( level + prev_level ), 2, 100 ) )
+  print("new Level value =", level, "Prev value =", prev_level)
+  
   command.args.level = level
   command_handler.set_level(_, device, command)
-  --local success = command_handler.send_lan_command( device, 'PUT', 'state', {brightness = {value = level }})
 end
 
 
@@ -165,16 +160,10 @@ function command_handler.color_Temperature_Steps_handler(self, device, command)
     local colorTemp = command.args.value
     device:emit_event(color_Temperature_Steps.colorTempSteps(colorTemp))
     print("Last Color Temperature =", device:get_latest_state("main", capabilities.colorTemperature.ID, capabilities.colorTemperature.colorTemperature.NAME))
-    colorTemp = colorTemp + device:get_latest_state("main", capabilities.colorTemperature.ID, capabilities.colorTemperature.colorTemperature.NAME)
-    if colorTemp > 6000 then
-      colorTemp = 6000
-    elseif colorTemp < 2700 then
-      colorTemp = 2700
-    end
+    colorTemp = utils.clamp_value( colorTemp + device:get_latest_state("main", capabilities.colorTemperature.ID, capabilities.colorTemperature.colorTemperature.NAME), 
+                                   2700, 6000 )
     print("colorTemp", colorTemp)
 
-    --local success = command_handler.send_lan_command(device, 'PUT', 'state', {ct={value = colorTemp}})
-    --device:emit_event(capabilities.colorTemperature.colorTemperature(math.floor(colorTemp)))
     command.args.temperature = math.floor(colorTemp)
     command_handler.set_temp(_, device, command)
 end
@@ -185,8 +174,8 @@ function command_handler.send_lan_command(device, method, path, body)
   
   local device_network_id = device.device_network_id
   if device_network_id == "http://192.168.0.155:16021/api/v1/b7uFIgZ1MywU0r6FW6ECPxMqAnHm3BgZ" then
-    log.info("patch of fly")
-    device_network_id = "http://192.168.0.155:16021/api/v1/fvTBDLvOXYJ2UR6mQz7P6oSqYfLrmViU"
+   log.info("patch on fly")
+   device_network_id = "http://192.168.0.155:16021/api/v1/fvTBDLvOXYJ2UR6mQz7P6oSqYfLrmViU"
   end
  
   local dest_url = device_network_id .. '/' ..path

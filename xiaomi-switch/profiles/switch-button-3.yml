@@ -1,0 +1,72 @@
+name: switch-button-3
+components:
+  - id: main
+    label: "Left"
+    capabilities:
+    - id: button
+      version: 1
+    - id: switch
+      version: 1
+    - id: temperatureAlarm
+      version: 1
+    - id: refresh
+      version: 1
+    categories:
+    - name: RemoteController
+  - id: button2
+    label: "Middle"
+    capabilities:
+    - id: switch
+      version: 1
+    - id: button
+      version: 1
+    categories:
+    - name: RemoteController
+  - id: button3
+    label: "Right"
+    capabilities:
+    - id: switch
+      version: 1
+    - id: button
+      version: 1
+    categories:
+    - name: RemoteController
+  - id: group1
+    label: "All buttons"
+    capabilities:
+    - id: button
+      version: 1
+    categories:
+    - name: RemoteController
+preferences:
+  - title: "Left button"
+    name: button1
+    required: true
+    preferenceType: enumeration
+    definition:
+      options:
+        0x12: "Switch 1"
+        0xFE: "Detached"
+      default: "0x12"
+  - title: "Middle button"
+    name: button2
+    required: true
+    preferenceType: enumeration
+    definition:
+      options:
+        0x22: "Switch 2"
+        0xFE: "Detached"
+      default: "0x22"
+  - title: "Right button"
+    name: button3
+    required: true
+    preferenceType: enumeration
+    definition:
+      options:
+        0x32: "Switch 3"
+        0xFE: "Detached"
+      default: "0x32"
+metadata:
+  deviceType: Switch
+  ocfDeviceType: oic.d.switch
+  deviceTypeId: Switch  

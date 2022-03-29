@@ -9,9 +9,6 @@ components:
   categories:
   - name: Switch
   
-preferences:
-  - preferenceId: detached
-    explicit: true
 metadata:
   deviceType: Switch
   ocfDeviceType: oic.d.switch

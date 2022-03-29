@@ -12,7 +12,7 @@ the channel contains the dev version of drivers so most likely it is not stable/
 
 - Xiaomi Motion Sensor (RTCGQ01LM)
 - Aqara Motion Sensor (RTCGQ11LM)
-- Aqara Leak Sensor (SJCG11LM)
+- Aqara Leak Sensor (SJCGQ11LM)
 
 # Platform known issues 
 

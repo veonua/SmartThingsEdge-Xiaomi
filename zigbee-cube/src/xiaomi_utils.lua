@@ -73,7 +73,6 @@ local xiaomi_utils = {
 }
 
 function xiaomi_utils.handler(driver, device, value, zb_rx)
-  local buff = value.value
   if value.ID == data_types.CharString.ID then
     local bytes = value.value
     local message_buf = buf.Reader(bytes)

@@ -17,7 +17,3 @@ zigbeeManufacturer:
     model: TS0207
     deviceProfileName: water-battery
 
-zigbeeGeneric:
-  - id: "any"
-    deviceLabel: any
-    deviceProfileName: water-temp-tempalarm-battery

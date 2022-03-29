@@ -24,7 +24,7 @@ local devices = {
   },
   GROUP2 = {
     MATCHING_MODELS = {
-      "lumi.switch.b1nacn02", "lumi.switch.b2nacn02", "lumi.switch.n3acn3", "lumi.ctrl_ln1.aq1", "lumi.ctrl_ln2.aq1", "lumi.switch.l3acn3", "lumi.switch.n3acn3",
+      "lumi.switch.b1nacn02", "lumi.switch.b2nacn02", "lumi.switch.b3n01", "lumi.switch.n3acn3", "lumi.ctrl_ln1.aq1", "lumi.ctrl_ln2.aq1", "lumi.switch.l3acn3", "lumi.switch.n3acn3",
     },
     CONFIGS = {
       first_button_ep = 0x0005,
@@ -65,6 +65,7 @@ local devices = {
       "lumi.remote.b1acn01",
       "lumi.remote.b186acn01", 
       "lumi.remote.b286acn01",
+      "lumi.switch.b1laus01",
     },
     CONFIGS = {
       first_button_ep = 0x0001,
