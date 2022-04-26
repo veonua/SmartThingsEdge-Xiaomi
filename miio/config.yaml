@@ -1,0 +1,5 @@
+name: 'Miio'
+packageKey: 'Miio'
+permissions:
+  lan: {}
+  discovery: {}

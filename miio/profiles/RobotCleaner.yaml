@@ -1,0 +1,19 @@
+name: RobotCleaner
+components:
+- id: main
+  capabilities:
+  - id: robotCleanerCleaningMode
+    version: 1
+  - id: robotCleanerMovement
+    version: 1
+  - id: robotCleanerTurboMode
+    version: 1
+  - id: refresh
+    version: 1
+  categories:
+  - name: RobotCleaner
+metadata:
+  deviceType: RobotCleaner
+  ocfDeviceType: oic.d.robotcleaner
+  deviceTypeId: RobotCleaner
+  
