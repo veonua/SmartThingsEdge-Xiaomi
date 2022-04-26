@@ -11,6 +11,12 @@ zigbeeManufacturer:
     model: "FYRTUR block-out roller Blind"
     deviceProfileName: blind
 
+  - id: "ikea/tredansen"
+    deviceLabel: "TREDANSEN block-out cellul blind"
+    manufacturer: IKEA of Sweden
+    model: "TREDANSEN block-out cellul blind"
+    deviceProfileName: blind
+
   - id: "ikea/Stryrbar"
     deviceLabel: "Ikea Stryrbar"
     manufacturer: IKEA of Sweden

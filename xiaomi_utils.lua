@@ -79,6 +79,12 @@ local function emit_temperature_event(device, temperature_record)
   elseif temperature < -20 then
     alarm = capabilities.temperatureAlarm.temperatureAlarm.freeze()
   end
+
+  local latest = device:get_latest_state("main", capabilities.temperatureAlarm.ID, capabilities.temperatureAlarm.temperatureAlarm.NAME)
+  if latest == alarm.value.value then
+    return
+  end
+
   device:emit_event(alarm)
 end
 

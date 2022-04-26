@@ -59,8 +59,10 @@ end
 
 
 local function consumption_handler(device, value)
-  if value.value < 3 then
-    log.info("consumption:", value.value)
+  local latest = device:get_latest_state("main", capabilities.energyMeter.ID, capabilities.energyMeter.energy.NAME)
+  
+  if value.value - latest < 0.1 then
+    log.info("consumption:", value.value, "latest:", latest)
     return
   end
   device:emit_event( capabilities.energyMeter.energy({value=value.value, unit="Wh"}) )

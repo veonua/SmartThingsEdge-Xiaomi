@@ -181,7 +181,7 @@ local handler = {
         [Level.server.commands.Move.ID] = build_button_handler("button3", capabilities.button.button.held),
         [Level.server.commands.Step.ID] = build_button_handler("button3", capabilities.button.button.pushed),
         [Level.server.commands.MoveWithOnOff.ID] = build_button_handler("button1", capabilities.button.button.held),
-        [Level.server.commands.StepWithOnOff.ID] = build_button_handler("button1", capabilities.button.button.pushed)
+        [Level.server.commands.StepWithOnOff.ID] = build_button_handler("button1", capabilities.button.button.pushed),
         [Level.server.commands.StopWithOnOff.ID] = build_button_handler("button1", capabilities.button.button.held)
       },
       -- Manufacturer command id used in ikea
