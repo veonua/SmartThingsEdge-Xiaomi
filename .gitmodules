@@ -1,0 +1,4 @@
+[submodule "miio/modules/lockbox"]
+	path = miio/modules/lockbox
+	url = https://github.com/rtyle/lua-lockbox.git
+	branch = smartthings-edge
