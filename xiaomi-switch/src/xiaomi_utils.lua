@@ -1,1 +1,1 @@
-/home/veon/work/smartthings_edge/xiaomi_utils.lua
+../../xiaomi_utils.lua
