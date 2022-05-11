@@ -74,6 +74,8 @@ end
 function window_shade_level_cmd(driver, device, command)
     local level = 100 - command.args.shadeLevel
     device:send_to_component(command.component, WindowCovering.server.commands.GoToLiftPercentage(device, level))
+
+    log.info(">> window_shade_level_cmd: " .. level .. " component: " .. command.component)
 end
 
 

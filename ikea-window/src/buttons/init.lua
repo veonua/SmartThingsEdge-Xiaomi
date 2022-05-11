@@ -57,20 +57,11 @@ end
 
 function build_button_payload_handler(pressed_type)
   return function(driver, device, zb_rx)
-    local additional_fields = {
-      state_change = true
-    }
     local bytes = zb_rx.body.zcl_body.body_bytes
-    local payload_id = bytes:byte(1)
-    local button_name =
-      payload_id == 0x00 and "button2" or "button4"
-    local event = pressed_type(additional_fields)
+    local button_name = bytes:byte(1) == 0x00 and "button2" or "button4"
+    local event = pressed_type({ state_change = true })
     local comp = device.profile.components[button_name]
-    if comp ~= nil then
-      device:emit_component_event(comp, event)
-    else
-      log.warn("Attempted to emit button event for unknown button: " .. button_name)
-    end
+    device:emit_component_event(comp, event)
   end
 end
 ---
@@ -89,15 +80,22 @@ end
 
 function press_handler(driver, device, zb_rx)
   local btn = zb_rx.body.zcl_body.body_bytes:byte(1)
-  local btn_map = {button.down, button.up}
-  local event = btn_map[btn+1]
-  if event then
-    device:emit_event(event({state_change = true}))
+  
+  if (device:get_model() == "Remote Control N2") then
+    local btn_map = {button.down, button.up}
+    local event = btn_map[btn+1]
+    if event then
+      device:emit_event(event({state_change = true}))
+    end
+    return
+    -- 00 01 0D 00
+    -- 01 01 0D 00 capabilities.button.button.pushed
+    -- 02 01 00 00 -- release
   end
   
-  -- 00 01 0D 00
-  -- 01 01 0D 00
-  -- 02 01 00 00 -- release
+  local button_name = btn == 0x00 and "button2" or "button4"
+  local event = capabilities.button.button.pushed({ state_change = true })
+  device:emit_component_event(device.profile.components[button_name], event)
 end
 
 function left_right_held_handler(driver, device, zb_rx)
