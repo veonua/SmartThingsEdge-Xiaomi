@@ -16,5 +16,5 @@ config.MSEARCH=table.concat({
   'MX: 3',
   'ST: nanoleaf_aurora:light'
 }, '\r\n')
-config.SCHEDULE_PERIOD=300
+config.SCHEDULE_PERIOD=60
 return config

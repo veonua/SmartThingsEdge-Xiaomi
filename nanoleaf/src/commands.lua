@@ -3,10 +3,15 @@ local utils = require('st.utils')
 local neturl = require('net.url')
 local log = require('log')
 local json = require('dkjson')
-local http = require('socket.http')
+local cosock = require "cosock"
+local http = cosock.asyncify "socket.http"
 local ltn12 = require('ltn12')
 
 local command_handler = {}
+
+local level_Steps = caps["legendabsolute60149.levelSteps"]
+local color_Temperature_Steps = caps["legendabsolute60149.colorTemperatureSteps"]
+
 
 function command_handler.new(_, device)
   local token = command_handler.send_lan_command(device, 'POST', 'new')
@@ -21,20 +26,20 @@ function command_handler.ping(address, port, device)
 end
 ------------------
 -- Refresh command
-function command_handler.refresh(_, device)
+function command_handler.refresh(_, device, slow)
   local success, data = command_handler.send_lan_command(device, 'GET', 'state')
 
   -- Check success
   if success then
     local raw_data = json.decode(table.concat(data))
     device:online()
-    device:emit_event(caps.switchLevel.level(raw_data.brightness.value))
-    if raw_data.on.value==false then
-      device:emit_event(caps.switch.switch.off())
-    else
-      device:emit_event(caps.switch.switch.on())
+    
+    local latest = device:get_latest_state("main", caps.switch.ID, caps.switch.switch.NAME)
+    if latest ~= raw_data.on.value then
+      device:emit_event(raw_data.on.value and caps.switch.switch.on() or caps.switch.switch.off())
     end
 
+    device:emit_event(caps.switchLevel.level(raw_data.brightness.value))
     device:emit_event(caps.colorControl.saturation(raw_data.sat.value))
     device:emit_event(caps.colorControl.hue(raw_data.hue.value))
     device:emit_event(caps.colorTemperature.colorTemperature(raw_data.ct.value))
@@ -43,15 +48,20 @@ function command_handler.refresh(_, device)
     device:offline()
   end
 
-  local success, data = command_handler.send_lan_command(device, 'GET', 'effects/effectsList')
+  if slow == false then
+    return
+  end
+
+  local success, data = command_handler.send_lan_command(device, 'GET', 'effects')
   if success then
     local raw_data = json.decode(table.concat(data))
     local presets = {}
 
-    for id, effect in ipairs(raw_data) do
+    for id, effect in ipairs(raw_data.effectsList) do
       table.insert(presets, {id=effect, name=effect}) -- tostring(id)
     end
     device:emit_event(caps.mediaPresets.presets({ value = presets }))
+    --device:emit_event(caps.mediaPresets.currentPreset({ id = raw_data.select }))
   end
 end
 
@@ -72,16 +82,13 @@ function command_handler.set_level(_, device, command)
   local lvl = command.args.level
   local success = command_handler.send_lan_command( device, 'PUT', 'state', {brightness = {value = lvl }})
 
-  if success then
-    if lvl == 0 then
-      device:emit_event(caps.switch.switch.off())
-    else
-      device:emit_event(caps.switch.switch.on())
-    end
-    device:emit_event(caps.switchLevel.level(lvl))
+  if ~success then
+    log.error('no response from device')
     return
   end
-  log.error('no response from device')
+  
+  device:emit_event(lvl == 0 and caps.switch.switch.off() or caps.switch.switch.on())
+  device:emit_event(caps.switchLevel.level(lvl))
 end
 
 function command_handler.set_color(_, device, command)
@@ -137,18 +144,14 @@ function command_handler.playPreset(_, device, command)
 end
 
 ----
-local capabilities = require('st.capabilities')
-local level_Steps = capabilities["legendabsolute60149.levelSteps"]
-local color_Temperature_Steps = capabilities["legendabsolute60149.colorTemperatureSteps"]
 
 function command_handler.level_Steps_handler(_, device, command)
   local level = command.args.value
   device:emit_event(level_Steps.levelSteps(level))
   
   local prev_level = device:get_latest_state("main", caps.switchLevel.ID, caps.switchLevel.level.NAME)
-  
-  level = utils.round( utils.clamp_value( math.floor( level + prev_level ), 2, 100 ) )
-  print("new Level value =", level, "Prev value =", prev_level)
+  level = utils.round( utils.clamp_value( math.floor( level + prev_level ), 1, 100 ) )
+  --print("new Level value =", level, "Prev value =", prev_level)
   
   command.args.level = level
   command_handler.set_level(_, device, command)
@@ -159,10 +162,10 @@ function command_handler.color_Temperature_Steps_handler(self, device, command)
     ---Next Color Temperature calculation
     local colorTemp = command.args.value
     device:emit_event(color_Temperature_Steps.colorTempSteps(colorTemp))
-    print("Last Color Temperature =", device:get_latest_state("main", capabilities.colorTemperature.ID, capabilities.colorTemperature.colorTemperature.NAME))
-    colorTemp = utils.clamp_value( colorTemp + device:get_latest_state("main", capabilities.colorTemperature.ID, capabilities.colorTemperature.colorTemperature.NAME), 
+    --print("Last Color Temperature =", device:get_latest_state("main", caps.colorTemperature.ID, caps.colorTemperature.colorTemperature.NAME))
+    colorTemp = utils.clamp_value( colorTemp + device:get_latest_state("main", caps.colorTemperature.ID, caps.colorTemperature.colorTemperature.NAME), 
                                    2700, 6000 )
-    print("colorTemp", colorTemp)
+    --print("colorTemp", colorTemp)
 
     command.args.temperature = math.floor(colorTemp)
     command_handler.set_temp(_, device, command)
@@ -171,20 +174,13 @@ end
 ------------------------
 -- Send LAN HTTP Request
 function command_handler.send_lan_command(device, method, path, body)
-  
-  local device_network_id = device.device_network_id
-  if device_network_id == "http://192.168.0.155:16021/api/v1/b7uFIgZ1MywU0r6FW6ECPxMqAnHm3BgZ" then
-   log.info("patch on fly")
-   device_network_id = "http://192.168.0.155:16021/api/v1/fvTBDLvOXYJ2UR6mQz7P6oSqYfLrmViU"
-  end
- 
-  local dest_url = device_network_id .. '/' ..path
+  local dest_url = device.device_network_id .. '/' ..path
   local source
   local payload = ''
   if body then
     payload = json.encode(body)
-    log.trace(method .. ' ' .. dest_url)
-    log.trace(payload)
+    --log.trace(method .. ' ' .. dest_url)
+    --log.trace(payload)
     source = ltn12.source.string(payload)
   end
   local res_body = {}
@@ -200,11 +196,12 @@ function command_handler.send_lan_command(device, method, path, body)
       ["Content-Length"] = payload:len()
     }})
 
-  log.trace("code:"..tostring( code ))
   -- Handle response
   if code < 300 then
     return true, res_body
   end
+
+  log.warn("code:"..tostring( code ))
   return false, nil
 end
 

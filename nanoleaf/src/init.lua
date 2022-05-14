@@ -2,6 +2,7 @@ local Driver = require('st.driver')
 local caps = require('st.capabilities')
 
 -- local imports
+local config = require('config')
 local discovery = require('discovery')
 local commands = require('commands')
 local log = require('log')
@@ -21,6 +22,17 @@ local function device_added(self, device)
   --device:refresh()
 end
 
+local function device_init(driver, device)
+  -- Refresh schedule
+  device.thread:call_on_schedule(
+    config.SCHEDULE_PERIOD,
+    function ()
+
+      return commands.refresh(nil, device, false)
+    end,
+    'Refresh schedule')
+end
+
 --------------------
 -- Driver definition
 local driver =
@@ -37,7 +49,8 @@ local driver =
       },
       lifecycle_handlers = {
         added = device_added,
-        removed = device_removed
+        removed = device_removed,
+        init = device_init
       },
       capability_handlers = {
         [caps.switch.ID] = {

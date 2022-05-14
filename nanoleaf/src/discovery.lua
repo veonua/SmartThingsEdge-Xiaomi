@@ -1,5 +1,6 @@
 local socket = require('socket')
-local http = require('socket.http')
+local cosock = require "cosock"
+local http = cosock.asyncify "socket.http"
 local ltn12 = require('ltn12')
 local log = require('log')
 local config = require('config')
@@ -11,7 +12,7 @@ local function parse_ssdp(data)
   res.status = data:sub(0, data:find('\r\n'))
   for k, v in data:gmatch('([%w-]+): ([%a+-: _/=]+)') do
     res[k:lower()] = v
-    -- log.debug(tostring(k) .. ': ' .. tostring(v))
+    --log.debug(tostring(k) .. ': ' .. tostring(v))
   end
   return res
 end
@@ -22,7 +23,7 @@ local function find_device()
   upnp:setoption('broadcast', true)
   upnp:settimeout(config.MC_TIMEOUT)
 
-  log.info('===== SCANNING NETWORK...')
+  --- log.info('===== SCANNING NETWORK...')
   upnp:sendto(config.MSEARCH, config.MC_ADDRESS, config.MC_PORT)
   local res = upnp:receivefrom()
   upnp:close()
@@ -45,7 +46,7 @@ local function try_get_token(device)
     }
   )
 
-  -- log.debug("POST " .. device_location.. ": " .. tostring(code))
+  log.debug("POST " .. device_location.. ": " .. tostring(code))
   if code / 100 == 2 then
     return json.decode(table.concat(res_body))['auth_token']
   end
@@ -84,8 +85,8 @@ end
 
 local disco = {}
 function disco.start(driver, opts, cons)
-  local iterations = 100
-  while iterations>0 do
+  local iterations = 20
+  while iterations > 0 do
     iterations = iterations - 1
     local device_res = find_device()
 
@@ -103,7 +104,7 @@ function disco.start(driver, opts, cons)
         return device
       end
     else
-      log.warn('===== DEVICE NOT FOUND IN NETWORK')
+      ---log.warn('===== DEVICE NOT FOUND IN NETWORK')
     end
   end
 end
