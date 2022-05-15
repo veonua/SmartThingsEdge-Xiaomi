@@ -88,38 +88,57 @@ local function emit_temperature_event(device, temperature_record)
   device:emit_event(alarm)
 end
 
+local function emit_consumption_event(device, e_value)
+  local value = utils.round(e_value.value * 10)/10.0
+  local latest = device:get_latest_state("main", capabilities.energyMeter.ID, capabilities.energyMeter.energy.NAME)
+  
+  if value - latest < 0.1 then
+    log.debug("consumption:", e_value.value, "latest:", latest)
+    return
+  end
+  device:emit_event( capabilities.energyMeter.energy({value=value, unit="Wh"}) )
+end
+
+local function emit_voltage_event(device, value)
+  device:emit_event( capabilities.voltageMeasurement.voltage({value=value.value//10, unit="V"}) )
+end
+
+
 local xiaomi_utils = {
   attr_id  = 0xFF01,
   attr_id2 = 0xFF02,
   xiami_events = {
     [0x01] = emit_battery_event,
     [0x03] = emit_temperature_event,
+    [0x95] = emit_consumption_event,
+    [0x96] = emit_voltage_event
   }
 }
 
 function xiaomi_utils.handler(driver, device, value, zb_rx)
-  if value.ID == data_types.CharString.ID or value.ID == data_types.OctetString.ID then
-    local bytes = value.value
-    local message_buf = buf.Reader(bytes)
-    
-    local xiaomi_data_type = deserialize(message_buf)
-    for key, value in pairs(xiaomi_data_type.items) do
-      local event = xiaomi_utils.xiami_events[key]
-      if event ~= nil then
-        event(device, value)
-      end
-    end
-
-    local rssi_db = xiaomi_data_type.items[0x05]
-    local lqi = xiaomi_data_type.items[0x06]
-    if rssi_db ~= nil and lqi ~= nil then
-      emit_signal_event(device, rssi_db.value, lqi.value)
-      -- emit_signal_event(device, xiaomi_data_type.items[0x05].value, xiaomi_data_type.items[0x06].value)
-    end
-    
-    -- log.warn("xiaomi_utils.handler handled: " .. tostring(#xiaomi_data_type.items))
-  else
+  if value.ID ~= data_types.CharString.ID and value.ID ~= data_types.OctetString.ID then
     log.warn("xiaomi_utils.handler: unknown data type: " .. tostring (value) )
+    return
+  end
+    
+  local bytes = value.value
+  local message_buf = buf.Reader(bytes)
+  
+  local xiaomi_data_type = deserialize(message_buf)
+  for key, value in pairs(xiaomi_data_type.items) do
+    local event = xiaomi_utils.xiami_events[key]
+    if event ~= nil then
+      event(device, value)
+    elseif key > 0x07 then
+      log.info("xiaomi_utils.lua: unknown event", key, value)
+    end
+  end
+
+  local rssi_db = xiaomi_data_type.items[0x05]
+  local lqi = xiaomi_data_type.items[0x06]
+  if rssi_db ~= nil and lqi ~= nil then
+    emit_signal_event(device, rssi_db.value, lqi.value)
+    -- emit_signal_event(device, xiaomi_data_type.items[0x05].value, xiaomi_data_type.items[0x06].value)
   end
 end
 

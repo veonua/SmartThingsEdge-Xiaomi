@@ -57,22 +57,6 @@ local function endpoint_to_component(device, ep)
   return button_comp
 end
 
-
-local function consumption_handler(device, value)
-  local latest = device:get_latest_state("main", capabilities.energyMeter.ID, capabilities.energyMeter.energy.NAME)
-  
-  if value.value - latest < 0.1 then
-    log.info("consumption:", value.value, "latest:", latest)
-    return
-  end
-  device:emit_event( capabilities.energyMeter.energy({value=value.value, unit="Wh"}) )
-end
-
-local function voltage_handler(device, value)
-  device:emit_event( capabilities.voltageMeasurement.voltage({value=value.value//10, unit="V"}) )
-end
-
-
 local device_init = function(self, device)
   device:set_component_to_endpoint_fn(component_to_endpoint)
   device:set_endpoint_to_component_fn(endpoint_to_component)
@@ -151,8 +135,6 @@ local function zdo_binding_table_handler(driver, device, zb_rx)
     end
   end
 end
-
-xiaomi_utils.xiami_events[0x95] = consumption_handler
 
 local switch_driver_template = {
   supported_capabilities = {

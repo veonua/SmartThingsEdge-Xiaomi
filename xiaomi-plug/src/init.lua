@@ -32,17 +32,6 @@ local function attr_handler0C(driver, device, value, zb_rx)
   end
 end
 
-local function consumption_handler(device, value)
-  device:emit_event( capabilities.energyMeter.energy({value=value.value, unit="Wh"}) )
-end
-
-local function voltage_handler(device, value)
-  device:emit_event( capabilities.voltageMeasurement.voltage({value=value.value//10, unit="V"}) )
-end
-
-local function resetEnergyMeter(device)
-end
-
 local function info_changed(driver, device, event, args)
   log.info(">>info changed: " .. tostring(event))
   log.info(json.encode(device.zigbee_endpoints))
@@ -94,11 +83,6 @@ local function info_changed(driver, device, event, args)
     end
   end
 end
-
-
-xiaomi_utils.xiami_events[0x95] = consumption_handler
-xiaomi_utils.xiami_events[0x96] = voltage_handler
-
 
 local plug_driver_template = {
   supported_capabilities = {
