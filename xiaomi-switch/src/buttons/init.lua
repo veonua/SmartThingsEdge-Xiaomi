@@ -19,7 +19,7 @@ function on_off_attr_handler(driver, device, value, zb_rx)
     local timer_func = function()
         local f_down_counter = device:get_field(DOWN_COUNTER)
         local button = capabilities.button.button
-        log.warn("down_counter: " .. tostring(f_down_counter))
+        log.debug("down_counter: " .. tostring(f_down_counter))
   
         local click_type
         click_type = utils.click_types[f_down_counter]   

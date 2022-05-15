@@ -21,6 +21,8 @@ end
 --- 
 --- ZbSend {"Device":"<device>","Manuf":"0x115F","Write":{"0500/FFF1%23":"0x03010000"}}
 
+xiaomi_utils.events[0x96] = nil -- otherwise replaces voltage measurement with 0
+
 local xiaomi_water_driver_template = {
   supported_capabilities = {
     capabilities.temperatureAlarm,

@@ -68,18 +68,19 @@ function on_off_attr_handler(driver, device, value, zb_rx)
     if ep < first_button_ep  then -- handled by default handler
         local attr = capabilities.switch.switch
         device:emit_event_for_endpoint(ep, value.value and attr.on() or attr.off())
-    else
-        local press_type = zb_rx.body_length.value>8 and capabilities.button.button.pushed or capabilities.button.button.held        
-        local text = zb_rx.body_length.value>8 and "pushed" or "held"
-        
-        log.warn(" old button " .. tostring(text), value.value)
-        if not value.value then
-            -- press = off/on in the same message
-            -- hold  = off, pause, on. so we emit only off
-            utils.emit_button_event(device, ep, press_type({state_change = true}))
-        end
-        --old_button_handler(device, component_id, value)       
+        return
     end
+    
+    local press_type = zb_rx.body_length.value>8 and capabilities.button.button.pushed or capabilities.button.button.held        
+    local text = zb_rx.body_length.value>8 and "pushed" or "held"
+    
+    log.info(" old button " .. tostring(text), value.value)
+    if not value.value then
+        -- press = off/on in the same message
+        -- hold  = off, pause, on. so we emit only off
+        utils.emit_button_event(device, ep, press_type({state_change = true}))
+    end
+    --old_button_handler(device, component_id, value)
 end
 
 --

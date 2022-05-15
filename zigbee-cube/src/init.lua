@@ -130,6 +130,8 @@ local do_refresh = function(self, device)
   added_handler(self, device)
 end
 
+xiaomi_utils.events[0x98] = nil -- supress power reports
+
 local aqara_cube_driver_template = {
   supported_capabilities = {
     capabilities.motionSensor,

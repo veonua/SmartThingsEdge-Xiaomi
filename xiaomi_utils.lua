@@ -10,18 +10,21 @@ local log = require "log"
 local battery_defaults = require "st.zigbee.defaults.battery_defaults"
 
 local xiaomi_key_map = {
+                   --                 Large   Kitchen Bed1    Corrid  Bed2                Charger  AndrewB      Bathroom     LMotion          Cube
   [0x01] = "battery_mV",
   [0x02] = "battery_??",
   [0x03] = "device_temperature",
-  [0x04] = "unknown1",
+  [0x04] = "0x04", -- Uint16: 0x??A8                                                               0x43 A8                   0x31 A8-> 13 A8  43A8
   [0x05] = "RSSI_dB",
   [0x06] = "LQI",
-  [0x07] = "unknown2",
-  [0x08] = "unknown3", -- 0x2616, 0x103D
-  [0x09] = "unknown4", -- 0x150A
+  [0x07] = "0x07", -- Uint64: 0                               0000000                  507C5D84BA
+  [0x08] = "0x08", -- Uint16: 0x0204, 0x2612, 0x2616, 0x2616, 0x103D, 0x103D,              0x1320
+  [0x09] = "0x09", -- Uint16: 0x1308  ------, ------,         0x150A, 0x(13|12|11)[08],    0x0B00  
   [0x0a] = "router_id",
-  [0x0b] = "illuminance",
-  [0x0c] = "unknown6",
+  [0x0b] = "illuminance/?switch", -- Uint8: 0
+  [0x0c] = "0x0c",
+  [0x0d] = "0x0d", -- Utint32:                                                                                  0x00000E0B
+  [0x0e] = "0x0e", -- Utint32:                                                                                           0
   [0x64] = "user1", -- switch/temp/open/position/gas_density
   [0x65] = "user2", -- switch2/humidity/brightness
   [0x66] = "user3", -- pressure/color_temp
@@ -30,10 +33,10 @@ local xiaomi_key_map = {
   [0x95] = "consumption", -- Wh           (must do round(f * 1000) )
   [0x96] = "voltage",     -- V            (must do round(f / 10) )
   [0x97] = "consumption/current in mA",               --  0
-  [0x98] = "power/gestureCounter", -- power in Watts, counter increasing by 4
-  [0x99] = "gestureCounter3", -- 0x1A
-  [0x9a] = "cubeSide/?switch",-- 0x04/0x00
-  [0x9b] = "unknown9",        -- 0x00
+  [0x98] = "power/gestureCounter",    -- power in Watts, counter increasing by 4                                                           0x0557
+  [0x99] = "gestureCounter3/?switch", -- Uint8: 0x1A/0x00                                                                                  0x048F
+  [0x9a] = "cubeSide/?switch",        -- Uint8: 0x04/0x00
+  [0x9b] = "0x9b",                -- 0x00
 }
 
 local function deserialize(data_buf)
@@ -93,7 +96,7 @@ local function emit_consumption_event(device, e_value)
   local latest = device:get_latest_state("main", capabilities.energyMeter.ID, capabilities.energyMeter.energy.NAME)
   
   if value - latest < 0.01 then
-    log.debug("consumption:", e_value.value, "latest:", latest)
+    --log.debug("consumption:", e_value.value, "latest:", latest)
     return
   end
   device:emit_event( capabilities.energyMeter.energy({value=value, unit="Wh"}) )
@@ -113,7 +116,7 @@ local function emit_power_event(device, e_value)
 end
 
 local xiaomi_utils = {
-  xiami_events = {
+  events = {
     [0x01] = emit_battery_event,
     [0x03] = emit_temperature_event,
     [0x95] = emit_consumption_event,
@@ -121,6 +124,16 @@ local xiaomi_utils = {
     [0x97] = emit_current_event,
     [0x98] = emit_power_event
   }
+}
+
+local ignore_events = {
+  [0x05] = "RSSI_dB",
+  [0x06] = "LQI",
+  [0x0a] = "router_id",
+  [0x64] = "user1", 
+  [0x65] = "user2",
+  [0x6e] = "button1",
+  [0x6f] = "button2",
 }
 
 function xiaomi_utils.handler(driver, device, value, zb_rx)
@@ -134,11 +147,19 @@ function xiaomi_utils.handler(driver, device, value, zb_rx)
   
   local xiaomi_data_type = deserialize(message_buf)
   for key, value in pairs(xiaomi_data_type.items) do
-    local event = xiaomi_utils.xiami_events[key]
+    local event = xiaomi_utils.events[key]
     if event ~= nil then
       event(device, value)
-    elseif key > 0x07 then
-      log.info(xiaomi_key_map[key], value) -- unhandled event
+    elseif ignore_events[key] == nil then
+      local skey = "xi"..tostring(key)
+      local name = xiaomi_key_map[key] or skey
+      local prev = device:get_field(skey)
+      if prev ~= nil and prev.value ~= value.value then
+        log.warn(name, "prev:", prev, "new:", value)
+      else
+        log.debug(name, value) -- unhandled event
+      end
+      device:set_field(skey, value)
     end
   end
 
@@ -150,33 +171,39 @@ function xiaomi_utils.handler(driver, device, value, zb_rx)
   end
 end
 
-function xiaomi_utils.handlerFF02(driver, device, value, zb_rx)
-  if value.ID ~= data_types.Structure.ID then
-    log.error("FF02 unknown data type: ", value)
+function xiaomi_utils.handlerFF02(driver, device, svalue, zb_rx)
+  if svalue.ID ~= data_types.Structure.ID then
+    log.error("FF02 unknown data type: ", svalue)
     return
   end
 
-  emit_battery_event(device, value[2])
+  elements = svalue.elements
+
+  local battery = elements[0x02]
+  log.info("battery:", battery)
+  if battery ~= nil then
+    emit_battery_event(device, battery.data)
+  end
   -- https://github.com/dresden-elektronik/deconz-rest-plugin/issues/1069
   -- Xiaomi Motion Sensor  xiaomi_utils.handlerFF02: Structure: 
-  --        on/off         battery                  const                      ????              ????      counter? [85-98]              
-  --[Boolean: true, Uint16: 0x0BC7,        Uint16: 0x13A8,       Uint40: 0x0000000001, Uint16: 0x002C,     Uint8: 0x5A]
-  ---
-  --[Boolean: true, Uint16: 0x0BD1 (3025), Uint16: 0x13A8(5032), Uint40: 0x0000000001, Uint16: 0x0014(20), Uint8: 0x5B(91)] 
-  --[Boolean: true, Uint16: 0x0BD1,        Uint16: 0x13A8,       Uint40: 0x0000000011, Uint16: 0x0015,     Uint8: 0x5B]
+  --        on/off         battery    0x04  0x??A8          ????          DEV_ID?         Signal?% [85-98]              
+  --[Boolean: true, Uint16: 0x0BC7, Uint16: 0x13A8, Uint40: 0x0000000001, Uint16: 0x002C, Uint8: 0x5A]
+  --[Boolean: true, Uint16: 0x0BC7, Uint16: 0x43A8, Uint40: 0x0000000001, Uint16: 0x002C, Uint8: 0x59]
+  --[Boolean: true, Uint16: 0x0BD8, Uint16: 0x43A8, Uint40: 0x0000000001, Uint16: 0x01AD, Uint8: 0x58]
+  --[Boolean: true, Uint16: 0x0BD1, Uint16: 0x13A8, Uint40: 0x0000000001, Uint16: 0x0014, Uint8: 0x5B] 
+  --[Boolean: true, Uint16: 0x0BD1, Uint16: 0x13A8, Uint40: 0x0000000011, Uint16: 0x0015, Uint8: 0x5B]
+  --[Boolean: true, Uint16: 0x0BD1, Uint16: 0x13A8, Uint40: 0x0000000001, Uint16: 0x0015, Uint8: 0x5B] 
+  
 
-  log.debug("FF02: " .. tostring(value))
-  if (value[3]~=0x13A8) then
-    log.error("value[3]", value[3])
+  log.debug("FF02: " .. tostring(svalue))
+  -- if (elements[3].data.value % 0xFF ~= 0xA8) then
+  --   log.error("elements[3]", elements[3].data.value)
+  -- end
+  if (elements[4].data.value > 2) then
+    log.error("elements[4]", elements[4].data.value)
   end
-  if (value[4]~=0x0000000001) then
-    log.error("value[4]", value[4])
-  end
-  if (value[5] > 0x002C) then
-    log.error("value[5]", value[5])
-  end
-  if (value[6]>0xFF) then
-    log.error("value[6]", value[6])
+  if (elements[6].data.value > 100) then
+    log.error("elements[6]", elements[6].data.value)
   end
 end
 
