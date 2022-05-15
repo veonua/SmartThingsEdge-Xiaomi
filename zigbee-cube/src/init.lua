@@ -153,9 +153,7 @@ local aqara_cube_driver_template = {
     global = {},
     cluster = {},
     attr = {
-      [zcl_clusters.basic_id] = {
-        [xiaomi_utils.attr_id] = xiaomi_utils.handler
-      },
+      [zcl_clusters.basic_id] = xiaomi_utils.basic_id,
       [0x12] = {
         [0x0055] = cube_attr_handler
       }, 

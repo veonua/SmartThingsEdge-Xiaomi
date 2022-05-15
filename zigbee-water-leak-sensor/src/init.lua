@@ -34,9 +34,7 @@ local xiaomi_water_driver_template = {
   },
   zigbee_handlers = {
     attr = {
-      [zcl_clusters.basic_id] = {
-        [xiaomi_utils.attr_id] = xiaomi_utils.handler
-      },
+      [zcl_clusters.basic_id] = xiaomi_utils.basic_id,
     },
   },
   ias_zone_configuration_method = constants.IAS_ZONE_CONFIGURE_TYPE.AUTO_ENROLL_RESPONSE,

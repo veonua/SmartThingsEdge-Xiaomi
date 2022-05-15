@@ -1,5 +1,6 @@
 local zcl_clusters = require "st.zigbee.zcl.clusters"
 local capabilities = require "st.capabilities"
+local utils = require "st.utils"
 local ZigbeeDriver = require "st.zigbee"
 local constants = require "st.zigbee.constants"
 local defaults = require "st.zigbee.defaults"
@@ -8,9 +9,6 @@ local xiaomi_utils = require "xiaomi_utils"
 local data_types = require "st.zigbee.data_types"
 local cluster_base = require "st.zigbee.cluster_base"
 local json = require "dkjson"
-
-local DeviceTemperatureConfiguration = zcl_clusters.DeviceTemperatureConfiguration
-
 
 local function added_handler(self, device)
   -- https://github.com/veonua/SmartThingsEdge-Xiaomi/issues/6
@@ -22,13 +20,14 @@ local function temp_attr_handler(driver, device, value, zb_rx)
   device:emit_event(capabilities.temperatureMeasurement.temperature({ value = value.value, unit = "C"}) )
 end
 
-local function attr_handler0C(driver, device, value, zb_rx)
+local function attr_handler0C(driver, device, e_value, zb_rx)
   local endpoint = zb_rx.address_header.src_endpoint.value
+  local value = utils.round(e_value.value * 100)/100.0
   
   if endpoint == 2 then
-    device:emit_event( capabilities.powerMeter.power({value=value.value, unit="W"}) )
+    device:emit_event( capabilities.powerMeter.power({value=value, unit="W"}) )
   elseif endpoint == 3 then
-    device:emit_event( capabilities.energyMeter.energy({value=value.value, unit="Wh"}) )
+    device:emit_event( capabilities.energyMeter.energy({value=value, unit="Wh"}) )
   end
 end
 
@@ -101,11 +100,9 @@ local plug_driver_template = {
     global = {},
     cluster = {},
     attr = {
-      [zcl_clusters.basic_id] = {
-        [xiaomi_utils.attr_id] = xiaomi_utils.handler
-      },
-      [DeviceTemperatureConfiguration.ID] = {
-        [DeviceTemperatureConfiguration.attributes.CurrentTemperature.ID] = temp_attr_handler,
+      [zcl_clusters.basic_id] = xiaomi_utils.basic_id,
+      [zcl_clusters.DeviceTemperatureConfiguration.ID] = {
+        [zcl_clusters.DeviceTemperatureConfiguration.attributes.CurrentTemperature.ID] = temp_attr_handler,
       },
       [0x0C] = {
         [0x0055] = attr_handler0C

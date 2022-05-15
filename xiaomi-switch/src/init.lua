@@ -167,11 +167,9 @@ local switch_driver_template = {
       [mgmt_bind_resp.MGMT_BIND_RESPONSE] = zdo_binding_table_handler
     },
     attr = {
+      [zcl_clusters.basic_id] = xiaomi_utils.basic_id,
       [MultistateInput] = { 
         [0x55] = button_attr_handler
-      },
-      [zcl_clusters.basic_id] = {
-        [xiaomi_utils.attr_id] = xiaomi_utils.handler
       },
     }
   },

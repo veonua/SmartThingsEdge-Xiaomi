@@ -63,9 +63,7 @@ local zigbee_temp_driver_template = {
   },
   zigbee_handlers = {
     attr = {
-      [zcl_clusters.basic_id] = {
-        [xiaomi_utils.attr_id] = xiaomi_utils.handler
-      },
+      [zcl_clusters.basic_id] = xiaomi_utils.basic_id,
       [zcl_clusters.TemperatureMeasurement.ID] = {
         [zcl_clusters.TemperatureMeasurement.attributes.MeasuredValue.ID] = tempearture_value_attr_handler
       },

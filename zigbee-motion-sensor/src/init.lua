@@ -30,10 +30,7 @@ local zigbee_motion_driver = {
   },
   zigbee_handlers = {
     attr = {
-      [clusters.basic_id] = {
-        [xiaomi_utils.attr_id] = xiaomi_utils.handler,
-        [xiaomi_utils.attr_id2] = xiaomi_utils.handlerFF02,
-      },
+      [clusters.basic_id] = xiaomi_utils.basic_id,
     },
   },
   ias_zone_configuration_method = constants.IAS_ZONE_CONFIGURE_TYPE.AUTO_ENROLL_RESPONSE

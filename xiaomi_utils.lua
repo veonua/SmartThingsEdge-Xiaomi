@@ -17,8 +17,8 @@ local xiaomi_key_map = {
   [0x05] = "RSSI_dB",
   [0x06] = "LQI",
   [0x07] = "unknown2",
-  [0x08] = "unknown3",
-  [0x09] = "unknown4",
+  [0x08] = "unknown3", -- 0x2616, 0x103D
+  [0x09] = "unknown4", -- 0x150A
   [0x0a] = "router_id",
   [0x0b] = "illuminance",
   [0x0c] = "unknown6",
@@ -27,13 +27,13 @@ local xiaomi_key_map = {
   [0x66] = "user3", -- pressure/color_temp
   [0x6e] = "button1",
   [0x6f] = "button2",
-  [0x95] = "consumption", -- Wh 
+  [0x95] = "consumption", -- Wh           (must do round(f * 1000) )
   [0x96] = "voltage",     -- V            (must do round(f / 10) )
   [0x97] = "consumption/current in mA",               --  0
-  [0x98] = "power/gestureCounter", -- counter increasing by 4
+  [0x98] = "power/gestureCounter", -- power in Watts, counter increasing by 4
   [0x99] = "gestureCounter3", -- 0x1A
-  [0x9a] = "cubeSide",        -- 0x04
-  [0x9b] = "unknown9",
+  [0x9a] = "cubeSide/?switch",-- 0x04/0x00
+  [0x9b] = "unknown9",        -- 0x00
 }
 
 local function deserialize(data_buf)
@@ -92,7 +92,7 @@ local function emit_consumption_event(device, e_value)
   local value = utils.round(e_value.value * 10)/10.0
   local latest = device:get_latest_state("main", capabilities.energyMeter.ID, capabilities.energyMeter.energy.NAME)
   
-  if value - latest < 0.1 then
+  if value - latest < 0.01 then
     log.debug("consumption:", e_value.value, "latest:", latest)
     return
   end
@@ -103,15 +103,23 @@ local function emit_voltage_event(device, value)
   device:emit_event( capabilities.voltageMeasurement.voltage({value=value.value//10, unit="V"}) )
 end
 
+local function emit_current_event(device, value)
+  log.info("Current mA:", value.value)
+end
+
+local function emit_power_event(device, e_value)
+  local value = utils.round(e_value.value * 100)/100.0
+  device:emit_event( capabilities.powerMeter.power({value=value, unit="W"}) )
+end
 
 local xiaomi_utils = {
-  attr_id  = 0xFF01,
-  attr_id2 = 0xFF02,
   xiami_events = {
     [0x01] = emit_battery_event,
     [0x03] = emit_temperature_event,
     [0x95] = emit_consumption_event,
-    [0x96] = emit_voltage_event
+    [0x96] = emit_voltage_event,
+    [0x97] = emit_current_event,
+    [0x98] = emit_power_event
   }
 }
 
@@ -130,7 +138,7 @@ function xiaomi_utils.handler(driver, device, value, zb_rx)
     if event ~= nil then
       event(device, value)
     elseif key > 0x07 then
-      log.info("xiaomi_utils.lua: unknown event", key, value)
+      log.info(xiaomi_key_map[key], value) -- unhandled event
     end
   end
 
@@ -144,13 +152,38 @@ end
 
 function xiaomi_utils.handlerFF02(driver, device, value, zb_rx)
   if value.ID ~= data_types.Structure.ID then
-    log.error("xiaomi_utils.handlerFF02: unknown data type: " .. tostring (value) )
+    log.error("FF02 unknown data type: ", value)
     return
   end
 
-  log.warn("xiaomi_utils.handlerFF02: " .. tostring(value))
-  --[Boolean: true, Uint16: 0x0BD1 (3025), Uint16: 0x13A8(5032), Uint40: 0x0000000001, Uint16: 0x0014(20), Uint8: 0x5B(91)] > > > >
+  emit_battery_event(device, value[2])
+  -- https://github.com/dresden-elektronik/deconz-rest-plugin/issues/1069
+  -- Xiaomi Motion Sensor  xiaomi_utils.handlerFF02: Structure: 
+  --        on/off         battery                  const                      ????              ????      counter? [85-98]              
+  --[Boolean: true, Uint16: 0x0BC7,        Uint16: 0x13A8,       Uint40: 0x0000000001, Uint16: 0x002C,     Uint8: 0x5A]
+  ---
+  --[Boolean: true, Uint16: 0x0BD1 (3025), Uint16: 0x13A8(5032), Uint40: 0x0000000001, Uint16: 0x0014(20), Uint8: 0x5B(91)] 
+  --[Boolean: true, Uint16: 0x0BD1,        Uint16: 0x13A8,       Uint40: 0x0000000011, Uint16: 0x0015,     Uint8: 0x5B]
+
+  log.debug("FF02: " .. tostring(value))
+  if (value[3]~=0x13A8) then
+    log.error("value[3]", value[3])
+  end
+  if (value[4]~=0x0000000001) then
+    log.error("value[4]", value[4])
+  end
+  if (value[5] > 0x002C) then
+    log.error("value[5]", value[5])
+  end
+  if (value[6]>0xFF) then
+    log.error("value[6]", value[6])
+  end
 end
+
+xiaomi_utils.basic_id = {
+  [0xFF01] = xiaomi_utils.handler,
+  [0xFF02] = xiaomi_utils.handlerFF02
+}
 
 return xiaomi_utils
 
