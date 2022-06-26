@@ -15,7 +15,7 @@ components:
     - id: switch
       version: 1
   categories:
-    - name: RemoteController  
+  - name: Switch
 metadata:
   deviceType: Switch
   ocfDeviceType: oic.d.switch

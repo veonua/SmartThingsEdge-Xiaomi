@@ -44,6 +44,12 @@ local function cube_attr_handler(driver, device, value, zb_rx)
   local action = (val >> 8) & 0xFF
   local prev_side = device:get_field(SIDE)
 
+  local reset_motion_status = function()
+    device:emit_event(capabilities.motionSensor.motion.inactive())
+    emit_action_event(device, "Ready", false)
+  end
+  motion_reset_timer = device.thread:call_with_delay(2, reset_motion_status)
+
   if action == 0x00 then -- flip
     local flip_type = (val >> 6) & 0x3
     
@@ -61,11 +67,6 @@ local function cube_attr_handler(driver, device, value, zb_rx)
         emit_action_event(device, "toss")
       end
 
-      local reset_motion_status = function()
-        device:emit_event(capabilities.motionSensor.motion.inactive())
-        --emit_action_event(device, "Ready", false)
-      end
-      motion_reset_timer = device.thread:call_with_delay(2, reset_motion_status)
       return
     else
       prev_side = (val >> 3) & 0x7 

@@ -30,12 +30,14 @@ function packet.init(deviceId, token)
     packet.cipher = CBCMode.Cipher()
                 .setKey(key)
                 .setBlockCipher(AES128Cipher)
-                .setPadding(ZeroPadding);
+                .setPadding(ZeroPadding)
+                .init();
 
     packet.decipher = CBCMode.Decipher()
                 .setKey(key)
                 .setBlockCipher(AES128Cipher)
-                .setPadding(ZeroPadding);
+                .setPadding(ZeroPadding)
+                .init();
 
 end
 

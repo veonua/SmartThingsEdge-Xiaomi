@@ -10,16 +10,16 @@ local log = require "log"
 local battery_defaults = require "st.zigbee.defaults.battery_defaults"
 
 local xiaomi_key_map = {
-                   --                 Large   Kitchen Bed1    Corrid  Bed2                Charger  AndrewB      Bathroom     LMotion          Cube
+                   --                 Large   Kitchen Bed1    Corrid  Bed2                Charger  AndrewB      Bathroom     LMotion          Cube Smoke
   [0x01] = "battery_mV",
   [0x02] = "battery_??",
   [0x03] = "device_temperature",
-  [0x04] = "0x04", -- Uint16: 0x??A8                                                               0x43 A8                   0x31 A8-> 13 A8  43A8
+  [0x04] = "0x04", -- Uint16: 0x??A8                                                               0x43 A8                   0x31 A8-> 13 A8  43A8  43A8 
   [0x05] = "RSSI_dB",
   [0x06] = "LQI",
   [0x07] = "0x07", -- Uint64: 0                               0000000                  507C5D84BA
-  [0x08] = "0x08", -- Uint16: 0x0204, 0x2612, 0x2616, 0x2616, 0x103D, 0x103D,              0x1320
-  [0x09] = "0x09", -- Uint16: 0x1308  ------, ------,         0x150A, 0x(13|12|11)[08],    0x0B00  
+  [0x08] = "0x08", -- Uint16: 0x0204, 0x2612, 0x2616, 0x2616, 0x103D, 0x103D,              0x1320                                                   0204
+  [0x09] = "0x09", -- Uint16: 0x1308  ------, ------,         0x150A, 0x(13|12|11)[08],0x(0A|0B)00  
   [0x0a] = "router_id",
   [0x0b] = "illuminance/?switch", -- Uint8: 0
   [0x0c] = "0x0c",
@@ -95,8 +95,7 @@ local function emit_consumption_event(device, e_value)
   local value = utils.round(e_value.value * 10)/10.0
   local latest = device:get_latest_state("main", capabilities.energyMeter.ID, capabilities.energyMeter.energy.NAME)
   
-  if value - latest < 0.01 then
-    --log.debug("consumption:", e_value.value, "latest:", latest)
+  if latest ~= nil and value - latest < 0.01 then
     return
   end
   device:emit_event( capabilities.energyMeter.energy({value=value, unit="Wh"}) )
@@ -189,11 +188,13 @@ function xiaomi_utils.handlerFF02(driver, device, svalue, zb_rx)
   --        on/off         battery    0x04  0x??A8          ????          DEV_ID?         Signal?% [85-98]              
   --[Boolean: true, Uint16: 0x0BC7, Uint16: 0x13A8, Uint40: 0x0000000001, Uint16: 0x002C, Uint8: 0x5A]
   --[Boolean: true, Uint16: 0x0BC7, Uint16: 0x43A8, Uint40: 0x0000000001, Uint16: 0x002C, Uint8: 0x59]
+  --[Boolean: true, Uint16: 0x0BC7, Uint16: 0x13A8, Uint40: 0x0000000003, Uint16: 0x002C, Uint8: 0x59]
   --[Boolean: true, Uint16: 0x0BD8, Uint16: 0x43A8, Uint40: 0x0000000001, Uint16: 0x01AD, Uint8: 0x58]
   --[Boolean: true, Uint16: 0x0BD1, Uint16: 0x13A8, Uint40: 0x0000000001, Uint16: 0x0014, Uint8: 0x5B] 
   --[Boolean: true, Uint16: 0x0BD1, Uint16: 0x13A8, Uint40: 0x0000000011, Uint16: 0x0015, Uint8: 0x5B]
   --[Boolean: true, Uint16: 0x0BD1, Uint16: 0x13A8, Uint40: 0x0000000001, Uint16: 0x0015, Uint8: 0x5B] 
-  
+  --[Boolean: true, Uint16: 0x0BD1, Uint16: 0x13A8, Uint40: 0x0000000007, Uint16: 0x0015, Uint8: 0x5B]
+
 
   log.debug("FF02: " .. tostring(svalue))
   -- if (elements[3].data.value % 0xFF ~= 0xA8) then

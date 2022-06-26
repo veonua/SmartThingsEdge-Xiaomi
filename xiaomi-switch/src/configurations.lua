@@ -66,6 +66,8 @@ local devices = {
       "lumi.remote.b186acn01", 
       "lumi.remote.b286acn01",
       "lumi.switch.b1laus01",
+      "lumi.switch.b2laus01",
+      "lumi.switch.b2naus01",
     },
     CONFIGS = {
       first_button_ep = 0x0001,

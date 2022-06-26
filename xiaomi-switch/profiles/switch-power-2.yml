@@ -12,19 +12,15 @@ components:
     - id: refresh
       version: 1
     categories:
-    - name: RemoteController
+    - name: Switch
   - id: button2
     label: "Right"
     capabilities:
     - id: switch
       version: 1
-    - id: powerMeter
-      version: 1
-    - id: energyMeter
-      version: 1
     categories:
-    - name: RemoteController
+    - name: Switch
 metadata:
   deviceType: Switch
   ocfDeviceType: oic.d.switch
-  deviceTypeId: Switch  
+  deviceTypeId: Switch

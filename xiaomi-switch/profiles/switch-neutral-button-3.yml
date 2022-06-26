@@ -16,7 +16,7 @@ components:
     - id: refresh
       version: 1
     categories:
-    - name: RemoteController
+    - name: Switch
   - id: button2
     label: "Middle"
     capabilities:
@@ -25,7 +25,7 @@ components:
     - id: button
       version: 1
     categories:
-    - name: RemoteController
+    - name: Switch
   - id: button3
     label: "Right"
     capabilities:
@@ -34,7 +34,7 @@ components:
     - id: button
       version: 1
     categories:
-    - name: RemoteController
+    - name: Switch
   - id: group1
     label: "All buttons"
     capabilities:

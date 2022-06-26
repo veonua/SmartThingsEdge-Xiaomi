@@ -3,16 +3,14 @@ components:
   - id: main
     label: "Left"
     capabilities:
-    - id: button
-      version: 1
     - id: switch
       version: 1
-    - id: temperatureAlarm
+    - id: button
       version: 1
     - id: refresh
       version: 1
     categories:
-    - name: RemoteController
+    - name: Switch
   - id: button2
     label: "Right"
     capabilities:
@@ -21,7 +19,7 @@ components:
     - id: button
       version: 1
     categories:
-    - name: RemoteController
+    - name: Switch
   - id: group1
     label: "Both buttons"
     capabilities:

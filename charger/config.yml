@@ -1,0 +1,4 @@
+name: 'Charger'
+packageKey: 'lumi-plug-ext'
+permissions:
+  zigbee: {}

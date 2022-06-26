@@ -121,4 +121,16 @@ zigbeeManufacturer:
     deviceLabel: WS-USC01 Wall Switch (No Neutral, Single Rocker)
     manufacturer: LUMI
     model: lumi.switch.b1laus01
-    deviceProfileName: switch
+    deviceProfileName: switch-button
+
+  - id: "WS-USC02"
+    deviceLabel: WS-USC02 Wall Switch (No Neutral, Double Rocker)
+    manufacturer: LUMI
+    model: lumi.switch.b2laus01
+    deviceProfileName: switch-2
+
+  - id: "WS-USC04"
+    deviceLabel: WS-USC04 Wall Switch (Double Rocker)
+    manufacturer: LUMI
+    model: lumi.switch.b2naus01
+    deviceProfileName: switch-power-2

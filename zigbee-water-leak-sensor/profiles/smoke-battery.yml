@@ -12,8 +12,3 @@ components:
     version: 1
   categories:
   - name: SmokeDetector
-
-metadata:
-  deviceType: smokeDetector
-  ocfDeviceType: x.com.st.d.sensor.smoke
-  deviceTypeId: smokeDetector  

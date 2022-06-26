@@ -12,8 +12,3 @@ components:
     version: 1
   categories:
   - name: LeakSensor
-
-metadata:
-  deviceType: LeakSensor
-  ocfDeviceType: x.com.st.d.sensor.moisture
-  deviceTypeId: LeakSensor  

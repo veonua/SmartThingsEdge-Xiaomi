@@ -1,0 +1,21 @@
+name: plug
+components:
+- id: main
+  capabilities:
+  - id: robotCleanerMovement
+    version: 1
+  - id: switch
+    version: 1
+  - id: powerMeter
+    version: 1
+  - id: energyMeter
+    version: 1
+  - id: refresh
+    version: 1
+  categories:
+  - name: Battery
+  
+metadata:
+  deviceType: Battery
+  ocfDeviceType: x.com.st.d.battery
+  deviceTypeId: Battery  

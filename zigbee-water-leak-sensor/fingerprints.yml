@@ -3,7 +3,7 @@ zigbeeManufacturer:
     deviceLabel: Aqara Water Leak Sensor
     manufacturer: LUMI
     model: lumi.sensor_wleak.aq1
-    deviceProfileName: water-temp-tempalarm-battery
+    deviceProfileName: water-battery
 
   - id: "Lumi/JTYJ-GD-01LM/BW"
     deviceLabel: Honeywell Fire Alarm Smoke Detector

@@ -1,0 +1,6 @@
+zigbeeManufacturer:
+  - id: "lumi.plug.charger"
+    deviceLabel: Charger CN Plug
+    manufacturer: LUMI
+    model: lumi.plug
+    deviceProfileName: plug

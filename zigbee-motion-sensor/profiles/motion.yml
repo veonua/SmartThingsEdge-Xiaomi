@@ -8,7 +8,3 @@ components:
     version: 1
   categories:
   - name: MotionSensor
-metadata:
-  deviceType: Motion Sensor
-  ocfDeviceType: x.com.st.d.sensor.motion
-  deviceTypeId: MotionSensor  
