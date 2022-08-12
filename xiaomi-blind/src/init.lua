@@ -119,13 +119,13 @@ local function info_changed(driver, device, event, args)
         attr = 0xFF29
       elseif id == "reverse" then
         attr = 0xFF28
-        val = not data
+        val = data
       elseif id == "reset" then
         attr = 0xFF27
         val = false
       end
 
-      device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, attr, 0x115F, data_types.Boolean, false) )
+      device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, attr, 0x115F, data_types.Boolean, val) )
     end
   end
 end

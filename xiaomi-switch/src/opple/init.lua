@@ -12,6 +12,7 @@ local device_management = require "st.zigbee.device_management"
 
 local OnOff = zcl_clusters.OnOff
 local Level = zcl_clusters.Level
+local Scenes = zcl_clusters.Scenes
 local ColorControl = zcl_clusters.ColorControl
 local PowerConfiguration = zcl_clusters.PowerConfiguration
 local Groups = zcl_clusters.Groups
@@ -21,6 +22,7 @@ local OPPLE_CLUSTER = 0xFCC0
 local OPPLE_FINGERPRINTS = {
     { mfr = "LUMI", model = "^lumi.switch.l.aeu1" },
     { mfr = "LUMI", model = "^lumi.remote.b.8" },
+    { mfr = "LUMI", model = "^lumi.switch.b.lc04" }
 }
 
 local is_opple = function(opts, driver, device)
@@ -33,7 +35,7 @@ local is_opple = function(opts, driver, device)
 end
 
 local do_refresh = function(self, device)
-    device:send(cluster_base.read_manufacturer_specific_attribute(device, OPPLE_CLUSTER, 0x0009, 0x115F))
+    device:send(cluster_base.read_manufacturer_specific_attribute(device, xiaomi_utils.OppleCluster, 0x0009, 0x115F))
     zigbee_utils.print_clusters(device)
     --device:send(Groups.server.commands.GetGroupMembership(device, {}))
     device:send( zigbee_utils.build_read_binding_table(device) )
@@ -64,6 +66,7 @@ local do_configure = function(self, device)
 
         --device:send(zigbee_utils.build_bind_request(device, OnOff.ID, group))
         device:send(zigbee_utils.build_bind_request(device, Level.ID, group))
+        device:send(zigbee_utils.build_bind_request(device, Scenes.ID, group)) 
         device:send(zigbee_utils.build_bind_request(device, ColorControl.ID, group))
         device:send(zigbee_utils.build_read_binding_table(device)) 
     end
@@ -89,6 +92,7 @@ local function info_changed(driver, device, event, args)
         elseif id == "group" then
             device:send(zigbee_utils.build_bind_request(device, OnOff.ID, data))
             device:send(zigbee_utils.build_bind_request(device, Level.ID, data))
+            device:send(zigbee_utils.build_bind_request(device, Scenes.ID, data))
             device:send(zigbee_utils.build_bind_request(device, ColorControl.ID, data))
         elseif id == "powerOutageMemory" then
             payload = data_types.validate_or_build_type(data==1, data_types.Boolean, id)

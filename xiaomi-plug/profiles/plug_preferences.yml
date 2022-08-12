@@ -10,9 +10,9 @@ components:
     version: 1
   - id: voltageMeasurement
     version: 1
-  - id: temperatureAlarm
-    version: 1
   - id: refresh
+    version: 1
+  - id: firmwareUpdate
     version: 1
   - id: configuration
     version: 1
@@ -20,6 +20,7 @@ components:
   - name: SmartPlug
 preferences:
   - title: "Power outage memory"
+    description: "Restore last known power strate after power outage"
     name: powerOutageMemory
     required: true
     preferenceType: boolean
@@ -27,15 +28,23 @@ preferences:
       default: true
 
   - title: "Auto Off"
-    desctipyion: "Turn the device automatically off when attached device consumes less than 2W for 20 minutes"
+    description: "Turn the device automatically off when attached device consumes less than 2W for 20 minutes"
     name: autoOff
     required: true
     preferenceType: boolean
     definition: 
       default: false
 
+  - title: "Disabled Led at Night"
+    description: "Disable the LED when the device is in night mode"
+    name: ledDisabledNight
+    required: true
+    preferenceType: boolean
+    definition: 
+      default: false
+
   - title: "Overload Protection"
-    desctipyion: "Maximum allowed load, turns off if exceeded (100 - 2200 W)"
+    description: "Maximum allowed load, turns off if exceeded (100 - 2200 W)"
     name: overloadProtection
     required: true
     preferenceType: number

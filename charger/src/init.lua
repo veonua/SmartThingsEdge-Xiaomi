@@ -52,7 +52,7 @@ local function info_changed(driver, device, event, args)
   for id, value in pairs(device.preferences) do
     if args.old_st_store.preferences[id] ~= value then
       local value = device.preferences[id]
-      local cluster_id = 0xFCC0
+      local cluster_id = xiaomi_utils.OppleCluster
       
       log.info("preferences changed: " .. id .. " " .. tostring(value))
 
@@ -118,8 +118,8 @@ local plug_driver_template = {
       [zcl_clusters.DeviceTemperatureConfiguration.ID] = {
         [zcl_clusters.DeviceTemperatureConfiguration.attributes.CurrentTemperature.ID] = temp_attr_handler,
       },
-      [0x0C] = {
-        [0x0055] = attr_handler0C
+      [zcl_clusters.analog_input_id] = {
+        [zcl_clusters.AnalogInput.attributes.PresentValue.ID] = attr_handler0C
       }
     }
   },

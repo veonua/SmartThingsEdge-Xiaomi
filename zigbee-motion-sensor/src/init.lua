@@ -23,7 +23,7 @@ local xiaomi_utils = require "xiaomi_utils"
 
 local zigbee_motion_driver = {
   supported_capabilities = {
-          capabilities.battery,
+      capabilities.battery,
   },
   sub_drivers = { require("lumi"), require("ikea"),
                   require("zigbee-plugin-motion-sensor"),

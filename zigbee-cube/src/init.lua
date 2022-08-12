@@ -160,8 +160,8 @@ local aqara_cube_driver_template = {
       [0x12] = {
         [0x0055] = cube_attr_handler
       }, 
-      [0x0C] = {
-        [0x0055] = rotate_attr_handler
+      [zcl_clusters.analog_input_id] = {
+        [zcl_clusters.AnalogInput.attributes.PresentValue.ID] = rotate_attr_handler
       }
     }
   },

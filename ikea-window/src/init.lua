@@ -11,7 +11,6 @@ local WindowCovering = zcl_clusters.WindowCovering
 local PowerConfiguration = zcl_clusters.PowerConfiguration
 local Groups = zcl_clusters.Groups
 
-
 local zigbee_utils = require "zigbee_utils"
 
 local device_management = require "st.zigbee.device_management"
