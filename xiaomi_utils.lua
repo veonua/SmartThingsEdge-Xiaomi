@@ -98,7 +98,7 @@ local function emit_consumption_event(device, e_value)
   if latest ~= nil and value - latest < 0.01 then
     return
   end
-  device:emit_event( capabilities.energyMeter.energy({value=value, unit="Wh"}) )
+  device:emit_event( capabilities.energyMeter.energy({value=value, unit="kWh"}) )
 end
 
 local function emit_voltage_event(device, value)
@@ -208,9 +208,15 @@ function xiaomi_utils.handlerFF02(driver, device, svalue, zb_rx)
   end
 end
 
+
 xiaomi_utils.basic_id = {
   [0xFF01] = xiaomi_utils.handler,
   [0xFF02] = xiaomi_utils.handlerFF02
+}
+
+xiaomi_utils.OppleCluster = 0xFCC0
+xiaomi_utils.opple_id = {
+  [0x00F7] = xiaomi_utils.handler,
 }
 
 return xiaomi_utils
