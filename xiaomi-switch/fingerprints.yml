@@ -100,6 +100,13 @@ zigbeeManufacturer:
     manufacturer: LUMI
     model: lumi.remote.b1acn01
     deviceProfileName: button
+    
+  - id: "WXKG11LM"
+    deviceLabel: WXKG11LM Wireless Switch (Single Rocker)
+    manufacturer: LUMI
+    model: lumi.sensor_switch.aq2
+    deviceProfileName: button
+
   - id: "WXKG12LM"
     deviceLabel: WXKG12LM Wireless Switch (Single Rocker)
     manufacturer: LUMI

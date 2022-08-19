@@ -1,38 +1,46 @@
 zigbeeManufacturer:
   - id: "lumi.plug"
-    deviceLabel: Xiaomi CN Plug
+    deviceLabel: Mi Power Plug CN (ZNCZ02LM)
     manufacturer: LUMI
     model: lumi.plug
     deviceProfileName: plug_prefs
+
+  - id: "lumi.plug.aq1"
+    deviceLabel: Aqara Smart Plug CN (ZNCZ11LM)
+    manufacturer: LUMI
+    model: lumi.plug.aq1
+    deviceProfileName: plug_prefs
+
   - id: "lumi.plug.maeu01"
-    deviceLabel: Aqara Zigbee EU Smart Outlet
+    deviceLabel: Aqara Smart Plug EU (SP-EUC01)
     manufacturer: LUMI
     model: lumi.plug.maeu01
     deviceProfileName: plug_prefs
 
   - id: "lumi.plug.mmeu01"
-    deviceLabel: Xiaomi EU Plug
+    deviceLabel: Mi Power Plug EU (ZNCZ04LM)
     manufacturer: LUMI
     model: lumi.plug.mmeu01
     deviceProfileName: plug
+
   - id: "lumi.plug.mitw01"
-    deviceLabel: Xiaomi TW Plug
+    deviceLabel: Mi Power Plug TW (ZNCZ03LM)
     manufacturer: LUMI
     model: lumi.plug.mitw01
     deviceProfileName: plug
   - id: "lumi.plug.maus01"
-    deviceLabel: Xiaomi US Plug
+    deviceLabel: Mi Power Plug US (ZNCZ12LM)
     manufacturer: LUMI
     model: lumi.plug.maus01
     deviceProfileName: plug
 
   - id: "lumi.ctrl_86plug"
-    deviceLabel: Xiaomi Zigbee CN Smart Wall Socket
+    deviceLabel: Mi Wall Outlet CN (QBCZ11LM)
     manufacturer: LUMI
     model: lumi.ctrl_86plug
     deviceProfileName: plug_prefs    
   - id: "lumi.ctrl_86plug.aq1"
-    deviceLabel: Aqara Zigbee CN Smart Wall Socket
+    deviceLabel: Aqara Wall Outlet CN (QBCZ11LM)
     manufacturer: LUMI
     model: lumi.ctrl_86plug.aq1
     deviceProfileName: plug    
