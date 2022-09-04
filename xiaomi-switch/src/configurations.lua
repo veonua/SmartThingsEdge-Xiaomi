@@ -13,6 +13,15 @@ local devices = {
       supported_button_values = {"pushed", "held", "pushed_2x", "pushed_3x", "pushed_4x", "pushed_5x"}
     }
   },
+  WXKG11LM_2 = {
+    MATCHING_MODELS = {
+      "lumi.remote.b1acn01"
+    },
+    CONFIGS = {
+      first_button_ep = 0x0001,
+      supported_button_values = {"pushed", "held", "pushed_2x", "pushed_3x", "pushed_4x", "pushed_5x"}
+    }
+  },
   GROUP1 = {
     MATCHING_MODELS = {
       "lumi.ctrl_neutral1", "lumi.ctrl_neutral2", "lumi.switch.b1lacn02", "lumi.switch.b2lacn02",
@@ -55,7 +64,6 @@ local devices = {
       "lumi.remote.b286opcn01", "lumi.remote.b486opcn01", "lumi.remote.b686opcn01", 
       "lumi.sensor_switch.aq3",
       "lumi.remote.b28ac1",
-      "lumi.remote.b1acn01",
       "lumi.remote.b186acn01", "lumi.remote.b286acn01",
       "lumi.remote.b186acn02", "lumi.remote.b286acn02",
       "lumi.switch.b1laus01", "lumi.switch.b2laus01",
