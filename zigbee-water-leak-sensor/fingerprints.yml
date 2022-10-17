@@ -9,6 +9,12 @@ zigbeeManufacturer:
     deviceLabel: Honeywell Fire Alarm Smoke Detector
     manufacturer: LUMI
     model: lumi.sensor_smoke 
+    deviceProfileName: smoke-honeywell
+
+  - id: "Lumi/JY-GZ-01AQ"
+    deviceLabel: Smart Smoke Detector
+    manufacturer: LUMI
+    model: lumi.sensor_smoke.acn03
     deviceProfileName: smoke-battery
 
   - id: "_TYZB01_sqmd19i1"

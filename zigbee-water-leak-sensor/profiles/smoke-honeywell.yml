@@ -1,0 +1,27 @@
+name: smoke-honeywell
+components:
+- id: main
+  capabilities:
+  - id: smokeDetector
+    version: 1
+  - id: battery
+    version: 1
+  categories:
+  - name: SmokeDetector
+
+- id: selftest
+  capabilities:
+    - id: momentary
+      version: 1
+
+preferences:
+  - title: "Sensivity"
+    name: sensivity
+    required: true
+    preferenceType: enumeration
+    definition:
+      options:
+        0x04010000: "Low"
+        0x04020000: "Medium"
+        0x04030000: "High"
+      default: "0x04010000"

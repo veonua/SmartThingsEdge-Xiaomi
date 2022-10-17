@@ -12,3 +12,36 @@ components:
     version: 1
   categories:
   - name: SmokeDetector
+- id: selftest
+  capabilities:
+    - id: momentary
+      version: 1
+
+preferences:
+  - title: "Heartbeat Indicator"
+    name: heartbeatIndicator
+    required: true
+    preferenceType: enumeration
+    definition:
+      options:
+        0: "Off"
+        1: "On"
+      default: "0"
+  - title: "Linkage Alarm"
+    name: linkageAlarm
+    required: true
+    preferenceType: enumeration
+    definition:
+      options:
+        0: "Off"
+        1: "On"
+      default: "0"
+  - title: "Buzzer Manual Alarm"
+    name: buzzerManualAlarm
+    required: true
+    preferenceType: enumeration
+    definition:
+      options:
+        0: "Off"
+        1: "On"
+      default: "0"

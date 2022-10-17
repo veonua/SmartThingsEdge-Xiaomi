@@ -33,24 +33,34 @@ local devices = {
   },
   GROUP2 = {
     MATCHING_MODELS = {
+      "lumi.ctrl_ln1", "lumi.ctrl_ln2", "lumi.ctrl_ln1.aq1", "lumi.ctrl_ln2.aq1",
+    },
+    CONFIGS = {
+      first_button_ep = 0x0005,
+      supported_button_values = {"pushed", "held"}
+    }
+  },
+  GROUP3 = {
+    MATCHING_MODELS = {
       "lumi.switch.b1nacn02", "lumi.switch.b2nacn02", "lumi.switch.b3n01", "lumi.switch.n3acn3", 
-      "lumi.ctrl_ln1.aq1", "lumi.ctrl_ln2.aq1", "lumi.switch.l3acn3", "lumi.switch.n3acn3",
+      "lumi.switch.l3acn3", "lumi.switch.n3acn3",
     },
     CONFIGS = {
       first_button_ep = 0x0005,
       supported_button_values = {"pushed", "pushed_2x"}
     }
   },
-  GROUP3 = {
+  GROUP4 = {
     MATCHING_MODELS = {
       "lumi.switch.l1aeu1", "lumi.switch.l2aeu1", 
+      "lumi.switch.n1aeu1", "lumi.switch.n2aeu1", 
     },
     CONFIGS = {
       first_button_ep = 0x0029,
       supported_button_values = {"pushed", "pushed_2x"}
     }
   },
-  GROUP4 = { 
+  GROUP5 = { 
     MATCHING_MODELS = {
       "lumi.sensor_86sw1", "lumi.sensor_86sw2",
     },
@@ -59,7 +69,7 @@ local devices = {
       supported_button_values = {"pushed", "pushed_2x", "pushed_3x"}
     }
   },
-  GROUP5 = { 
+  GROUP6 = { 
     MATCHING_MODELS = {
       "lumi.remote.b286opcn01", "lumi.remote.b486opcn01", "lumi.remote.b686opcn01", 
       "lumi.sensor_switch.aq3",

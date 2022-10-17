@@ -33,7 +33,7 @@ end
 
 function multi_click_handler(driver, device, zb_rx)
     local val = zb_rx.value
-    if val>4 then -- we don't count after 4
+    if val>5 then -- we don't count after 4
         val = 5 
     end
 

@@ -1,4 +1,4 @@
-name: 'Ikea Window'
+name: 'Ikea Window 1.1'
 packageKey: 'ikea-window'
 permissions:
   zigbee: {}

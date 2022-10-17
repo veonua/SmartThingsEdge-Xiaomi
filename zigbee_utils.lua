@@ -121,4 +121,48 @@ zutils.build_read_binding_table = function(device)
   })
 end
 
+zutils.send_bind_request = function(device, cluster, group)
+  return device:send( zutils.build_bind_request(device, cluster, group) )
+end
+
+zutils.send_unbind_request = function(device, cluster, group)
+  -- not tested
+  local addr_header = messages.AddressHeader(
+    constants.HUB.ADDR, 
+    constants.HUB.ENDPOINT, 
+    device:get_short_address(), 
+    device.fingerprinted_endpoint_id, 
+    constants.ZDO_PROFILE_ID, 
+    0x0022)
+
+  local bind_req = bind_request.BindRequest(
+    device.zigbee_eui, 
+    device:get_endpoint(cluster), 
+    cluster, 
+    bind_request.ADDRESS_MODE_16_BIT, 
+    group)
+
+  return device:send( messages.ZigbeeMessageTx({
+    address_header = addr_header,
+    body = zdo_messages.ZdoMessageBody({zdo_body = bind_req})
+  }) )
+end
+
+zutils.send_read_binding_table = function(device)
+  local mgmt_bind_req = require "st.zigbee.zdo.mgmt_bind_request"
+
+  local addr_header = messages.AddressHeader(
+    constants.HUB.ADDR,
+    constants.HUB.ENDPOINT,
+    device:get_short_address(),
+    device.fingerprinted_endpoint_id,
+    constants.ZDO_PROFILE_ID,
+    mgmt_bind_req.BINDING_TABLE_REQUEST_CLUSTER_ID
+  )
+  return device:send( messages.ZigbeeMessageTx({
+    address_header = addr_header,
+    body = zdo_messages.ZdoMessageBody({zdo_body = mgmt_bind_req.MgmtBindRequest(0)})
+  }) )
+end
+
 return zutils

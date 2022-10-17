@@ -8,7 +8,7 @@ zigbeeManufacturer:
   - id: "ikea/fyrtur"
     deviceLabel: "FYRTUR block-out roller Blind"
     manufacturer: IKEA of Sweden
-    model: "FYRTUR block-out roller Blind"
+    model: "FYRTUR block-out roller blind"
     deviceProfileName: blind
 
   - id: "ikea/tredansen"
