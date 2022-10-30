@@ -17,9 +17,3 @@ zigbeeManufacturer:
     model: lumi.sensor_smoke.acn03
     deviceProfileName: smoke-battery
 
-  - id: "_TYZB01_sqmd19i1"
-    deviceLabel: BlitzWolf Water Leak Sensor TS0207
-    manufacturer: _TYZB01_sqmd19i1
-    model: TS0207
-    deviceProfileName: water-battery
-

@@ -1,4 +1,4 @@
-name: 'Zigbee Water Leak/Smoke Sensor 1.5'
+name: 'Zigbee Water Leak/Smoke Sensor 1.7'
 packageKey: 'zigbee-water-leak-sensor'
 permissions:
   zigbee: {}

@@ -1,6 +1,11 @@
 zigbeeManufacturer:
+  - id: "lumi.sensor"
+    deviceLabel: Mijia Temperature & Humidity Sensor
+    manufacturer: LUMI
+    model: lumi.sensor
+    deviceProfileName: temp-general
   - id: "lumi.sensor_ht"
-    deviceLabel: Xiaomi Temperature Sensor
+    deviceLabel: Mijia Temperature & Humidity Sensor
     manufacturer: LUMI
     model: lumi.sensor_ht
     deviceProfileName: temp-general
