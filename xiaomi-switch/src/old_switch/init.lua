@@ -85,27 +85,27 @@ end
 
 --
 
-local function info_changed(driver, device, event, args)
-    -- xiaomi_switch_operation_mode_basic
-    for id, value in pairs(device.preferences) do
-        if args.old_st_store.preferences[id] ~= value then --and preferences[id] then
-            local data = tonumber(device.preferences[id])
+-- local function info_changed(driver, device, event, args)
+--     -- xiaomi_switch_operation_mode_basic
+--     for id, value in pairs(device.preferences) do
+--         if args.old_st_store.preferences[id] ~= value then --and preferences[id] then
+--             local data = tonumber(device.preferences[id])
             
-            local attr
-            if id == "button1" then
-                attr = 0xFF22
-            elseif id == "button2" then
-                attr = 0xFF23
-            elseif id == "button3" then
-                attr = 0xFF24
-            end
+--             local attr
+--             if id == "button1" then
+--                 attr = 0xFF22
+--             elseif id == "button2" then
+--                 attr = 0xFF23
+--             elseif id == "button3" then
+--                 attr = 0xFF24
+--             end
   
-            if attr then
-                device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, attr, 0x115F, data_types.Uint8, data) )
-            end
-        end
-    end
-end
+--             if attr then
+--                 device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, attr, 0x115F, data_types.Uint8, data) )
+--             end
+--         end
+--     end
+-- end
   
 -- 
 
@@ -118,9 +118,9 @@ local old_switch_handler = {
             }
         },
     },
-    lifecycle_handlers = {
-        infoChanged = info_changed,
-    },
+    -- lifecycle_handlers = {
+    --     infoChanged = info_changed,
+    -- },
     can_handle = function(opts, driver, device)
         return utils.first_switch_ep(device) > 0 and utils.first_button_ep(device) == 4
     end

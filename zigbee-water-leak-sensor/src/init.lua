@@ -37,6 +37,10 @@ local xiaomi_water_driver_template = {
     capabilities.temperatureAlarm,
     capabilities.temperatureMeasurement,
     capabilities.battery,
+    capabilities.refresh,
+
+    capabilities.waterSensor,
+    capabilities.smokeDetector
   },
   capability_handlers = {
     [capabilities.refresh.ID] = {

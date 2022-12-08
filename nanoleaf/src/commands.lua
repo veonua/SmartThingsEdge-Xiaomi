@@ -82,7 +82,7 @@ function command_handler.set_level(_, device, command)
   local lvl = command.args.level
   local success = command_handler.send_lan_command( device, 'PUT', 'state', {brightness = {value = lvl }})
 
-  if ~success then
+  if not success then
     log.error('no response from device')
     return
   end

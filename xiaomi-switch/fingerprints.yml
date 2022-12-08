@@ -129,6 +129,12 @@ zigbeeManufacturer:
     model: lumi.sensor_switch.aq2
     deviceProfileName: button
 
+  - id: "WXKG12LM_2"
+    deviceLabel: WXKG12LM Wireless Switch (Single Rocker)
+    manufacturer: LUMI
+    model: lumi.sensor_swit
+    deviceProfileName: button
+
   - id: "WXKG12LM"
     deviceLabel: WXKG12LM Wireless Switch (Single Rocker)
     manufacturer: LUMI
@@ -171,12 +177,12 @@ zigbeeManufacturer:
     deviceLabel: H1 EU Wall Switch (With Neutral, Single Rocker)
     manufacturer: LUMI
     model: lumi.switch.n1aeu1
-    deviceProfileName: opple-switch
+    deviceProfileName: opple-switch-neutral
   - id: "WS-EUK04"
     deviceLabel: H1 EU Wall Switch (With Neutral, Double Rocker)
     manufacturer: LUMI
     model: lumi.switch.n2aeu1
-    deviceProfileName: opple-switch-2
+    deviceProfileName: opple-switch-neutral-2
     
   - id: "WS-USC01"
     deviceLabel: WS-USC01 Wall Switch (No Neutral, Single Rocker)

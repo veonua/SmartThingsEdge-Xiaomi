@@ -51,9 +51,7 @@ local function info_changed(driver, device, event, args)
 end
 
 
-local function reporting (device, attr)
-    local data_type = data_types.Uint8
-
+local function reporting (device, attr, data_type)
     local min = data_types.validate_or_build_type(30, data_types.Uint16, "minimum_reporting_interval")
     local max = data_types.validate_or_build_type(21600, data_types.Uint16, "maximum_reporting_interval")
     local rep_change = data_types.validate_or_build_type(1, data_type, "reportable_change")
@@ -84,12 +82,13 @@ local function do_refresh(self, device)
   
   
     ---
-    reporting(device, 0x013a)
-    reporting(device, 0x013b)
-    reporting(device, 0x013c)
-    reporting(device, 0x013d)
-    reporting(device, 0x0126)
-    reporting(device, 0x0146)
+    reporting(device, 0x013a, data_types.Uint16)
+    reporting(device, 0x013b, data_types.Uint8)
+    reporting(device, 0x013c, data_types.Uint8)
+    reporting(device, 0x013d, data_types.Uint8)
+
+    --reporting(device, 0x0126) unsupported ?
+    reporting(device, 0x0146, data_types.Uint8)
 
     ---
   end
@@ -102,9 +101,9 @@ local function selftest_handler(_, device, command)
     do_refresh(_, device)
 
     if device:get_model() == "lumi.sensor_smoke" then
-        device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.IASZone.ID, 0xFFF1, 0x115F, data_types.Uint32, 0x03010000) )
+        device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.IASZone.ID,   0xFFF1, 0x115F, data_types.Uint32, 0x03010000) )
     else
-        device:send(cluster_base.write_manufacturer_specific_attribute(device, xiaomi_utils.OppleCluster, 0x0127, 0x115F, data_types.Boolean, True) )
+        device:send(cluster_base.write_manufacturer_specific_attribute(device, xiaomi_utils.OppleCluster, 0x0127, 0x115F, data_types.Boolean, true) )
     end
 end
 

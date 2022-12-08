@@ -136,6 +136,30 @@ local function zdo_binding_table_handler(driver, device, zb_rx)
   end
 end
 
+function info_changed(driver, device, event, args)
+  -- xiaomi_switch_operation_mode_basic
+  for id, value in pairs(device.preferences) do
+      if args.old_st_store.preferences[id] ~= value then --and preferences[id] then
+          local data = tonumber(device.preferences[id])
+          
+          local attr
+          if id == "button1" then
+              attr = 0xFF22
+          elseif id == "button2" then
+              attr = 0xFF23
+          elseif id == "button3" then
+              attr = 0xFF24
+          end
+
+          log.info("+info_changed: ", id, value, data, attr)
+
+          if attr then
+              device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, attr, 0x115F, data_types.Uint8, data) )
+          end
+      end
+  end
+end
+
 local switch_driver_template = {
   supported_capabilities = {
     capabilities.switch,
@@ -173,12 +197,12 @@ local switch_driver_template = {
       },
     }
   },
-
   sub_drivers = { require ("buttons"), require ("opple"), require ("old_switch"), require("WXKG01LM") },
   
   lifecycle_handlers = {
     init = device_init,
     added = device_init,
+    infoChanged = info_changed,
   }
 }
 

@@ -72,7 +72,7 @@ local devices = {
   GROUP6 = { 
     MATCHING_MODELS = {
       "lumi.remote.b286opcn01", "lumi.remote.b486opcn01", "lumi.remote.b686opcn01", 
-      "lumi.sensor_switch.aq3",
+      "lumi.sensor_swit", "lumi.sensor_switch.aq3",
       "lumi.remote.b28ac1",
       "lumi.remote.b186acn01", "lumi.remote.b286acn01",
       "lumi.remote.b186acn02", "lumi.remote.b286acn02",

@@ -111,6 +111,11 @@ end
 
 local function emit_power_event(device, e_value)
   local value = utils.round(e_value.value * 100)/100.0
+
+  local latest = device:get_latest_state("main", capabilities.powerMeter.ID, capabilities.powerMeter.power.NAME)
+  if latest ~= nil and value - latest < 1 then
+    return
+  end
   device:emit_event( capabilities.powerMeter.power({value=value, unit="W"}) )
 end
 

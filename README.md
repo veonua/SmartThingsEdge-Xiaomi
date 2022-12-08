@@ -51,7 +51,7 @@ the channel contains the development version of drivers, so it can be unstable.
  **Wireless** |
 | [WXKG01LM](https://zigbee.blakadder.com/Xiaomi_WXKG01LM.html) | ![WXKG01LM](https://zigbee.blakadder.com/assets/images/devices/Xiaomi_WXKG01LM.webp) | lumi.sensor_switch | Wireless Switch | - | Single | 
 | [WXKG02LM](https://zigbee.blakadder.com/Aqara_WXKG02LM.html) | ![WXKG02LM](https://zigbee.blakadder.com/assets/images/devices/Aqara_WXKG02LM.webp) | lumi.sensor_86sw2, lumi.remote.b286acn01 | Wall Switch| - | Double Rocker |
-| [WXKG03LM](https://zigbee.blakadder.com/Xiaomi_WXKG03LM.html) | ![WXKG03LM](https://zigbee.blakadder.com/assets/images/devices/Aqara_WXKG03LM.webp) | lumi.sensor_86sw1, lumi.remote.b186acn01 | Wall Switch| - | Single Rocker |
+| [WXKG03LM](https://zigbee.blakadder.com/Aqara_WXKG03LM.html) | ![WXKG03LM](https://zigbee.blakadder.com/assets/images/devices/Aqara_WXKG03LM.webp) | lumi.sensor_86sw1, lumi.remote.b186acn01 | Wall Switch| - | Single Rocker |
 | [WXKG06LM](https://zigbee.blakadder.com/Aqara_WXKG06LM.html) | ![WXKG06LM](https://zigbee.blakadder.com/assets/images/devices/Aqara_WXKG06LM.webp) | lumi.remote.b186acn02 | Wall Switch| - | Single Rocker |
 | [WXKG07LM](https://zigbee.blakadder.com/Aqara_WXKG07LM.html) | ![WXKG07LM](https://zigbee.blakadder.com/assets/images/devices/Aqara_WXKG07LM.webp) | lumi.remote.b286acn02 | Wall Switch| - | Double Rocker |
 | [WXKG11LM](https://zigbee.blakadder.com/Aqara_WXKG11LM.html) | ![WXKG11LM](https://zigbee.blakadder.com/assets/images/devices/Aqara_WXKG11LM.webp) | lumi.sensor_switch.aq2, lumi.remote.b1acn01 | Wall Switch| - | Single |

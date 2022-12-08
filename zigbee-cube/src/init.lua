@@ -25,6 +25,7 @@ end
 
 local function added_handler(self, device)
   log.info("Added device: " .. device:get_model())
+  device:emit_event(capabilities.switch.switch.on())
 end
 
 
@@ -103,10 +104,13 @@ local function rotate_attr_handler(driver, device, value, zb_rx)
   local val = utils.round( utils.clamp_value(value.value, -180, 180) ) -- between -180 and 180
   local delta = math.floor( val / 18 * 8) -- 80 percent for every 180*
   
-  log.debug("rotate: ", val, " delta: ", delta)
+  -- if device is on 
   local level = device:get_field(CURRENT_LEVEL) or DEFAULT_LEVEL
-  local new_level = utils.clamp_value( level + delta, 2, 100)
-  generate_switch_level_event(device, new_level)
+  if level >= 0 then
+    log.debug("rotate: ", val, "old_level ", level, " delta: ", delta)
+    local new_level = utils.clamp_value( level + delta, 2, 100)
+    generate_switch_level_event(device, new_level)
+  end
 
   local event = cube.rotation(val)
   event.state_change = true
@@ -122,13 +126,39 @@ function set_level(_, device, command)
     log.info("ignore dimmer loopback")
     return
   end
-
-  device:emit_event(capabilities.switchLevel.level(command.args.level))
+  
+  local value = command.args.level
+  device:emit_event(capabilities.switchLevel.level(value))
   device:set_field(CURRENT_LEVEL, value)
 end
 
 local do_refresh = function(self, device)
   added_handler(self, device)
+end
+
+function on_off(_, device, command)
+  local last_state = device:get_latest_state("main", capabilities.switch.ID, capabilities.switch.switch.NAME)
+  
+  if (last_state == command.command) then
+    log.info("ignore on/off loopback")
+    return
+  end
+
+  local on_off = command.command == 'on'
+  if on_off then
+    local last_level = device:get_latest_state("main", capabilities.switchLevel.ID, capabilities.switchLevel.level.NAME)
+    if last_level == nil then
+      last_level = DEFAULT_LEVEL
+    end
+    log.debug("on_off: ", on_off, " last_level: ", last_level)
+
+    device:set_field(CURRENT_LEVEL, last_level)
+    return device:emit_event(capabilities.switch.switch.on())
+  end
+
+  device:set_field(CURRENT_LEVEL, -1)
+  log.debug("on_off: ", on_off)
+  return device:emit_event(capabilities.switch.switch.off())
 end
 
 xiaomi_utils.events[0x98] = nil -- supress power reports
@@ -146,6 +176,10 @@ local aqara_cube_driver_template = {
   capability_handlers = {
     [capabilities.refresh.ID] = {
       [capabilities.refresh.commands.refresh.NAME] = do_refresh,
+    },
+    [capabilities.switch.ID] = {
+      [capabilities.switch.commands.on.NAME] = on_off,
+      [capabilities.switch.commands.off.NAME] = on_off
     },
     [capabilities.switchLevel.ID] = {
       [capabilities.switchLevel.commands.setLevel.NAME] = set_level

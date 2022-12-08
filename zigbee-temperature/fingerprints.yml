@@ -9,6 +9,11 @@ zigbeeManufacturer:
     manufacturer: LUMI
     model: lumi.sensor_ht
     deviceProfileName: temp-general
+  - id: "lumi.sens"
+    deviceLabel: Mijia Temperature & Humidity Sensor
+    manufacturer: LUMI
+    model: lumi.sens
+    deviceProfileName: temp-general
   - id: "lumi.weather"
     deviceLabel: Aqara Weather
     manufacturer: LUMI
