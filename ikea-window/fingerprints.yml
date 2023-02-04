@@ -16,6 +16,12 @@ zigbeeManufacturer:
     manufacturer: IKEA of Sweden
     model: "TREDANSEN block-out cellul blind"
     deviceProfileName: blind
+    
+  - id: "ikea/praktlysing"
+    deviceLabel: "PRAKTLYSING cellular blind"
+    manufacturer: IKEA of Sweden
+    model: "PRAKTLYSING cellular blind"
+    deviceProfileName: blind
 
   - id: "ikea/Stryrbar"
     deviceLabel: "Ikea Stryrbar"
