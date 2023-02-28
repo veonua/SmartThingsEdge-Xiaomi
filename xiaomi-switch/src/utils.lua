@@ -38,6 +38,7 @@ utils.click_types = {
     [2] = capabilities.button.button.pushed_2x, 
     [3] = capabilities.button.button.pushed_3x, 
     [4] = capabilities.button.button.pushed_4x,
+    [5] = capabilities.button.button.pushed_5x,
     [0x10] = capabilities.button.button.held,
     [0x11] = nil, -- released
     [0xff] = nil, 

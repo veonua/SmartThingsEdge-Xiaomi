@@ -3,9 +3,9 @@ components:
   - id: main
     label: "Left"
     capabilities:
-    - id: button
-      version: 1
     - id: switch
+      version: 1
+    - id: button
       version: 1
     - id: refresh
       version: 1
@@ -14,9 +14,9 @@ components:
   - id: button2
     label: "Right"
     capabilities:
-    - id: button
-      version: 1
     - id: switch
+      version: 1
+    - id: button
       version: 1
     categories:
     - name: Switch

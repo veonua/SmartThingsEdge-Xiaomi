@@ -114,7 +114,7 @@ configs.get_device_parameters = function(zb_device)
   return {
     first_switch_ep = first_switch_ep,
     first_button_ep = first_button_ep,
-    supported_button_values = {"pushed"}
+    supported_button_values = {"pushed", "pushed_2x"}
   }
 end
 

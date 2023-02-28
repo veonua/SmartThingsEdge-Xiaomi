@@ -1,4 +1,4 @@
-name: 'Xiaomi/Aqara Switch and Button v1.9'
+name: 'Xiaomi/Aqara Switch and Button v1.10'
 packageKey: 'lumi-switch'
 permissions:
   zigbee: {}

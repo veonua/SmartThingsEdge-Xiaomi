@@ -1,5 +1,52 @@
 # see for fingerprints https://github.com/Koenkk/zigbee-herdsman-converters/blob/master/devices/xiaomi.js
 zigbeeManufacturer:
+  - id: "lumi.plug"
+    deviceLabel: Mi Power Plug CN (ZNCZ02LM)
+    manufacturer: LUMI
+    model: lumi.plug
+    deviceProfileName: plug_prefs
+
+  - id: "lumi.plug.aq1"
+    deviceLabel: Aqara Smart Plug CN (ZNCZ11LM)
+    manufacturer: LUMI
+    model: lumi.plug.aq1
+    deviceProfileName: plug_prefs
+
+  - id: "lumi.plug.maeu01"
+    deviceLabel: Aqara Smart Plug EU (SP-EUC01)
+    manufacturer: LUMI
+    model: lumi.plug.maeu01
+    deviceProfileName: plug_prefs
+
+  - id: "lumi.plug.mmeu01"
+    deviceLabel: Mi Power Plug EU (ZNCZ04LM)
+    manufacturer: LUMI
+    model: lumi.plug.mmeu01
+    deviceProfileName: plug
+
+  - id: "lumi.plug.mitw01"
+    deviceLabel: Mi Power Plug TW (ZNCZ03LM)
+    manufacturer: LUMI
+    model: lumi.plug.mitw01
+    deviceProfileName: plug
+  - id: "lumi.plug.maus01"
+    deviceLabel: Mi Power Plug US (ZNCZ12LM)
+    manufacturer: LUMI
+    model: lumi.plug.maus01
+    deviceProfileName: plug
+
+  - id: "lumi.ctrl_86plug"
+    deviceLabel: Mi Wall Outlet CN (QBCZ11LM)
+    manufacturer: LUMI
+    model: lumi.ctrl_86plug
+    deviceProfileName: plug_prefs    
+  - id: "lumi.ctrl_86plug.aq1"
+    deviceLabel: Aqara Wall Outlet CN (QBCZ11LM)
+    manufacturer: LUMI
+    model: lumi.ctrl_86plug.aq1
+    deviceProfileName: plug    
+    
+
   - id: "QBKG03LM"
     deviceLabel: QBKG03LM Wall Switch (No Neutral, Double Rocker)
     manufacturer: LUMI
@@ -79,6 +126,16 @@ zigbeeManufacturer:
     manufacturer: LUMI
     model: lumi.switch.b2lc04
     deviceProfileName: opple-switch-2
+  - id: "QBKG40LM"
+    deviceLabel: QBKG40LM E1 Wall Switch (With Neutral, Single Rocker)
+    manufacturer: LUMI
+    model: lumi.switch.b1nc04
+    deviceProfileName: switch-neutral-button
+  - id: "QBKG41LM"
+    deviceLabel: QBKG41LM E1 Wall Switch (With Neutral, Double Rocker)
+    manufacturer: LUMI
+    model: lumi.switch.b2nc01
+    deviceProfileName: switch-neutral-button-2
 
   
 
@@ -140,6 +197,17 @@ zigbeeManufacturer:
     manufacturer: LUMI
     model: lumi.sensor_switch.aq3
     deviceProfileName: button
+
+  - id: "WXKG16LM"
+    deviceLabel: Aqara E1 Wireless Switch (Single Rocker)
+    manufacturer: LUMI
+    model: lumi.remote.acn003
+    deviceProfileName: button
+  - id: "WXKG17LM"
+    deviceLabel: Aqara E1 Wireless Switch (Double Rocker)
+    manufacturer: LUMI
+    model: lumi.remote.acn004
+    deviceProfileName: button-2
 
   - id: "WRS-R02"
     deviceLabel: WRS-R02 Wireless Switch (Two Button)

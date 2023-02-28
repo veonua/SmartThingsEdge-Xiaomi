@@ -1,7 +1,31 @@
 zigbeeManufacturer:
-  - id: "lumi.curtain.hagl04"
+  - id: "ZNCLDJ12LM"
     deviceLabel: Aqara Curtain B1
     manufacturer: LUMI
     model: lumi.curtain.hagl04
+    deviceProfileName: blind
+  # not tested yet
+  - id: "ZNCLDJ11LM"
+    deviceLabel: Curtain Motor
+    manufacturer: LUMI
+    model: lumi.curtain
+    deviceProfileName: blind
+
+  - id: "ZNJLBL01LM"
+    deviceLabel: Aqara Curtain E1
+    manufacturer: LUMI
+    model: lumi.curtain.acn002
+    deviceProfileName: blind
+
+  - id: "ZNCLBL01LM agl001"
+    deviceLabel: Aqara Curtain driver E1
+    manufacturer: LUMI
+    model: lumi.curtain.agl001
+    deviceProfileName: blind
+
+  - id: "ZNCLBL01LM acn003"
+    deviceLabel: Aqara Curtain driver E1
+    manufacturer: LUMI
+    model: lumi.curtain.acn003
     deviceProfileName: blind
   

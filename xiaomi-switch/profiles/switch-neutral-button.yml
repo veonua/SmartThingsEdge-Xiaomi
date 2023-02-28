@@ -2,9 +2,9 @@ name: switch-neutral-button
 components:
   - id: main
     capabilities:
-    - id: button
-      version: 1
     - id: switch
+      version: 1
+    - id: button
       version: 1
     - id: powerMeter
       version: 1
