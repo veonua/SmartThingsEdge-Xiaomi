@@ -10,6 +10,8 @@ components:
     version: 1
   - id: configuration
     version: 1
+  - id: statelessPowerToggleButton
+    version: 1
   - id: battery
     version: 1
   - id: refresh

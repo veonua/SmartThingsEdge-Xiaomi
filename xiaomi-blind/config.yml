@@ -1,4 +1,4 @@
-name: 'Xiaomi/Aqara Blinds 1.0.2'
+name: 'Xiaomi/Aqara Blinds 1.1'
 packageKey: 'lumi-blind'
 permissions:
   zigbee: {}

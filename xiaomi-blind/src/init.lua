@@ -10,8 +10,10 @@ local data_types = require "st.zigbee.data_types"
 local mgmt_bind_resp = require "st.zigbee.zdo.mgmt_bind_response"
 local mgmt_bind_req = require "st.zigbee.zdo.mgmt_bind_request"
 
-local CLUSTER   = data_types.ClusterId(0xd)
-local ATTRIBUTE = data_types.AttributeId(0x55)
+local AnalogOutput = zcl_clusters.AnalogOutput
+local Groups = zcl_clusters.Groups
+
+local MFG_CODE = 0x115F
 
 -- see https://raw.githubusercontent.com/markus-li/Hubitat/release/drivers/expanded/zigbee-aqara-smart-curtain-motor-expanded.groovy
 -- for referance
@@ -28,17 +30,29 @@ end
 
 local function added_handler(self, device)
   device:emit_event(capabilities.windowShade.supportedWindowShadeCommands({ value = { "open", "close", "pause"} }))
+  --device:emit_component_event(main_comp,
+  --  deviceInitialization.supportedInitializedState({ "notInitialized", "initializing", "initialized" }))
+
+  device:send(Groups.server.commands.RemoveAllGroups(device))
+
+  -- Set default value to the device.
+  --write_pref_attribute(device, PREF_REVERSE_OFF)
+  --write_pref_attribute(device, PREF_SOFT_TOUCH_ON)
+
   device:refresh()
 end
 
 local level_handler = function(self, device, value, zb_rx) 
   local body_length = zb_rx.body_length.value
   local val = math.floor(value.value)
-  local state = ""
-    
+
+  log.debug("level_handler: ", value, " body_length: ", body_length, " val: ", val)
+
+  local state = nil
+  
   if body_length == 0x11 then
     if val == 0 then
-      device:send(cluster_base.read_attribute(device, CLUSTER, ATTRIBUTE))
+      device:send(AnalogOutput.attributes.PresentValue:read(device))
     else
       log.info("moving")
     end
@@ -56,7 +70,7 @@ local level_handler = function(self, device, value, zb_rx)
     device:set_field("shadeLevel", val)
   end
 
-  if state ~= "" then
+  if state then
     device:emit_event(capabilities.windowShade.windowShade(state))
   end
 end
@@ -65,22 +79,43 @@ function pause(driver, device, command)
   device:send_to_component(command.component, zcl_clusters.WindowCovering.server.commands.Stop(device))
 end
 
+function toggle(driver, device, command)
+  local level = device:get_latest_state("main", capabilities.windowShadeLevel.ID,
+      capabilities.windowShadeLevel.shadeLevel.NAME) or 0
+
+  log.info("toggle level: ", level)
+
+  if level < 50 then
+    set_window_shade_level(driver, device, 100)
+  else
+    set_window_shade_level(driver, device, 0)
+  end
+end
+
 function set_window_shade_level(driver, device, number)
-  local prev_level = device:get_field("shadeLevel") or 0
+  local lastLevel = device:get_latest_state("main", capabilities.windowShadeLevel.ID,
+      capabilities.windowShadeLevel.shadeLevel.NAME) or 0
   
-  if prev_level == number then
+  if lastLevel == number then
     log.info("window shade level is already set to ", number)
   return end
+
+  log.info("setting window shade level to ", number, " from ", lastLevel)
   
+  if number == 0 then -- zero is not a valid value
+    number = 1
+  end
+
   local sign = 0
   local mantissa, exponent = math.frexp(number)
   mantissa = mantissa * 2 - 1
   exponent = exponent - 1
   
   local data = data_types.SinglePrecisionFloat(sign, exponent, mantissa)
-  device:send(cluster_base.write_attribute(device, CLUSTER, ATTRIBUTE, data))
+  device:send(AnalogOutput.attributes.PresentValue:write(device, data))
 
-  device:emit_event(capabilities.windowShade.windowShade((number < prev_level) and "closing" or "opening"))
+  local state = (number < lastLevel) and "closing" or "opening"
+  device:emit_event(capabilities.windowShade.windowShade(state))
 end
 
 function window_shade_level_cmd(driver, device, command)
@@ -102,7 +137,9 @@ local function build_window_shade_level(value)
 end
 
 local do_refresh = function(self, device)
-  device:send( cluster_base.read_attribute(device, CLUSTER, ATTRIBUTE) )
+  device:send(AnalogOutput.attributes.PresentValue:read(device))
+
+  --read_pref_attribute(device)
 end
 
 local function info_changed(driver, device, event, args)
@@ -125,7 +162,7 @@ local function info_changed(driver, device, event, args)
         val = false
       end
 
-      device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, attr, 0x115F, data_types.Boolean, val) )
+      device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, attr, MFG_CODE, data_types.Boolean, val) )
     end
   end
 end
@@ -144,8 +181,8 @@ local blinds_driver_template = {
   cluster_configurations = {
     [capabilities.windowShadeLevel.ID] = { -- have no idea if it works
       {
-        cluster = 0x0D,
-        attribute = 0x55,
+        cluster = AnalogOutput.ID,
+        attribute = AnalogOutput.attributes.PresentValue.ID,
         minimum_interval = 1,
         maximum_interval = 600,
         data_type = data_types.SinglePrecisionFloat,
@@ -160,8 +197,8 @@ local blinds_driver_template = {
       [mgmt_bind_resp.MGMT_BIND_RESPONSE] = zdo_binding_table_handler
     },
     attr = {
-      [0x0D] = {
-        [0x55] = level_handler,
+      [AnalogOutput.ID] = {
+        [AnalogOutput.attributes.PresentValue.ID] = level_handler,
       }
     }
   },
@@ -170,7 +207,7 @@ local blinds_driver_template = {
       [capabilities.refresh.commands.refresh.NAME] = do_refresh,
     },
     [capabilities.windowShade.ID] = {
-      [capabilities.windowShade.commands.close.NAME] = build_window_shade_level(0),
+      [capabilities.windowShade.commands.close.NAME] = build_window_shade_level(1),
       [capabilities.windowShade.commands.pause.NAME] = pause,
       [capabilities.windowShade.commands.open.NAME]  = build_window_shade_level(100),
     },
@@ -179,6 +216,9 @@ local blinds_driver_template = {
     },
     [capabilities.windowShadePreset.ID] = {
       [capabilities.windowShadePreset.commands.presetPosition.NAME] = preset
+    },
+    [capabilities.statelessPowerToggleButton.ID] = {
+      [capabilities.statelessPowerToggleButton.commands.setButton.NAME] = toggle
     }
   },
   sub_drivers = {},
