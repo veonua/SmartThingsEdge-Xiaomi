@@ -110,6 +110,19 @@ zigbeeManufacturer:
     manufacturer: LUMI
     model: lumi.switch.n3acn3
     deviceProfileName: switch-neutral-button-3
+
+  - id: "QBKG29LM"
+    deviceLabel: QBKG29LM Wall Switch (No Neutral, Triple Rocker)
+    manufacturer: LUMI
+    model: lumi.switch.l3acn1
+    deviceProfileName: opple-switch-3
+
+  - id: "QBKG32LM"
+    deviceLabel: QBKG32LM Wall Switch (With Neutral, Triple Rocker)
+    manufacturer: LUMI
+    model: lumi.switch.n3acn1
+    deviceProfileName: switch-neutral-button-3
+
   - id: "QBKG34LM"
     deviceLabel: QBKG34LM Wall Switch (With Neutral, Triple Rocker)
     manufacturer: LUMI
@@ -144,6 +157,11 @@ zigbeeManufacturer:
     manufacturer: LUMI
     model: lumi.sensor_switch
     deviceProfileName: button
+  - id: "WXKG02LM"
+    deviceLabel: WXKG02LM Wall Switch (Double Rocker)
+    manufacturer: LUMI
+    model: lumi.remote.b286acn01
+    deviceProfileName: button-2
   - id: "WXKG03LM_rev1"
     deviceLabel: WXKG03LM_rev1 Wall Switch (Single Rocker)
     manufacturer: LUMI
@@ -154,16 +172,17 @@ zigbeeManufacturer:
     manufacturer: LUMI
     model: lumi.remote.b186acn01
     deviceProfileName: button
-  - id: "WXKG02LM_rev1"
-    deviceLabel: WXKG02LM_rev1 Wall Switch (Double Rocker)
+  - id: "WXKG02LM sensor_86sw2"
+    deviceLabel: WXKG02LM-86sw2 Wall Switch (Double Rocker)
     manufacturer: LUMI
     model: lumi.sensor_86sw2
     deviceProfileName: button-2
-  - id: "WXKG02LM_rev2"
-    deviceLabel: WXKG02LM_rev2 Wall Switch (Double Rocker)
+  - id: "WXKG02LM sensor_86sw2Un"
+    deviceLabel: WXKG02LM-86sw2Un Wall Switch (Double Rocker)
     manufacturer: LUMI
-    model: lumi.remote.b286acn01
+    model: lumi.sensor_86sw2Un
     deviceProfileName: button-2
+ 
   - id: "WXKG06LM"
     deviceLabel: WXKG06LM Wall Switch (Single Rocker)
     manufacturer: LUMI
@@ -186,7 +205,7 @@ zigbeeManufacturer:
     model: lumi.sensor_switch.aq2
     deviceProfileName: button
 
-  - id: "WXKG12LM_2"
+  - id: "WXKG12LM sensor_swit"
     deviceLabel: WXKG12LM Wireless Switch (Single Rocker)
     manufacturer: LUMI
     model: lumi.sensor_swit
@@ -202,7 +221,8 @@ zigbeeManufacturer:
     deviceLabel: Aqara E1 Wireless Switch (Single Rocker)
     manufacturer: LUMI
     model: lumi.remote.acn003
-    deviceProfileName: button
+    deviceProfileName: opple-button
+
   - id: "WXKG17LM"
     deviceLabel: Aqara E1 Wireless Switch (Double Rocker)
     manufacturer: LUMI
@@ -257,19 +277,16 @@ zigbeeManufacturer:
     manufacturer: LUMI
     model: lumi.switch.b1laus01
     deviceProfileName: switch-button
-
   - id: "WS-USC02"
     deviceLabel: WS-USC02 Wall Switch (No Neutral, Double Rocker)
     manufacturer: LUMI
     model: lumi.switch.b2laus01
     deviceProfileName: switch-2
-
   - id: "WS-USC03"
     deviceLabel: WS-USC03 Wall Switch (Single Rocker)
     manufacturer: LUMI
     model: lumi.switch.b1naus01
     deviceProfileName: switch-power
-
   - id: "WS-USC04"
     deviceLabel: WS-USC04 Wall Switch (Double Rocker)
     manufacturer: LUMI

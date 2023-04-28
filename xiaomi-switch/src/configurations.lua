@@ -42,7 +42,7 @@ local devices = {
   },
   GROUP3 = {
     MATCHING_MODELS = {
-      "lumi.switch.b1nacn02", "lumi.switch.b2nacn02", "lumi.switch.b3n01", "lumi.switch.n3acn3", 
+      "lumi.switch.b1nacn02", "lumi.switch.b2nacn02", "lumi.switch.b3n01",
       "lumi.switch.l3acn3", "lumi.switch.n3acn3",
     },
     CONFIGS = {
