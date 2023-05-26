@@ -7,6 +7,9 @@ local cosock = require "cosock"
 local http = cosock.asyncify "socket.http"
 local ltn12 = require('ltn12')
 
+-- local lcoap = require('lcoap')
+-- local coap_client = require('lcoap.client')
+
 local command_handler = {}
 
 local level_Steps = caps["legendabsolute60149.levelSteps"]
@@ -27,6 +30,12 @@ end
 ------------------
 -- Refresh command
 function command_handler.refresh(_, device, slow)
+  -- local co_resp, err = coap_client.post("coap://[fd9a:9169:3c05:1:e2f7:411a:7b09:3a0c]/nlsecure", "12345")
+  -- if not co_resp then
+  --   log.error("Error: " .. err)
+  --   return
+  -- end
+
   local success, data = command_handler.send_lan_command(device, 'GET', 'state')
 
   -- Check success

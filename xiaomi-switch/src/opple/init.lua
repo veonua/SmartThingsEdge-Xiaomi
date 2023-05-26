@@ -21,6 +21,7 @@ local OPPLE_CLUSTER = 0xFCC0
 
 local OPPLE_FINGERPRINTS = {
     { mfr = "LUMI", model = "^lumi.switch.l.aeu1" },
+    { mfr = "LUMI", model = "^lumi.remote.acn003" }, -- unknown
     { mfr = "LUMI", model = "^lumi.remote.b.8" },
     { mfr = "LUMI", model = "^lumi.switch.b.lc04" },
     { mfr = "LUMI", model = "^lumi.switch.l3acn3" },
