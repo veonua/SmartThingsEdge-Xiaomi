@@ -62,8 +62,8 @@ local device_init = function(self, device)
   device:set_endpoint_to_component_fn(endpoint_to_component)
 
   ---
-  device:remove_monitored_attribute(0x0006, 0x0000)
-  device:remove_monitored_attribute(0x0012, 0x0055)
+  -- device:remove_monitored_attribute(0x0006, 0x0000)
+  -- device:remove_monitored_attribute(0x0012, 0x0055)
   ---
   local configs = configsMap.get_device_parameters(device)
 
@@ -151,10 +151,11 @@ function info_changed(driver, device, event, args)
               attr = 0xFF24
           end
 
-          log.info("+info_changed: ", id, value, data, attr)
-
           if attr then
-              device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, attr, 0x115F, data_types.Uint8, data) )
+            log.info("+info_changed: ", id, value, data, attr)
+            device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, attr, 0x115F, data_types.Uint8, data) )
+          else
+            log.error("info not changed ", id, value)
           end
       end
   end
@@ -179,9 +180,16 @@ local switch_driver_template = {
         attribute = 0x55,
         minimum_interval = 100,
         maximum_interval = 3600,
-        data_type = Uint16,
+        data_type = data_types.Uint16,
         reportable_change = 1
       }
+      -- ,{
+      --   cluster = zcl_clusters.OnOff.ID,
+      --   attribute = zcl_clusters.OnOff.attributes.OnOff.ID,
+      --   minimum_interval = 100,
+      --   maximum_interval = 3600,
+      --   data_type = data_types.Boolean
+      -- }
     }
   },
   zigbee_handlers = {
@@ -201,11 +209,11 @@ local switch_driver_template = {
   
   lifecycle_handlers = {
     init = device_init,
-    added = device_init,
+    --added = device_added,
     infoChanged = info_changed,
   }
 }
 
 defaults.register_for_default_handlers(switch_driver_template, switch_driver_template.supported_capabilities)
-local plug = ZigbeeDriver("switch", switch_driver_template)
-plug:run()
+local driver = ZigbeeDriver("switch", switch_driver_template)
+driver:run()

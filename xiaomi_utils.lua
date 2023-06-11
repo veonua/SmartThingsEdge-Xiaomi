@@ -140,6 +140,14 @@ local ignore_events = {
   [0x6f] = "button2",
 }
 
+function xiaomi_utils.emit_battery_event(driver, device, value, zb_rx)
+  emit_battery_event(device, value)
+end
+
+function xiaomi_utils.emit_voltage_event(driver, device, value, zb_rx)
+  emit_voltage_event(device, value)
+end
+
 function xiaomi_utils.handler(driver, device, value, zb_rx)
   if value.ID ~= data_types.CharString.ID and value.ID ~= data_types.OctetString.ID then
     log.warn("xiaomi_utils.handler: unknown data type: " .. tostring (value) )
