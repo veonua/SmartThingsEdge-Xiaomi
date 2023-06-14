@@ -1,57 +1,68 @@
 name: switch-neutral-button-2
 components:
-  - id: main
-    label: "Left"
-    capabilities:
-    - id: switch
-      version: 1
-    - id: button
-      version: 1
-    - id: powerMeter
-      version: 1
-    - id: energyMeter
-      version: 1
-    - id: refresh
-      version: 1
-    categories:
-    - name: Switch
-  - id: button2
-    label: "Right"
-    capabilities:
-    - id: switch
-      version: 1
-    - id: button
-      version: 1
-    categories:
-    - name: Switch
-  - id: group1
-    label: "Both buttons"
-    capabilities:
-    - id: button
-      version: 1
-    categories:
-    - name: RemoteController
+- id: main
+  label: "Left"
+  capabilities:
+  - id: switch
+    version: 1
+  - id: button
+    version: 1
+  - id: powerMeter
+    version: 1
+  - id: energyMeter
+    version: 1
+  - id: refresh
+    version: 1
+  categories:
+  - name: Switch
+- id: button2
+  label: "Right"
+  capabilities:
+  - id: switch
+    version: 1
+  - id: button
+    version: 1
+  categories:
+  - name: Switch
+- id: group1
+  label: "Both buttons"
+  capabilities:
+  - id: button
+    version: 1
+  categories:
+  - name: RemoteController
 preferences:
-  - title: "Left button"
-    name: button1
-    required: true
-    preferenceType: enumeration
-    definition:
-      options:
-        0x12: "Switch 1"
-        0x22: "Switch 2"
-        0xFE: "Detached"
-      default: "0x12"
-  - title: "Right button"
-    name: button2
-    required: true
-    preferenceType: enumeration
-    definition:
-      options:
-        0x12: "Switch 1"
-        0x22: "Switch 2"
-        0xFE: "Detached"
-      default: "0x22"
+- title: "Left button"
+  name: button1
+  required: true
+  preferenceType: enumeration
+  definition:
+    options:
+      0x12: "Switch 1"
+      0x22: "Switch 2"
+      0xFE: "Detached"
+    default: "0x12"
+- title: "Right button"
+  name: button2
+  required: true
+  preferenceType: enumeration
+  definition:
+    options:
+      0x12: "Switch 1"
+      0x22: "Switch 2"
+      0xFE: "Detached"
+    default: "0x22"
+- title: "Dual Button Actions"
+  description: "Both buttons pressed at the same time will send a different event than when pressed individually."
+  name: splitEvents
+  required: true
+  preferenceType: enumeration
+  definition:
+    options:
+      0: "Individual events"
+      1: "Grouped event"
+    default: "0"
+
 metadata:
   deviceType: Switch
   ocfDeviceType: oic.d.switch

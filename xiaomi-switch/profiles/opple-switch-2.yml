@@ -60,6 +60,10 @@ preferences:
     preferenceType: boolean
     definition:
       default: false
+
+  - preferenceId: stse.restorePowerState
+    explicit: true
+    
 metadata:
   deviceType: Switch
   ocfDeviceType: oic.d.switch

@@ -45,6 +45,16 @@ preferences:
     minLength: 1
     maxLength: 5
     default: "0"
+- title: "Dual Button Actions"
+  description: "Both buttons pressed at the same time will send a different event than when pressed individually."
+  name: splitEvents
+  required: true
+  preferenceType: enumeration
+  definition:
+    options:
+      0: "Individual events"
+      1: "Grouped event"
+    default: "0"
 
 
 metadata:

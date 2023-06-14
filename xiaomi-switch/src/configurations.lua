@@ -53,6 +53,7 @@ local devices = {
   GROUP4 = {
     MATCHING_MODELS = {
       "lumi.switch.l1aeu1", "lumi.switch.l2aeu1", 
+      "lumi.switch.l3acn1",
       "lumi.switch.n1aeu1", "lumi.switch.n2aeu1", 
     },
     CONFIGS = {
@@ -96,7 +97,7 @@ configs.get_device_parameters = function(zb_device)
   for _, device in pairs(devices) do
     for _, model in pairs(device.MATCHING_MODELS) do
       if zb_device:get_model() == model then
-        log.info( "Found config for device: " .. model .. " " .. json.encode(device.CONFIGS) )
+        log.info( "Found config for: " .. model .. " " .. json.encode(device.CONFIGS) )
         
         device.CONFIGS["first_switch_ep"] = first_switch_ep
         return device.CONFIGS
@@ -104,10 +105,10 @@ configs.get_device_parameters = function(zb_device)
     end
   end
   
-  log.warn("No configuration found for device: " .. zb_device:get_model() )
+  log.warn("No configuration found for: " .. zb_device:get_model() )
   local first_button_ep = zigbee_utils.find_first_ep(eps, 0x0012)
   if first_button_ep == nil then
-    log.warn("No Multistate Input for device: " .. zb_device:get_model() )
+    log.warn("No Multistate Input for: " .. zb_device:get_model() )
     first_button_ep = 100
   end
 

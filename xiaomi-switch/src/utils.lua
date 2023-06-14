@@ -1,4 +1,3 @@
-
 local capabilities = require "st.capabilities"
 local log = require "log"
 --local json = require "dkjson"
@@ -14,21 +13,20 @@ function utils.first_button_ep(device)
 end
 
 function utils.first_button_group_ep(device)
-    return device:get_field("first_button_group_ep") or 99
+    return device:get_field("first_button_group_ep") or 999
 end
 
 function utils.emit_button_event(device, ep, event)
     local all_buttons_ep = utils.first_button_group_ep(device)
-    local eps = {ep}
-    if ep >= all_buttons_ep then -- broadcast event to all buttons
+    
+    local splitEvents = device.preferences['splitEvents'] or '0'
+    if ep < all_buttons_ep or splitEvents == '1' then -- broadcast event to all buttons
+        device:emit_event_for_endpoint(ep, event)
+    else
         local first_button_ep = utils.first_button_ep(device)
         for i = first_button_ep, all_buttons_ep-1 do
-            table.insert(eps, i)
+            device:emit_event_for_endpoint(i, event)
         end
-    end
-
-    for _, _ep in ipairs(eps) do
-        device:emit_event_for_endpoint(_ep, event)
     end
 end
 
