@@ -85,7 +85,7 @@ local do_configure = function(self, device)
 end
 
 local do_refresh = function(self, device)
-  do_configure(self, device)
+  -- do_configure(self, device)
 
   device:send(OccupancySensing.attributes.Occupancy:read(device))
   device:send(OccupancySensing.attributes.PIROccupiedToUnoccupiedDelay:read(device))

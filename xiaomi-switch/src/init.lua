@@ -61,12 +61,10 @@ local device_init = function(self, device)
   device:set_component_to_endpoint_fn(component_to_endpoint)
   device:set_endpoint_to_component_fn(endpoint_to_component)
 
-  ---
-  -- device:remove_monitored_attribute(0x0006, 0x0000)
+  device:remove_monitored_attribute(0x0006, 0x0000) -- remove held event 
   -- device:remove_monitored_attribute(0x0012, 0x0055)
-  ---
+  
   local configs = configsMap.get_device_parameters(device)
-
   device:set_field("first_switch_ep", configs.first_switch_ep, {persist = true})
   device:set_field("first_button_ep", configs.first_button_ep, {persist = true})
 
@@ -118,7 +116,6 @@ function button_attr_handler(driver, device, value, zb_rx)
   end
 
   local click_type = utils.click_types[val]
-  --local component_id = ep - utils.first_button_ep(device) + 1
 
   if click_type ~= nil then
     utils.emit_button_event(device, zb_rx.address_header.src_endpoint.value, click_type({state_change = true}))

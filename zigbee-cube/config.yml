@@ -1,4 +1,4 @@
-name: 'Aqara Cube v1.1'
+name: 'Aqara Cube v1.2'
 packageKey: 'aqara-cube'
 permissions:
   zigbee: {}

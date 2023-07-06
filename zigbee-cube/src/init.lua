@@ -133,7 +133,7 @@ function set_level(_, device, command)
 end
 
 local do_refresh = function(self, device)
-  added_handler(self, device)
+  log.info("do_refresh")
 end
 
 function on_off(_, device, command)
