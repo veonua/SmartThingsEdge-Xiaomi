@@ -35,21 +35,9 @@ preferences:
         0xFE: "Detached"
       default: "0x12"
 
-  - title: "Turn Off indicator light"
-    name: ledDisabledNight
-    required: false
-    preferenceType: boolean
-    definition:
-      default: false
-      
-  - title: "Power off memory"
-    name: powerOutageMemory
-    required: false
-    preferenceType: boolean
-    definition:
-      default: false
-
   - preferenceId: stse.restorePowerState
+    explicit: true
+  - preferenceId: stse.turnOffIndicatorLight
     explicit: true
 metadata:
   deviceType: Switch

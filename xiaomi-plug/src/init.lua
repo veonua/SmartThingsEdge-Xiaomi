@@ -62,7 +62,7 @@ local function info_changed(driver, device, event, args)
       local payload
       local attr
       
-      if id == "powerOutageMemory" then
+      if id == "stse.restorePowerState" then
         if model == "lumi.plug" then
           payload = octetstring_from({ 0xaa, 0x80, 0x05, 0xd1, 0x47, value and 0x09 or 0x07, 0x01, 0x10, bool_to_number(not value)})
           cluster_id = zcl_clusters.basic_id
@@ -80,7 +80,7 @@ local function info_changed(driver, device, event, args)
           payload = data_types.Boolean(value)
           attr = 0x0202
         end
-      elseif id == "ledDisabledNight" then
+      elseif id == "stse.turnOffIndicatorLight" then
         if model == "lumi.plug.aq1" or model == "lumi.plug" then
           local pl = bool_to_number(not value)
           payload = octetstring_from({ 0xaa, 0x80, 0x05, 0xd1, 0x47, pl, 0x03, 0x10, pl})

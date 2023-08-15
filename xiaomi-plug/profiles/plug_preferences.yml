@@ -19,13 +19,8 @@ components:
   categories:
   - name: SmartPlug
 preferences:
-  - title: "Power outage memory"
-    description: "Restore last known power strate after power outage"
-    name: powerOutageMemory
-    required: true
-    preferenceType: boolean
-    definition: 
-      default: true
+  - preferenceId: stse.restorePowerState
+    explicit: true
 
   - title: "Auto Off"
     description: "Turn the device automatically off when attached device consumes less than 2W for 20 minutes"

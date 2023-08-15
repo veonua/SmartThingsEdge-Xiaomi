@@ -18,10 +18,11 @@ local PowerConfiguration = zcl_clusters.PowerConfiguration
 local Groups = zcl_clusters.Groups
 
 local OPPLE_FINGERPRINTS = {
-    { mfr = "LUMI", model = "^lumi.switch.l.aeu1" },
-    { mfr = "LUMI", model = "^lumi.remote.b.8" },
-    { mfr = "LUMI", model = "^lumi.switch.b.lc04" },
-    { mfr = "LUMI", model = "^lumi.switch.l3acn." },
+    { model = "^lumi.switch.l.aeu1" },
+    { model = "^lumi.switch.n.aeu1" },
+    { model = "^lumi.remote.b.8" },
+    { model = "^lumi.switch.b.lc04" },
+    { model = "^lumi.switch.l3acn." },
 }
 
 local is_opple = function(opts, driver, device)
@@ -113,12 +114,16 @@ local function info_changed(driver, device, event, args)
             device:send(zigbee_utils.build_bind_request(device, Level.ID, data))
             device:send(zigbee_utils.build_bind_request(device, Scenes.ID, data))
             device:send(zigbee_utils.build_bind_request(device, ColorControl.ID, data))
-        elseif id == "powerOutageMemory" then
+        elseif id == "stse.restorePowerState" then
             payload = data_types.validate_or_build_type(data==1, data_types.Boolean, id)
             attr = 0x0201
-        elseif id == "ledDisabledNight" then
+        elseif id == "stse.turnOffIndicatorLight" then
             payload = data_types.validate_or_build_type(data==1, data_types.Boolean, id)
             attr = 0x0203
+        elseif id == "stse.changeToWirelessSwitch" then
+            attr = 0x0200
+            endpoint = 1
+            payload = data_types.validate_or_build_type(data<0xF0 and 1 or 0, data_types.Uint8, id)
         elseif id == "button1" then
             attr = 0x0200
             endpoint = 1

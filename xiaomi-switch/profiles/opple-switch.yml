@@ -21,31 +21,12 @@ preferences:
         0: "Light Commands (Bind to Group)"
         1: "Button Events (Normal)"
       default: "1"
-  - title: "Button"
-    name: button1
-    required: true
-    preferenceType: enumeration
-    definition:
-      options:
-        0x12: "Switch"
-        0xFE: "Detached"
-      default: "0x12"
-
-  - title: "Turn Off indicator light"
-    name: ledDisabledNight
-    required: false
-    preferenceType: boolean
-    definition:
-      default: false
-      
-  - title: "Power off memory"
-    name: powerOutageMemory
-    required: false
-    preferenceType: boolean
-    definition:
-      default: false
+  - preferenceId: stse.changeToWirelessSwitch
+    explicit: true
 
   - preferenceId: stse.restorePowerState
+    explicit: true
+  - preferenceId: stse.turnOffIndicatorLight
     explicit: true
 
 metadata:

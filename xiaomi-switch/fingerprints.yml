@@ -1,58 +1,58 @@
 # see for fingerprints https://github.com/Koenkk/zigbee-herdsman-converters/blob/master/src/devices/xiaomi.js
 #                      https://opendoc.aqara.com/docs/SDK%E5%AF%B9%E6%8E%A5%E5%BC%80%E5%8F%91%E6%89%8B%E5%86%8C/Android%E5%BC%80%E5%8F%91%E6%89%8B%E5%86%8C/%E8%AE%BE%E5%A4%87%E9%85%8D%E7%BD%91/%E9%85%8D%E7%BD%91SDK%E6%94%AF%E6%8C%81%E8%AE%BE%E5%A4%87%E6%B8%85%E5%8D%95.html
 zigbeeManufacturer:
-  - id: "lumi.plug"
-    deviceLabel: Mi Power Plug CN (ZNCZ02LM)
-    manufacturer: LUMI
-    model: lumi.plug
-    deviceProfileName: plug_prefs
+  # - id: "lumi.plug"
+  #   deviceLabel: Mi Power Plug CN (ZNCZ02LM)
+  #   manufacturer: LUMI
+  #   model: lumi.plug
+  #   deviceProfileName: plug_prefs
 
-  - id: "lumi.plug.aq1"
-    deviceLabel: Aqara Smart Plug CN (ZNCZ11LM)
-    manufacturer: LUMI
-    model: lumi.plug.aq1
-    deviceProfileName: plug_prefs
+  # - id: "lumi.plug.aq1"
+  #   deviceLabel: Aqara Smart Plug CN (ZNCZ11LM)
+  #   manufacturer: LUMI
+  #   model: lumi.plug.aq1
+  #   deviceProfileName: plug_prefs
 
-  - id: "lumi.plug.maeu01"
-    deviceLabel: Aqara Smart Plug EU (SP-EUC01)
-    manufacturer: LUMI
-    model: lumi.plug.maeu01
-    deviceProfileName: plug_prefs
+  # - id: "lumi.plug.maeu01"
+  #   deviceLabel: Aqara Smart Plug EU (SP-EUC01)
+  #   manufacturer: LUMI
+  #   model: lumi.plug.maeu01
+  #   deviceProfileName: plug_prefs
 
-  - id: "lumi.plug.mmeu01"
-    deviceLabel: Mi Power Plug EU (ZNCZ04LM)
-    manufacturer: LUMI
-    model: lumi.plug.mmeu01
-    deviceProfileName: plug
+  # - id: "lumi.plug.mmeu01"
+  #   deviceLabel: Mi Power Plug EU (ZNCZ04LM)
+  #   manufacturer: LUMI
+  #   model: lumi.plug.mmeu01
+  #   deviceProfileName: plug
 
-  - id: "lumi.plug.mitw01"
-    deviceLabel: Mi Power Plug TW (ZNCZ03LM)
-    manufacturer: LUMI
-    model: lumi.plug.mitw01
-    deviceProfileName: plug
-  - id: "lumi.plug.maus01"
-    deviceLabel: Mi Power Plug US (ZNCZ12LM)
-    manufacturer: LUMI
-    model: lumi.plug.maus01
-    deviceProfileName: plug
+  # - id: "lumi.plug.mitw01"
+  #   deviceLabel: Mi Power Plug TW (ZNCZ03LM)
+  #   manufacturer: LUMI
+  #   model: lumi.plug.mitw01
+  #   deviceProfileName: plug
+  # - id: "lumi.plug.maus01"
+  #   deviceLabel: Mi Power Plug US (ZNCZ12LM)
+  #   manufacturer: LUMI
+  #   model: lumi.plug.maus01
+  #   deviceProfileName: plug
 
-  - id: "lumi.ctrl_86plug"
-    deviceLabel: Mi Wall Outlet CN (QBCZ11LM)
-    manufacturer: LUMI
-    model: lumi.ctrl_86plug
-    deviceProfileName: plug_prefs    
-  - id: "lumi.ctrl_86plug.aq1"
-    deviceLabel: Aqara Wall Outlet CN (QBCZ11LM)
-    manufacturer: LUMI
-    model: lumi.ctrl_86plug.aq1
-    deviceProfileName: plug    
+  # - id: "lumi.ctrl_86plug"
+  #   deviceLabel: Mi Wall Outlet CN (QBCZ11LM)
+  #   manufacturer: LUMI
+  #   model: lumi.ctrl_86plug
+  #   deviceProfileName: plug_prefs    
+  # - id: "lumi.ctrl_86plug.aq1"
+  #   deviceLabel: Aqara Wall Outlet CN (QBCZ11LM)
+  #   manufacturer: LUMI
+  #   model: lumi.ctrl_86plug.aq1
+  #   deviceProfileName: plug    
     
 
   - id: "QBKG03LM"
     deviceLabel: QBKG03LM Wall Switch (No Neutral, Double Rocker)
     manufacturer: LUMI
     model: lumi.ctrl_neutral2
-    deviceProfileName: switch-button-2
+    deviceProfileName: switch-button-2-main
   - id: "QBKG04LM"
     deviceLabel: QBKG04LM Wall Switch (No Neutral, Single Rocker)
     manufacturer: LUMI
@@ -99,7 +99,7 @@ zigbeeManufacturer:
     deviceLabel: QBKG24LM Wall Switch (With Neutral, Double Rocker)
     manufacturer: LUMI
     model: lumi.switch.b2nacn02
-    deviceProfileName: switch-neutral-button-2
+    deviceProfileName: switch-neutral-button-2-main
   
   - id: "QBKG25LM"
     deviceLabel: QBKG25LM Wall Switch (No Neutral, Triple Rocker)
