@@ -18,11 +18,10 @@ local PowerConfiguration = zcl_clusters.PowerConfiguration
 local Groups = zcl_clusters.Groups
 
 local OPPLE_FINGERPRINTS = {
-    { model = "^lumi.switch.l.aeu1" },
-    { model = "^lumi.switch.n.aeu1" },
+    { model = "^lumi.switch...aeu1" },
     { model = "^lumi.remote.b.8" },
     { model = "^lumi.switch.b.lc04" },
-    { model = "^lumi.switch.l3acn." },
+    { model = "^lumi.switch..3acn." },
 }
 
 local is_opple = function(opts, driver, device)
@@ -101,8 +100,12 @@ local function info_changed(driver, device, event, args)
     -- https://github.com/Koenkk/zigbee-herdsman-converters/blob/master/converters/toZigbee.js for more info
     for id, value in pairs(device.preferences) do
       if args.old_st_store.preferences[id] ~= value then --and preferences[id] then
-        local data = tonumber(device.preferences[id])
-        
+        --local data = tonumber(device.preferences[id])
+        -- if device.preferences[id] is number, then data will be number, otherwise it will be string
+
+        local data = device.preferences[id]
+        data = tonumber(data) or data
+
         local attr
         local payload 
         local endpoint
@@ -115,15 +118,15 @@ local function info_changed(driver, device, event, args)
             device:send(zigbee_utils.build_bind_request(device, Scenes.ID, data))
             device:send(zigbee_utils.build_bind_request(device, ColorControl.ID, data))
         elseif id == "stse.restorePowerState" then
-            payload = data_types.validate_or_build_type(data==1, data_types.Boolean, id)
+            payload = data_types.validate_or_build_type(data, data_types.Boolean, id)
             attr = 0x0201
         elseif id == "stse.turnOffIndicatorLight" then
-            payload = data_types.validate_or_build_type(data==1, data_types.Boolean, id)
+            payload = data_types.validate_or_build_type(data, data_types.Boolean, id)
             attr = 0x0203
         elseif id == "stse.changeToWirelessSwitch" then
             attr = 0x0200
             endpoint = 1
-            payload = data_types.validate_or_build_type(data<0xF0 and 1 or 0, data_types.Uint8, id)
+            payload = data_types.validate_or_build_type(data and 0 or 1, data_types.Uint8, id)
         elseif id == "button1" then
             attr = 0x0200
             endpoint = 1
