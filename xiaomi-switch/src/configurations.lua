@@ -134,7 +134,7 @@ configs.get_device_parameters = function(zb_device)
         if m ~= nil then
           switch = true
           number_of_channels = tonumber(m)
-          neutral_wire = true
+          neutral_wire = false
         end
       end  
     end

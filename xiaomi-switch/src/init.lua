@@ -102,7 +102,7 @@ end
 local function device_added(driver, device)
   -- Only create children for the actual Zigbee device and not the children
   if device.network_type ~= device_lib.NETWORK_TYPE_ZIGBEE then
-    log.warn("Device is not Zigbee")
+    log.info("Device is not Zigbee")
     return
   end
 
@@ -123,7 +123,7 @@ local function device_added(driver, device)
   
   if children_amount >= 2 then
     for i = first_switch_ep + 1, first_switch_ep + children_amount - 1, 1 do
-      log.warn("--- Creating child device: ", i)
+      -- log.warn("--- Creating child device: ", i)
 
       if find_child(device, i) == nil then
         local name = string.format("%s%d", device.label, i)
@@ -136,7 +136,7 @@ local function device_added(driver, device)
           parent_assigned_child_key = string.format("%02X", i), -- same as Zigbee endpoint
           vendor_provided_label = name
         }
-        log.warn("+++ Creating child device: ", name)
+        -- log.warn("+++ Creating child device: ", name)
         driver:try_create_device(metadata)
       end
     end
@@ -145,6 +145,7 @@ end
 ---
 
 local device_init = function(self, device)
+  log.info("------- device_init -------")
   device:set_component_to_endpoint_fn(component_to_endpoint)
   device:set_endpoint_to_component_fn(endpoint_to_component)
 
@@ -158,8 +159,8 @@ local device_init = function(self, device)
 
   device:set_find_child(find_child)
 
-  device:remove_monitored_attribute(0x0006, 0x0000) -- remove held event 
-  -- device:remove_monitored_attribute(0x0012, 0x0055)
+  device:remove_monitored_attribute(zcl_clusters.OnOff.ID, zcl_clusters.OnOff.attributes.OnOff.ID) -- remove held event 
+  -- device:remove_monitored_attribute(MultistateInput, WIRELESS_SWITCH_ATTRIBUTE_ID)
 
   local configs = configsMap.get_device_parameters(device)
   
@@ -203,10 +204,11 @@ local device_init = function(self, device)
 end
 
 local do_refresh = function(self, device)
+  log.info("------- do_refresh -------")
   -- device_added(self, device)
-  -- device_init(self, device)
+  device_init(self, device)
 
-  device:send(zcl_clusters.OnOff.attributes.OnOff:read(device))
+  --device:send(zcl_clusters.OnOff.attributes.OnOff:read(device))
   device:send(zcl_clusters.AnalogInput.attributes.PresentValue:read(device):to_endpoint(POWER_METER_ENDPOINT))
   device:send(zcl_clusters.AnalogInput.attributes.PresentValue:read(device):to_endpoint(ENERGY_METER_ENDPOINT))
 end
@@ -328,5 +330,5 @@ local switch_driver_template = {
 }
 
 defaults.register_for_default_handlers(switch_driver_template, switch_driver_template.supported_capabilities)
-local driver = ZigbeeDriver("switch", switch_driver_template)
+local driver = ZigbeeDriver("lumi-switch", switch_driver_template)
 driver:run()
