@@ -73,12 +73,12 @@ zigbeeManufacturer:
     deviceLabel: QBKG12LM Wall Switch (With Neutral, Double Rocker)
     manufacturer: LUMI
     model: lumi.ctrl_ln2
-    deviceProfileName: switch-neutral-button-2
+    deviceProfileName: switch-neutral-button-2-main
   - id: "QBKG12LM_AG"
     deviceLabel: QBKG12LM Wall Switch (With Neutral, Double Rocker)
     manufacturer: LUMI
     model: lumi.ctrl_ln2.aq1
-    deviceProfileName: switch-neutral-button-2
+    deviceProfileName: switch-neutral-button-2-main
 
   - id: "QBKG21LM"
     deviceLabel: QBKG21LM Wall Switch (No Neutral, Single Rocker)

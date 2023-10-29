@@ -135,6 +135,10 @@ local function info_changed(driver, device, event, args)
             attr = 0x0200
             endpoint = 2
             payload = data_types.validate_or_build_type(data<0xF0 and 1 or 0, data_types.Uint8, id)
+        elseif id == "button3" then
+            attr = 0x0200
+            endpoint = 3
+            payload = data_types.validate_or_build_type(data<0xF0 and 1 or 0, data_types.Uint8, id)
         end
 
         if attr then

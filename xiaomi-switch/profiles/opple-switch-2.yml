@@ -40,6 +40,16 @@ preferences:
   - preferenceId: stse.changeToWirelessSwitch
     explicit: true
 
+  - title: "Right button"
+    name: button2
+    required: true
+    preferenceType: enumeration
+    definition:
+      options:
+        0x22: "Switch 2"
+        0xFE: "Detached"
+      default: "0x22"
+
   - preferenceId: stse.restorePowerState
     explicit: true
   - preferenceId: stse.turnOffIndicatorLight

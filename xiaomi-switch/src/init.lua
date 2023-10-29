@@ -91,7 +91,9 @@ end
 
 local CONFIG_MAP = {
   ["lumi.switch.b2nacn02"] = { children_amount = 2 },
-  ["lumi.ctrl_neutral2"] = { children_amount = 2 }
+  ["lumi.ctrl_neutral2"] = { children_amount = 2 },
+  ["lumi.ctrl_ln2"] = { children_amount = 2 },
+  ["lumi.ctrl_ln2.aq1"] = { children_amount = 2 }
 }
 
 local function get_children_amount(device)
