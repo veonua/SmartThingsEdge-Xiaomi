@@ -12,6 +12,7 @@ local mgmt_bind_req = require "st.zigbee.zdo.mgmt_bind_request"
 
 local AnalogOutput = zcl_clusters.AnalogOutput
 local Groups = zcl_clusters.Groups
+local PowerConfiguration = zcl_clusters.PowerConfiguration
 
 local MFG_CODE = 0x115F
 
@@ -138,8 +139,13 @@ end
 
 local do_refresh = function(self, device)
   device:send(AnalogOutput.attributes.PresentValue:read(device))
+  device:send(PowerConfiguration.attributes.BatteryPercentageRemaining:read(device))
+  device:send(PowerConfiguration.attributes.BatteryVoltage:read(device))
+end
 
-  --read_pref_attribute(device)
+local do_configure = function(self, device)
+  -- device:send(AnalogOutput.attributes.PresentValue:configure_reporting(device, 30, 21600, 1))
+  device:send(PowerConfiguration.attributes.BatteryPercentageRemaining:configure_reporting(device, 30, 21600, 1))
 end
 
 local function info_changed(driver, device, event, args)
@@ -176,6 +182,7 @@ local blinds_driver_template = {
   },
   lifecycle_handlers = {
     added = added_handler,
+    doConfigure = do_configure,
     infoChanged = info_changed,
   },
   cluster_configurations = {
@@ -186,7 +193,7 @@ local blinds_driver_template = {
         minimum_interval = 1,
         maximum_interval = 600,
         data_type = data_types.SinglePrecisionFloat,
-        reportable_change = 10
+        reportable_change = 1
       }
     }
   },
@@ -197,6 +204,9 @@ local blinds_driver_template = {
       [mgmt_bind_resp.MGMT_BIND_RESPONSE] = zdo_binding_table_handler
     },
     attr = {
+      -- [PowerConfiguration.ID] = {
+      --   [PowerConfiguration.attributes.BatteryPercentageRemaining.ID] = battery_perc_attr_handler,
+      -- },
       [AnalogOutput.ID] = {
         [AnalogOutput.attributes.PresentValue.ID] = level_handler,
       }

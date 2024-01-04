@@ -128,8 +128,9 @@ function set_level(_, device, command)
   end
   
   local value = command.args.level
-  device:emit_event(capabilities.switchLevel.level(value))
-  device:set_field(CURRENT_LEVEL, value)
+  generate_switch_level_event(device, value)
+  -- device:emit_event(capabilities.switchLevel.level(value))
+  -- device:set_field(CURRENT_LEVEL, value)
 end
 
 local do_refresh = function(self, device)
@@ -139,7 +140,8 @@ end
 function on_off(_, device, command)
   local last_state = device:get_latest_state("main", capabilities.switch.ID, capabilities.switch.switch.NAME)
   
-  if (last_state == command.command) then
+  local last_rotate = device:get_field(LEVEL_TS) or 0
+  if (os.time() - last_rotate < 5) or (last_state == command.command) then
     log.info("ignore on/off loopback")
     return
   end

@@ -16,6 +16,15 @@ local tempearture_value_attr_handler = function(driver, device, value, zb_rx)
     return
   end
 
+  if temperature == 0 then
+    local prev = device:get_latest_state("main", capabilities.temperatureMeasurement.ID, capabilities.temperatureMeasurement.temperature.NAME)
+    -- if large change in temperature, ignore
+    if prev ~= nil and math.abs(prev.value - temperature) > 3 then
+      log.warn("Ignoring temperature change: " .. temperature .. " prev: " .. prev.value)
+      return
+    end
+  end
+
   device:emit_event(capabilities.temperatureMeasurement.temperature({ value = temperature, unit = "C" }))
   
   local alarm = "cleared"

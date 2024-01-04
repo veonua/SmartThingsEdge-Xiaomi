@@ -43,15 +43,16 @@ function command_handler.refresh(_, device, slow)
     local raw_data = json.decode(table.concat(data))
     device:online()
     
-    local latest = device:get_latest_state("main", caps.switch.ID, caps.switch.switch.NAME)
-    if latest ~= raw_data.on.value then
-      device:emit_event(raw_data.on.value and caps.switch.switch.on() or caps.switch.switch.off())
-    end
-
     device:emit_event(caps.switchLevel.level(raw_data.brightness.value))
     device:emit_event(caps.colorControl.saturation(raw_data.sat.value))
     device:emit_event(caps.colorControl.hue(raw_data.hue.value))
     device:emit_event(caps.colorTemperature.colorTemperature(raw_data.ct.value))
+
+    local latest = device:get_latest_state("main", caps.switch.ID, caps.switch.switch.NAME)
+    if latest ~= raw_data.on.value then
+      device:emit_event(raw_data.on.value and caps.switch.switch.on() or caps.switch.switch.off())
+    end
+    
   else
     log.error('failed to poll device state')
     device:offline()
