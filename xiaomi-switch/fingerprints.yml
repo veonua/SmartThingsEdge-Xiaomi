@@ -218,6 +218,12 @@ zigbeeManufacturer:
     model: lumi.sensor_switch.aq3
     deviceProfileName: button
 
+  - id: "WXKG13LM"
+    deviceLabel: Aqara Wireless Mini Switch T1
+    manufacturer: LUMI
+    model: lumi.remote.b1acn02
+    deviceProfileName: button
+
   - id: "WRS-R02"
     deviceLabel: WRS-R02 Wireless Switch (Two Button)
     manufacturer: LUMI

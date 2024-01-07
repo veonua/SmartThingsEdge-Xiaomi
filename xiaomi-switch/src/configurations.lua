@@ -14,7 +14,7 @@ local devices = {
   },
   WXKG11LM_2 = {
     MATCHING_MODELS = {
-      "lumi.remote.b1acn01"
+      "lumi.remote.b1acn01", "lumi.remote.b1acn02"
     },
     CONFIGS = {
       first_button_ep = 0x0001,

@@ -56,6 +56,7 @@ the channel contains the development version of drivers, so it can be unstable.
 | [WXKG07LM](https://zigbee.blakadder.com/Aqara_WXKG07LM.html) | ![WXKG07LM](https://zigbee.blakadder.com/assets/images/devices/Aqara_WXKG07LM.webp) | lumi.remote.b286acn02 | Wall Switch| - | Double Rocker |
 | [WXKG11LM](https://zigbee.blakadder.com/Aqara_WXKG11LM.html) | ![WXKG11LM](https://zigbee.blakadder.com/assets/images/devices/Aqara_WXKG11LM.webp) | lumi.sensor_switch.aq2, lumi.remote.b1acn01 | Wall Switch| - | Single |
 | [WXKG12LM](https://zigbee.blakadder.com/Aqara_WXKG12LM.html) | ![WXKG12LM](https://zigbee.blakadder.com/assets/images/devices/Aqara_WXKG12LM.webp) | lumi.sensor_switch.aq3, lumi.sensor_swit | Wall Switch| - | Single |
+| [WXKG13LM](https://zigbee.blakadder.com/Aqara_WXKG13LM.html) | ![WXKG13LM](https://zigbee.blakadder.com/assets/images/devices/Aqara_WXKG13LM.webp) | lumi.remote.b1acn02 | Wireless Switch | - | Single |
 | [WXCJKG11LM](https://zigbee.blakadder.com/Xiaomi_WXCJKG11LM.html) | ![WXCJKG11LM](https://zigbee.blakadder.com/assets/images/devices/Xiaomi_WXCJKG11LM.webp) | lumi.remote.b286opcn01 | Wireless Switch | - | Two Button |
 | [WXCJKG12LM](https://zigbee.blakadder.com/Xiaomi_WXCJKG12LM.html) | ![WXCJKG12LM](https://zigbee.blakadder.com/assets/images/devices/Xiaomi_WXCJKG12LM.webp) | lumi.remote.b486opcn01 | Wireless Switch | - | Four Button |
 | [WXCJKG13LM](https://zigbee.blakadder.com/Xiaomi_WXCJKG13LM.html) | ![WXCJKG13LM](https://zigbee.blakadder.com/assets/images/devices/Xiaomi_WXCJKG13LM.webp) | lumi.remote.b686opcn01 | Wireless Switch | - | Six Button |
@@ -82,3 +83,4 @@ Leak and Smoke | Detectors |
 Temperature and Humidity |
 | [WSDCGQ01LM](https://zigbee.blakadder.com/Xiaomi_WSDCGQ01LM.html) | ![WSDCGQ01LM](https://zigbee.blakadder.com/assets/images/devices/Xiaomi_WSDCGQ01LM.webp) | lumi.sens, lumi.sensor_ht | Temperature and Humidity Sensor | - | - |
 | [WSDCGQ11LM](https://zigbee.blakadder.com/Aqara_WSDCGQ11LM.html) | ![WSDCGQ11LM](https://zigbee.blakadder.com/assets/images/devices/Aqara_WSDCGQ11LM.webp) | lumi.weather | Temperature, Humidity and Pressure Sensor | - | - |
+| [WSDCGQ12LM](https://zigbee.blakadder.com/Aqara_WSDCGQ12LM.html) | ![WSDCGQ01LM](https://zigbee.blakadder.com/assets/images/devices/Aqara_WSDCGQ12LM.webp) | lumi.sensor_ht.agl02 | Temperature and Humidity Sensor | - | - |

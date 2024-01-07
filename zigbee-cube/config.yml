@@ -1,5 +1,5 @@
-name: 'Aqara Cube v1.3'
+name: 'Aqara Cube v1.4'
 packageKey: 'aqara-cube'
+description: "Driver for Aqara Cube devices"
 permissions:
   zigbee: {}
-  

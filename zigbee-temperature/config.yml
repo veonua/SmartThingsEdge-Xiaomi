@@ -1,4 +1,5 @@
-name: 'Aqara/Xiaomi Temperature 1.4'
+name: 'Aqara/Xiaomi Temperature 1.5'
 packageKey: 'xiaomi-temp'
+description: 'Aqara & Xiaomi Temperature and Humidity Sensors https://github.com/veonua/SmartThingsEdge-Xiaomi'
 permissions:
   zigbee: {}

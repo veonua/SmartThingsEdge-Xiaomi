@@ -162,8 +162,7 @@ local device_init = function(self, device)
   device:set_find_child(find_child)
 
   device:remove_monitored_attribute(zcl_clusters.OnOff.ID, zcl_clusters.OnOff.attributes.OnOff.ID) -- remove held event 
-  -- device:remove_monitored_attribute(MultistateInput, WIRELESS_SWITCH_ATTRIBUTE_ID)
-
+  
   local configs = configsMap.get_device_parameters(device)
   
   if device:supports_capability(capabilities.button, "main") then
@@ -216,17 +215,12 @@ local do_refresh = function(self, device)
 end
 
 function button_attr_handler(driver, device, value, zb_rx)
-  local val = value.value
-  
-  if val == 255 then
-    log.info("button released, no such st event")
-    return
-  end
-
-  local click_type = utils.click_types[val]
+  local click_type = utils.click_types[value.value]
 
   if click_type ~= nil then
     utils.emit_button_event(device, zb_rx.address_header.src_endpoint.value, click_type({state_change = true}))
+  else
+    log.info("No such st event, Button released or unknown click type: ", value.value)
   end
 end
 
@@ -296,8 +290,16 @@ local switch_driver_template = {
         cluster = MultistateInput,
         attribute = WIRELESS_SWITCH_ATTRIBUTE_ID,
         minimum_interval = 100,
-        maximum_interval = 3600,
+        maximum_interval = 7200,
         data_type = data_types.Uint16,
+        reportable_change = 1
+      },
+      {
+        cluster = zcl_clusters.PowerConfiguration.ID,
+        attribute = zcl_clusters.PowerConfiguration.attributes.BatteryVoltage.ID,
+        minimum_interval = 30,
+        maximum_interval = 3600,
+        data_type = PowerConfiguration.attributes.BatteryVoltage.base_type,
         reportable_change = 1
       }
       -- ,{

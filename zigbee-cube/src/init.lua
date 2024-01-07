@@ -4,6 +4,9 @@ local ZigbeeDriver = require "st.zigbee"
 local constants = require "st.zigbee.constants"
 local defaults = require "st.zigbee.defaults"
 local utils = require "st.utils"
+local battery_defaults = require "st.zigbee.defaults.battery_defaults"
+
+local PowerConfiguration = zcl_clusters.PowerConfiguration
 
 local log = require "log"
 local xiaomi_utils = require "xiaomi_utils"
@@ -17,15 +20,41 @@ local DEFAULT_LEVEL = 50
 local cube = capabilities["winterdictionary35590.cube"]
 local map_side_to_name = { "up", "left", "front", "down", "right", "back" }
 
+local cubeAction = capabilities["stse.cubeAction"]
+local cubeFace = capabilities["stse.cubeFace"]
+local cubeFaceVal = { "face1Up", "face2Up", "face3Up", "face4Up", "face5Up", "face6Up" }
+local cubeFlipToSideVal = { "flipToSide1", "flipToSide2", "flipToSide3", "flipToSide4", "flipToSide5", "flipToSide6" }
+
+local configuration = {
+  {
+    cluster = PowerConfiguration.ID,
+    attribute = PowerConfiguration.attributes.BatteryVoltage.ID,
+    minimum_interval = 30,
+    maximum_interval = 3600,
+    data_type = PowerConfiguration.attributes.BatteryVoltage.base_type,
+    reportable_change = 1
+  }
+}
+
 local generate_switch_level_event = function(device, value)
   device:emit_event(capabilities.switchLevel.level(value))
   device:set_field(CURRENT_LEVEL, value)
   device:set_field(LEVEL_TS, os.time())
 end
 
-local function added_handler(self, device)
+local function device_added(self, device)
   log.info("Added device: " .. device:get_model())
   device:emit_event(capabilities.switch.switch.on())
+
+  -- Set private attribute
+  -- device:send(cluster_base.write_manufacturer_specific_attribute(device,
+  --   PRI_CLU, PRI_ATTR, MFG_CODE, data_types.Uint8, 1))
+
+  -- device:send(cluster_base.write_manufacturer_specific_attribute(device,
+  --   PRI_CLU, CUBE_MODE, MFG_CODE, data_types.Uint8, 1))
+  device:emit_event(cubeAction.cubeAction("noAction"))
+  device:emit_event(cubeFace.cubeFace("face1Up"))
+  do_refresh(self, device)
 end
 
 
@@ -37,6 +66,8 @@ local function emit_action_event(device, action, state_change)
     event.state_change = true
   end
   device:emit_event(event)
+
+  device:emit_event(cubeAction.cubeAction("noAction"))
 end
 
 local function cube_attr_handler(driver, device, value, zb_rx)
@@ -62,7 +93,7 @@ local function cube_attr_handler(driver, device, value, zb_rx)
       
       if val == 0 then -- shake
         emit_action_event(device, "shake")
-      elseif val == 2 then -- wake up
+      elseif val == 2 then -- wake up ~ pickUpAndHold
         device:emit_event(capabilities.motionSensor.motion.active())
       elseif val == 3 then -- toss
         emit_action_event(device, "toss")
@@ -95,7 +126,8 @@ local function cube_attr_handler(driver, device, value, zb_rx)
     device:set_field(SIDE, side)
     event = cube.face(map_side_to_name[side+1])
     --event.state_change = true
-    device:emit_event(event)   
+    device:emit_event(event)
+    device:emit_event(cubeFace.cubeFace(cubeFaceVal[side + 1]))
   end
 end
 
@@ -115,7 +147,7 @@ local function rotate_attr_handler(driver, device, value, zb_rx)
   local event = cube.rotation(val)
   event.state_change = true
   device:emit_event( event )
-
+  device:emit_event( cubeAction.cubeAction("rotate") )
   --- to force run subsequent actions  
   device:emit_event( cube.rotation(0) )
 end
@@ -134,7 +166,7 @@ function set_level(_, device, command)
 end
 
 local do_refresh = function(self, device)
-  log.info("do_refresh")
+  device:send(PowerConfiguration.attributes.BatteryVoltage:read(device))
 end
 
 function on_off(_, device, command)
@@ -163,6 +195,16 @@ function on_off(_, device, command)
   return device:emit_event(capabilities.switch.switch.off())
 end
 
+local function device_init(driver, device)
+  battery_defaults.build_linear_voltage_init(2.6, 3.0)(driver, device)
+  if configuration ~= nil then
+    for _, attribute in ipairs(configuration) do
+      device:add_configured_attribute(attribute)
+      device:add_monitored_attribute(attribute)
+    end
+  end
+end
+
 xiaomi_utils.events[0x98] = nil -- supress power reports
 
 local aqara_cube_driver_template = {
@@ -172,7 +214,8 @@ local aqara_cube_driver_template = {
     capabilities.temperatureAlarm,
   },
   lifecycle_handlers = {
-    added = added_handler,
+    init = device_init,
+    added = device_added
   },
 
   capability_handlers = {
@@ -198,6 +241,9 @@ local aqara_cube_driver_template = {
       }, 
       [zcl_clusters.analog_input_id] = {
         [zcl_clusters.AnalogInput.attributes.PresentValue.ID] = rotate_attr_handler
+      },
+      [PowerConfiguration.ID] = {
+        [PowerConfiguration.attributes.BatteryVoltage.ID] = battery_defaults.battery_volt_attr_handler
       }
     }
   },

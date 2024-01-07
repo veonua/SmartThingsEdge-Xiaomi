@@ -9,6 +9,11 @@ zigbeeManufacturer:
     manufacturer: LUMI
     model: lumi.sensor_ht
     deviceProfileName: temp-general
+  - id: "lumi.sensor_ht.agl02"
+    deviceLabel: Temperature and Humidity Sensor T1
+    manufacturer: LUMI
+    model: lumi.sensor_ht.agl02
+    deviceProfileName: temp-general
   - id: "lumi.sens"
     deviceLabel: Mijia Temperature & Humidity Sensor
     manufacturer: LUMI
@@ -19,3 +24,4 @@ zigbeeManufacturer:
     manufacturer: LUMI
     model: lumi.weather
     deviceProfileName: temp-pressure
+  
