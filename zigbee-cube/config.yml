@@ -1,4 +1,4 @@
-name: 'Aqara Cube v1.4'
+name: 'Aqara Cube v1.5'
 packageKey: 'aqara-cube'
 description: "Driver for Aqara Cube devices"
 permissions:

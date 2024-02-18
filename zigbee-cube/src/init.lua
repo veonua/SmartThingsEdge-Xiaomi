@@ -20,11 +20,6 @@ local DEFAULT_LEVEL = 50
 local cube = capabilities["winterdictionary35590.cube"]
 local map_side_to_name = { "up", "left", "front", "down", "right", "back" }
 
-local cubeAction = capabilities["stse.cubeAction"]
-local cubeFace = capabilities["stse.cubeFace"]
-local cubeFaceVal = { "face1Up", "face2Up", "face3Up", "face4Up", "face5Up", "face6Up" }
-local cubeFlipToSideVal = { "flipToSide1", "flipToSide2", "flipToSide3", "flipToSide4", "flipToSide5", "flipToSide6" }
-
 local configuration = {
   {
     cluster = PowerConfiguration.ID,
@@ -52,8 +47,6 @@ local function device_added(self, device)
 
   -- device:send(cluster_base.write_manufacturer_specific_attribute(device,
   --   PRI_CLU, CUBE_MODE, MFG_CODE, data_types.Uint8, 1))
-  device:emit_event(cubeAction.cubeAction("noAction"))
-  device:emit_event(cubeFace.cubeFace("face1Up"))
   do_refresh(self, device)
 end
 
@@ -67,7 +60,7 @@ local function emit_action_event(device, action, state_change)
   end
   device:emit_event(event)
 
-  device:emit_event(cubeAction.cubeAction("noAction"))
+  --device:emit_event(cubeAction.cubeAction("noAction"))
 end
 
 local function cube_attr_handler(driver, device, value, zb_rx)
@@ -127,7 +120,6 @@ local function cube_attr_handler(driver, device, value, zb_rx)
     event = cube.face(map_side_to_name[side+1])
     --event.state_change = true
     device:emit_event(event)
-    device:emit_event(cubeFace.cubeFace(cubeFaceVal[side + 1]))
   end
 end
 
