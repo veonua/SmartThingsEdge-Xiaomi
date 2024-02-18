@@ -219,7 +219,7 @@ zigbeeManufacturer:
     deviceProfileName: button
 
   - id: "WXKG13LM"
-    deviceLabel: Aqara Wireless Mini Switch T1
+    deviceLabel: WXKG13LM Wireless Mini Switch T1
     manufacturer: LUMI
     model: lumi.remote.b1acn02
     deviceProfileName: button
