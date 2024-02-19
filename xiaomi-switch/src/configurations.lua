@@ -9,7 +9,7 @@ local devices = {
     },
     CONFIGS = {
       first_button_ep = 0x0004,
-      supported_button_values = {"pushed", "held", "pushed_2x", "pushed_3x", "pushed_4x", "pushed_5x"}
+      supported_button_values = {"pushed", "pushed_2x", "pushed_3x", "pushed_4x"}
     }
   },
   WXKG11LM_2 = {
@@ -18,7 +18,7 @@ local devices = {
     },
     CONFIGS = {
       first_button_ep = 0x0001,
-      supported_button_values = {"pushed", "held", "pushed_2x", "pushed_3x", "pushed_4x", "pushed_5x"}
+      supported_button_values = {"pushed", "held", "pushed_2x"}
     }
   },
   GROUP1 = {
