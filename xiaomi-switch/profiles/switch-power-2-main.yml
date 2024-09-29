@@ -1,0 +1,19 @@
+name: switch-power-2-main
+components:
+  - id: main
+    label: "Left"
+    capabilities:
+    - id: switch
+      version: 1
+    - id: powerMeter
+      version: 1
+    - id: energyMeter
+      version: 1
+    - id: refresh
+      version: 1
+    categories:
+    - name: Switch
+metadata:
+  deviceType: Switch
+  ocfDeviceType: oic.d.switch
+  deviceTypeId: Switch

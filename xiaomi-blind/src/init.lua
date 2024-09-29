@@ -10,6 +10,22 @@ local data_types = require "st.zigbee.data_types"
 local mgmt_bind_resp = require "st.zigbee.zdo.mgmt_bind_response"
 local mgmt_bind_req = require "st.zigbee.zdo.mgmt_bind_request"
 
+---
+local deviceInitialization = capabilities["stse.deviceInitialization"]
+local reverseCurtainDirection = capabilities["stse.reverseCurtainDirection"]
+local softTouch = capabilities["stse.softTouch"]
+local setInitializedStateCommandName = "setInitializedState"
+
+local INIT_STATE = "initState"
+local INIT_STATE_INIT = "init"
+local INIT_STATE_OPEN = "open"
+local INIT_STATE_CLOSE = "close"
+local INIT_STATE_REVERSE = "reverse"
+
+---
+
+local Basic = zcl_clusters.Basic
+local WindowCovering = zcl_clusters.WindowCovering
 local AnalogOutput = zcl_clusters.AnalogOutput
 local Groups = zcl_clusters.Groups
 local PowerConfiguration = zcl_clusters.PowerConfiguration
@@ -77,7 +93,7 @@ local level_handler = function(self, device, value, zb_rx)
 end
 
 function pause(driver, device, command)
-  device:send_to_component(command.component, zcl_clusters.WindowCovering.server.commands.Stop(device))
+  device:send_to_component(command.component, WindowCovering.server.commands.Stop(device))
 end
 
 function toggle(driver, device, command)
@@ -141,11 +157,19 @@ local do_refresh = function(self, device)
   device:send(AnalogOutput.attributes.PresentValue:read(device))
   device:send(PowerConfiguration.attributes.BatteryPercentageRemaining:read(device))
   device:send(PowerConfiguration.attributes.BatteryVoltage:read(device))
+
+  --device:send(cluster_base.read_manufacturer_specific_attribute(device, Basic.ID, aqara_utils.PREF_ATTRIBUTE_ID,
+  --  MFG_CODE))
 end
 
 local do_configure = function(self, device)
   -- device:send(AnalogOutput.attributes.PresentValue:configure_reporting(device, 30, 21600, 1))
   device:send(PowerConfiguration.attributes.BatteryPercentageRemaining:configure_reporting(device, 30, 21600, 1))
+
+  device:configure()
+  device:send(Basic.attributes.ApplicationVersion:read(device))
+  device:send(Groups.server.commands.RemoveAllGroups(device))
+  do_refresh(self, device)
 end
 
 local function info_changed(driver, device, event, args)
@@ -171,6 +195,12 @@ local function info_changed(driver, device, event, args)
       device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, attr, MFG_CODE, data_types.Boolean, val) )
     end
   end
+end
+
+local function application_version_handler(driver, device, value, zb_rx)
+  local version = tonumber(value.value)
+  device:set_field("application_version", version, { persist = true })
+  log.info("application_version_handler: ", version)
 end
 
 local blinds_driver_template = {
@@ -229,6 +259,11 @@ local blinds_driver_template = {
     },
     [capabilities.statelessPowerToggleButton.ID] = {
       [capabilities.statelessPowerToggleButton.commands.setButton.NAME] = toggle
+    },
+    [Basic.ID] = {
+    --  [aqara_utils.SHADE_STATE_ATTRIBUTE_ID] = shade_state_report_handler,
+    --  [aqara_utils.PREF_ATTRIBUTE_ID] = pref_report_handler,
+        [Basic.attributes.ApplicationVersion.ID] = application_version_handler
     }
   },
   sub_drivers = {},

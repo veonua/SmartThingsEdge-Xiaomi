@@ -1,4 +1,4 @@
-name: 'Aqara/Xiaomi Switch and Button v23'
+name: 'Aqara/Xiaomi Switch and Button v26'
 packageKey: 'lumi-switch'
 description: 'Aqara/Xiaomi Switch and Button https://github.com/veonua/SmartThingsEdge-Xiaomi'
 permissions:

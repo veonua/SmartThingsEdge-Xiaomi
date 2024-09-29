@@ -1,0 +1,52 @@
+name: opple-switch-2-main
+components:
+  - id: main
+    label: "Left"
+    capabilities:
+    - id: switch
+      version: 1
+    - id: button
+      version: 1
+    - id: refresh
+      version: 1
+    categories:
+    - name: Switch
+  - id: group1
+    label: "Both buttons"
+    capabilities:
+    - id: button
+      version: 1
+    categories:
+    - name: RemoteController
+preferences:
+  - title: "Mode"
+    name: operationMode
+    required: true
+    preferenceType: enumeration
+    definition:
+      options:
+        0: "Light Commands (Bind to Group)"
+        1: "Button Events (Normal)"
+      default: "1"
+  - preferenceId: stse.changeToWirelessSwitch
+    explicit: true
+
+  - title: "Right button"
+    name: button2
+    required: true
+    preferenceType: enumeration
+    definition:
+      options:
+        0x22: "Switch 2"
+        0xFE: "Detached"
+      default: "0x22"
+
+  - preferenceId: stse.restorePowerState
+    explicit: true
+  - preferenceId: stse.turnOffIndicatorLight
+    explicit: true
+    
+metadata:
+  deviceType: Switch
+  ocfDeviceType: oic.d.switch
+  deviceTypeId: Switch

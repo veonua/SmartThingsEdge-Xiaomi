@@ -14,11 +14,22 @@ components:
     version: 1
   - id: battery
     version: 1
+
+  - id: stse.deviceInitialization
+    version: 1
   - id: refresh
     version: 1
   categories:
   - name: Blind
 preferences:
+  - preferenceId: stse.reverseCurtainDirection
+    explicit: true
+  - preferenceId: stse.softTouch
+    explicit: true
+
+  - preferenceId: reverse
+    explicit: true
+
   - preferenceId: presetPosition
     explicit: true
   - title: "Touch start"
@@ -30,6 +41,12 @@ preferences:
   - title: "Reverse"
     name: reverse
     required: true
+    preferenceType: boolean
+    definition: 
+      default: false
+  - title: "Reset (experimental)"
+    name: reset
+    required: false
     preferenceType: boolean
     definition: 
       default: false

@@ -5,7 +5,6 @@ local ZigbeeDriver = require "st.zigbee"
 local constants = require "st.zigbee.constants"
 local defaults = require "st.zigbee.defaults"
 local log = require "log"
-local json = require "dkjson"
 
 local mgmt_bind_resp = require "st.zigbee.zdo.mgmt_bind_response"
 
@@ -90,10 +89,16 @@ end
 
 
 local CONFIG_MAP = {
+  
+  ["lumi.switch.b2lc04"]   = { children_amount = 2 },
+  ["lumi.switch.b2lacn02"] = { children_amount = 2 },
   ["lumi.switch.b2nacn02"] = { children_amount = 2 },
-  ["lumi.ctrl_neutral2"] = { children_amount = 2 },
-  ["lumi.ctrl_ln2"] = { children_amount = 2 },
-  ["lumi.ctrl_ln2.aq1"] = { children_amount = 2 }
+  ["lumi.switch.b2naus01"] = { children_amount = 2 },
+  ["lumi.ctrl_neutral2"]   = { children_amount = 2 },
+  ["lumi.ctrl_ln2"]        = { children_amount = 2 },
+  ["lumi.ctrl_ln2.aq1"]    = { children_amount = 2 },
+  ["lumi.switch.l3acn3"]   = { children_amount = 3 },
+  ["lumi.switch.n3acn3"]   = { children_amount = 3 },
 }
 
 local function get_children_amount(device)
@@ -147,12 +152,15 @@ end
 ---
 
 local device_init = function(self, device)
+
+  log.warn(st_utils.stringify_table(device.st_store, "st_store"))
+
   log.info("------- device_init -------")
   device:set_component_to_endpoint_fn(component_to_endpoint)
   device:set_endpoint_to_component_fn(endpoint_to_component)
 
   if device.network_type ~= device_lib.NETWORK_TYPE_ZIGBEE then
-    log.warn("Device is not Zigbee")
+    -- Device is Virtual
     device:emit_event(capabilities.button.supportedButtonValues({"pushed", "pushed_2x", "held"},
                                       { visibility = { displayed = false } }))
 
@@ -299,7 +307,7 @@ local switch_driver_template = {
         attribute = zcl_clusters.PowerConfiguration.attributes.BatteryVoltage.ID,
         minimum_interval = 30,
         maximum_interval = 3600,
-        data_type = PowerConfiguration.attributes.BatteryVoltage.base_type,
+        data_type = zcl_clusters.PowerConfiguration.attributes.BatteryVoltage.base_type,
         reportable_change = 1
       }
       -- ,{
