@@ -15,8 +15,6 @@ components:
 
   - id: legendabsolute60149.levelSteps
     version: 1
-  - id: legendabsolute60149.colorTemperatureSteps
-    version: 1
   
   - id: refresh
     version: 1

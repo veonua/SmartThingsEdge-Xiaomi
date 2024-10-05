@@ -41,16 +41,19 @@ function command_handler.refresh(_, device, slow)
   -- Check success
   if success then
     local raw_data = json.decode(table.concat(data))
+    -- log.warn(raw_data)
     device:online()
     
-    device:emit_event(caps.switchLevel.level(raw_data.brightness.value))
-    device:emit_event(caps.colorControl.saturation(raw_data.sat.value))
-    device:emit_event(caps.colorControl.hue(raw_data.hue.value))
-    device:emit_event(caps.colorTemperature.colorTemperature(raw_data.ct.value))
-
     local latest = device:get_latest_state("main", caps.switch.ID, caps.switch.switch.NAME)
     if latest ~= raw_data.on.value then
       device:emit_event(raw_data.on.value and caps.switch.switch.on() or caps.switch.switch.off())
+    end
+    
+    if raw_data.on.value == true then
+      device:emit_event(caps.switchLevel.level(raw_data.brightness.value))
+      device:emit_event(caps.colorControl.saturation(raw_data.sat.value))
+      device:emit_event(caps.colorControl.hue(raw_data.hue.value))
+      device:emit_event(caps.colorTemperature.colorTemperature(raw_data.ct.value))
     end
     
   else
@@ -148,6 +151,7 @@ function command_handler.playPreset(_, device, command)
   local success = command_handler.send_lan_command(device, 'PUT', 'effects', {select=id})
 
   if success then
+    device:emit_event(caps.switch.switch.on())
     return
   end
   log.error('no response from device')
@@ -189,8 +193,8 @@ function command_handler.send_lan_command(device, method, path, body)
   local payload = ''
   if body then
     payload = json.encode(body)
-    --log.trace(method .. ' ' .. dest_url)
-    --log.trace(payload)
+    log.trace(method .. ' ' .. dest_url)
+    log.trace(payload)
     source = ltn12.source.string(payload)
   end
   local res_body = {}
@@ -203,7 +207,7 @@ function command_handler.send_lan_command(device, method, path, body)
     sink   = ltn12.sink.table(res_body),
     headers={
       ['Content-Type'] = "application/json",
-      ["Content-Length"] = payload:len()
+      ["Content-Length"] = payload and payload:len() or 0
     }})
 
   -- Handle response
@@ -211,7 +215,7 @@ function command_handler.send_lan_command(device, method, path, body)
     return true, res_body
   end
 
-  log.warn("code:"..tostring( code ))
+  log.warn("method: " .. method .. " url: " .. dest_url .. " source: " .. tostring(source) .. " code: " .. tostring(code))
   return false, nil
 end
 
