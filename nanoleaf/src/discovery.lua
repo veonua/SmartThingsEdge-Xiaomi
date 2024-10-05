@@ -12,7 +12,7 @@ local function parse_ssdp(data)
   res.status = data:sub(0, data:find('\r\n'))
   for k, v in data:gmatch('([%w-]+): ([%a+-: _/=]+)') do
     res[k:lower()] = v
-    --log.debug(tostring(k) .. ': ' .. tostring(v))
+    log.debug(tostring(k) .. ': ' .. tostring(v))
   end
   return res
 end
@@ -48,7 +48,11 @@ local function try_get_token(device)
 
   log.debug("POST " .. device_location.. ": " .. tostring(code))
   if code / 100 == 2 then
-    return json.decode(table.concat(res_body))['auth_token']
+     local decoded_body = json.decode(table.concat(res_body))
+     if decoded_body and decoded_body['auth_token'] then
+       return decoded_body['auth_token']
+     end
+     return nil
   end
   return nil
 end
