@@ -12,8 +12,8 @@ local ltn12 = require('ltn12')
 
 local command_handler = {}
 
-local level_Steps = caps["legendabsolute60149.levelSteps"]
-local color_Temperature_Steps = caps["legendabsolute60149.colorTemperatureSteps"]
+-- local level_Steps = caps["legendabsolute60149.levelSteps"]
+-- local color_Temperature_Steps = caps["legendabsolute60149.colorTemperatureSteps"]
 
 
 function command_handler.new(_, device)
@@ -35,6 +35,10 @@ function command_handler.refresh(_, device, slow)
   --   log.error("Error: " .. err)
   --   return
   -- end
+
+  --- Registering and Receiving Events
+  --- https://forum.nanoleaf.me/docs#_1qvwts5tbjof
+  --- http://192.168.0.141:16021/api/v1/x8gVaHjBYonVsNrHWqAc8vdjOQaQYEW8/events?id=1,2,4
 
   local success, data = command_handler.send_lan_command(device, 'GET', 'state')
 
@@ -159,31 +163,31 @@ end
 
 ----
 
-function command_handler.level_Steps_handler(_, device, command)
-  local level = command.args.value
-  device:emit_event(level_Steps.levelSteps(level))
+-- function command_handler.level_Steps_handler(_, device, command)
+--   local level = command.args.value
+--   device:emit_event(level_Steps.levelSteps(level))
   
-  local prev_level = device:get_latest_state("main", caps.switchLevel.ID, caps.switchLevel.level.NAME)
-  level = utils.round( utils.clamp_value( math.floor( level + prev_level ), 1, 100 ) )
-  --print("new Level value =", level, "Prev value =", prev_level)
+--   local prev_level = device:get_latest_state("main", caps.switchLevel.ID, caps.switchLevel.level.NAME)
+--   level = utils.round( utils.clamp_value( math.floor( level + prev_level ), 1, 100 ) )
+--   --print("new Level value =", level, "Prev value =", prev_level)
   
-  command.args.level = level
-  command_handler.set_level(_, device, command)
-end
+--   command.args.level = level
+--   command_handler.set_level(_, device, command)
+-- end
 
 
-function command_handler.color_Temperature_Steps_handler(self, device, command)
-    ---Next Color Temperature calculation
-    local colorTemp = command.args.value
-    device:emit_event(color_Temperature_Steps.colorTempSteps(colorTemp))
-    --print("Last Color Temperature =", device:get_latest_state("main", caps.colorTemperature.ID, caps.colorTemperature.colorTemperature.NAME))
-    colorTemp = utils.clamp_value( colorTemp + device:get_latest_state("main", caps.colorTemperature.ID, caps.colorTemperature.colorTemperature.NAME), 
-                                   2700, 6000 )
-    --print("colorTemp", colorTemp)
+-- function command_handler.color_Temperature_Steps_handler(self, device, command)
+--     ---Next Color Temperature calculation
+--     local colorTemp = command.args.value
+--     device:emit_event(color_Temperature_Steps.colorTempSteps(colorTemp))
+--     --print("Last Color Temperature =", device:get_latest_state("main", caps.colorTemperature.ID, caps.colorTemperature.colorTemperature.NAME))
+--     colorTemp = utils.clamp_value( colorTemp + device:get_latest_state("main", caps.colorTemperature.ID, caps.colorTemperature.colorTemperature.NAME), 
+--                                    2700, 6000 )
+--     --print("colorTemp", colorTemp)
 
-    command.args.temperature = math.floor(colorTemp)
-    command_handler.set_temp(_, device, command)
-end
+--     command.args.temperature = math.floor(colorTemp)
+--     command_handler.set_temp(_, device, command)
+-- end
 
 ------------------------
 -- Send LAN HTTP Request
@@ -194,7 +198,7 @@ function command_handler.send_lan_command(device, method, path, body)
   if body then
     payload = json.encode(body)
     log.trace(method .. ' ' .. dest_url)
-    log.trace(payload)
+    -- log.trace(payload)
     source = ltn12.source.string(payload)
   end
   local res_body = {}
@@ -211,7 +215,7 @@ function command_handler.send_lan_command(device, method, path, body)
     }})
 
   -- Handle response
-  if code < 300 then
+  if code and tonumber(code) < 300 then
     return true, res_body
   end
 
