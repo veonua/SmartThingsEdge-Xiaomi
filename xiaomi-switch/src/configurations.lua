@@ -54,6 +54,7 @@ local devices = {
       "lumi.switch.l1aeu1", "lumi.switch.l2aeu1", 
       "lumi.switch.l3acn1", "lumi.switch.n3acn1",
       "lumi.switch.n1aeu1", "lumi.switch.n2aeu1", 
+      "lumi.switch.b2lc04",
     },
     CONFIGS = {
       first_button_ep = 0x0029,
