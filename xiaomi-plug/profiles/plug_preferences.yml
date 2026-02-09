@@ -8,6 +8,8 @@ components:
     version: 1
   - id: energyMeter
     version: 1
+  - id: powerConsumptionReport
+    version: 1
   - id: voltageMeasurement
     version: 1
   - id: refresh
@@ -22,6 +24,11 @@ preferences:
   - preferenceId: stse.restorePowerState
     explicit: true
 
+  - preferenceId: stse.maxPowerCN
+    explicit: true
+  - preferenceId: stse.turnOffIndicatorLight
+    explicit: true
+
   - title: "Auto Off"
     description: "Turn the device automatically off when attached device consumes less than 2W for 20 minutes"
     name: autoOff
@@ -29,25 +36,7 @@ preferences:
     preferenceType: boolean
     definition: 
       default: false
-
-  - title: "Disabled Led at Night"
-    description: "Disable the LED when the device is in night mode"
-    name: ledDisabledNight
-    required: true
-    preferenceType: boolean
-    definition: 
-      default: false
-
-  - title: "Overload Protection"
-    description: "Maximum allowed load, turns off if exceeded (100 - 2200 W)"
-    name: overloadProtection
-    required: true
-    preferenceType: number
-    definition:
-      min: 100 
-      max: 2200
-      default: 2200
-      
+    
 metadata:
   deviceType: SmartPlug
   ocfDeviceType: oic.d.smartplug
