@@ -37,6 +37,10 @@ local generate_switch_level_event = function(device, value)
   device:set_field(LEVEL_TS, os.time())
 end
 
+local do_refresh = function(self, device)
+  device:send(PowerConfiguration.attributes.BatteryVoltage:read(device))
+end
+
 local function device_added(self, device)
   log.info("Added device: " .. device:get_model())
   device:emit_event(capabilities.switch.switch.on())
@@ -157,9 +161,6 @@ function set_level(_, device, command)
   -- device:set_field(CURRENT_LEVEL, value)
 end
 
-local do_refresh = function(self, device)
-  device:send(PowerConfiguration.attributes.BatteryVoltage:read(device))
-end
 
 function on_off(_, device, command)
   local last_state = device:get_latest_state("main", capabilities.switch.ID, capabilities.switch.switch.NAME)
@@ -239,6 +240,7 @@ local aqara_cube_driver_template = {
       }
     }
   },
+  health_check = false,
 }
 
 local aqara_cube = ZigbeeDriver("aqara_cube", aqara_cube_driver_template)

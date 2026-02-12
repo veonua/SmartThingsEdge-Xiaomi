@@ -16,8 +16,6 @@ components:
     version: 1
   - id: firmwareUpdate
     version: 1
-  - id: configuration
-    version: 1
   categories:
   - name: SmartPlug
 preferences:

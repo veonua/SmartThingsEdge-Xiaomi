@@ -2,16 +2,13 @@ name: floor-thermostat-w500
 components:
 - id: main
   capabilities:
-  - id: temperatureMeasurement
-    version: 1
-  - id: relativeHumidityMeasurement
-    version: 1
   - id: thermostatHeatingSetpoint
     version: 1
     config:
       values:
         - key: "heatingSetpoint.value"
           range: [ 5, 40 ]
+  
   - id: thermostatMode
     version: 1
     config:
@@ -33,6 +30,11 @@ components:
             - cleared
             - freeze
             - heat
+  
+  - id: temperatureMeasurement
+    version: 1
+  - id: relativeHumidityMeasurement
+    version: 1
   - id: powerMeter
     version: 1
   - id: energyMeter

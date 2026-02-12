@@ -139,11 +139,9 @@ local plug_driver_template = {
       }
     }
   },
-  
+  health_check = false
 }
 
-defaults.register_for_default_handlers(plug_driver_template, plug_driver_template.supported_capabilities)
+defaults.register_for_default_handlers(plug_driver_template, plug_driver_template.supported_capabilities, {native_capability_cmds_enabled = true})
 local plug = ZigbeeDriver("plug", plug_driver_template)
 plug:run()
-
--- TODO: add zigbee binding for plug

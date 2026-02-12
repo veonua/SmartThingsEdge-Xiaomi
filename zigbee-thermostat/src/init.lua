@@ -13,6 +13,7 @@ local Thermostat                    = clusters.Thermostat
 local TemperatureMeasurement        = clusters.TemperatureMeasurement
 local ElectricalMeasurement          = clusters.ElectricalMeasurement
 local SimpleMetering                 = clusters.SimpleMetering
+local RelativeHumidityCluster        = clusters.RelativeHumidity
 
 local ThermostatSystemMode      = Thermostat.attributes.SystemMode
 local ThermostatControlSequence = Thermostat.attributes.ControlSequenceOfOperation
@@ -36,6 +37,9 @@ local BAT_MIN = 50.0
 local BAT_MAX = 65.0
 
 local W500_MODEL = "lumi.airrtc.aeu001"
+
+local DEFAULT_ELECTRICAL_MEASUREMENT_DIVISOR = 10
+local DEFAULT_SIMPLE_METERING_DIVISOR = 1000
 
 local THERMOSTAT_MODE_MAP = {
   [ThermostatSystemMode.OFF]               = ThermostatMode.thermostatMode.off,
@@ -97,6 +101,12 @@ end
 local function get_divisor(device, key)
   local divisor = device:get_field(key)
   if divisor == nil or divisor == 0 then
+    if key == constants.ELECTRICAL_MEASUREMENT_DIVISOR_KEY then
+      return DEFAULT_ELECTRICAL_MEASUREMENT_DIVISOR
+    end
+    if key == constants.SIMPLE_METERING_DIVISOR_KEY then
+      return DEFAULT_SIMPLE_METERING_DIVISOR
+    end
     return 1
   end
   return divisor
@@ -239,9 +249,15 @@ local temperature_measurement_min_max_attr_handler = function(minOrMax)
   end
 end
 
+local RelativeHumidityClusterHandler = function(driver, device, value, zb_rx)
+  local percent = utils.clamp_value(value.value / 100, 0.0, 100.0)
+  if percent < 99 then -- filter out spurious values
+    device:emit_event(RelativeHumidity.humidity(percent))
+  end
+end
+
 local do_refresh = function(self, device)
   local attributes = {
-    Thermostat.attributes.OccupiedCoolingSetpoint,
     Thermostat.attributes.OccupiedHeatingSetpoint,
     Thermostat.attributes.LocalTemperature,
     Thermostat.attributes.ControlSequenceOfOperation,
@@ -249,14 +265,12 @@ local do_refresh = function(self, device)
     Thermostat.attributes.SystemMode,
     Thermostat.attributes.MinHeatSetpointLimit,
     Thermostat.attributes.MaxHeatSetpointLimit,
-    Thermostat.attributes.MinCoolSetpointLimit,
-    Thermostat.attributes.MaxCoolSetpointLimit,
+    Thermostat.attributes.ThermostatOperatingState,
+    ElectricalMeasurement.attributes.ActivePower,
+    SimpleMetering.attributes.CurrentSummationDelivered,
+    RelativeHumidityCluster.attributes.MeasuredValue
   }
 
-  if is_w500(device) then
-    table.insert(attributes, ElectricalMeasurement.attributes.ActivePower)
-    table.insert(attributes, SimpleMetering.attributes.CurrentSummationDelivered)
-  end
   for _, attribute in pairs(attributes) do
     device:send(attribute:read(device))
   end
@@ -275,8 +289,15 @@ end
 
 local device_added = function(self, device)
   if is_w500(device) then
-    device:set_field(constants.ELECTRICAL_MEASUREMENT_DIVISOR_KEY, 10, { persists = true })
-    device:set_field(constants.SIMPLE_METERING_DIVISOR_KEY, 1000, { persists = true })
+    device:set_field(constants.ELECTRICAL_MEASUREMENT_DIVISOR_KEY, DEFAULT_ELECTRICAL_MEASUREMENT_DIVISOR, { persists = true })
+    device:set_field(constants.SIMPLE_METERING_DIVISOR_KEY, DEFAULT_SIMPLE_METERING_DIVISOR, { persists = true })
+  else
+    if device:supports_capability(capabilities.powerMeter, "main") then
+      device:set_field(constants.ELECTRICAL_MEASUREMENT_DIVISOR_KEY, DEFAULT_ELECTRICAL_MEASUREMENT_DIVISOR, { persists = true })
+    end
+    if device:supports_capability(capabilities.energyMeter, "main") then
+      device:set_field(constants.SIMPLE_METERING_DIVISOR_KEY, DEFAULT_SIMPLE_METERING_DIVISOR, { persists = true })
+    end
   end
 
   device:send(TemperatureMeasurement.attributes.MinMeasuredValue:read(device))
@@ -326,6 +347,9 @@ local zigbee_thermostat_driver = {
       [TemperatureMeasurement.ID] = {
         [TemperatureMeasurement.attributes.MinMeasuredValue.ID] = temperature_measurement_min_max_attr_handler(temperature_measurement_defaults.MIN_TEMP),
         [TemperatureMeasurement.attributes.MaxMeasuredValue.ID] = temperature_measurement_min_max_attr_handler(temperature_measurement_defaults.MAX_TEMP),
+      },
+      [RelativeHumidityCluster.ID] = {
+        [RelativeHumidityCluster.attributes.MeasuredValue.ID] = RelativeHumidityClusterHandler
       }
     }
   },
