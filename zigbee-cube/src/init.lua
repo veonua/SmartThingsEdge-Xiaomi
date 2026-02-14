@@ -18,6 +18,7 @@ local SIDE = "side"
 local DEFAULT_LEVEL = 50
 
 local cube = capabilities["winterdictionary35590.cube"]
+local knob = capabilities.knob
 local map_side_to_name = { "up", "left", "front", "down", "right", "back" }
 
 local configuration = {
@@ -44,6 +45,7 @@ end
 local function device_added(self, device)
   log.info("Added device: " .. device:get_model())
   device:emit_event(capabilities.switch.switch.on())
+  device:emit_event(knob.supportedAttributes({"rotateAmount"}, {visibility = {displayed = false}}))
 
   -- Set private attribute
   -- device:send(cluster_base.write_manufacturer_specific_attribute(device,
@@ -142,10 +144,10 @@ local function rotate_attr_handler(driver, device, value, zb_rx)
 
   local event = cube.rotation(val)
   event.state_change = true
-  device:emit_event( event )
-  device:emit_event( cubeAction.cubeAction("rotate") )
-  --- to force run subsequent actions  
-  device:emit_event( cube.rotation(0) )
+  device:emit_event(event)
+  device:emit_event(knob.rotateAmount(val, {state_change = true}))
+  --- to force run subsequent actions
+  device:emit_event(cube.rotation(0))
 end
 
 function set_level(_, device, command)
@@ -205,6 +207,7 @@ local aqara_cube_driver_template = {
     capabilities.motionSensor,
     capabilities.battery,
     capabilities.temperatureAlarm,
+    capabilities.knob,
   },
   lifecycle_handlers = {
     init = device_init,

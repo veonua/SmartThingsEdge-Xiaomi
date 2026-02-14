@@ -4,11 +4,14 @@ components:
   capabilities:
   - id: winterdictionary35590.cube
     version: 1
+ 
+  - id: stse.cubeFace
+    version: 1
+  - id: stse.cubeAction
+    version: 1
 
-  # - id: stse.cubeAction
-  #   version: 1
-  # - id: stse.cubeFace
-  #   version: 1
+  - id: knob
+    version: 1
 
   - id: switchLevel
     version: 1
