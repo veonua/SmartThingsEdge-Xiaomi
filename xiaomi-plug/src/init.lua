@@ -15,11 +15,14 @@ local function added_handler(self, device)
   -- https://github.com/veonua/SmartThingsEdge-Xiaomi/issues/6
   device:set_field(constants.SIMPLE_METERING_DIVISOR_KEY, 10, {persists= true})        -- Current Summation Delivered
   device:set_field(constants.ELECTRICAL_MEASUREMENT_DIVISOR_KEY, 10, {persists= true}) -- Active Power
+
+  xiaomi_utils.set_energy_offset(device, 0)
 end
 
 local function temp_attr_handler(driver, device, value, zb_rx)
   device:emit_event(capabilities.temperatureMeasurement.temperature({ value = value.value, unit = "C"}) )
 end
+
 
 local function analog_input_handler(driver, device, e_value, zb_rx)
   local endpoint = zb_rx.address_header.src_endpoint.value
@@ -33,6 +36,7 @@ local function analog_input_handler(driver, device, e_value, zb_rx)
     log.warn("unknown AnalogInput ep:" .. tostring(endpoint) .. " value:" .. tostring(value) )
   end
 end
+
 
 function bool_to_number(value)
   return value and 0x01 or 0x00
@@ -90,7 +94,7 @@ local function info_changed(driver, device, event, args)
           payload = data_types.Boolean(value)
           attr = 0x0203
         end
-      elseif id == "overloadProtection" then
+      elseif id == "stse.maxPowerCN" then
         local sign = 0
         local mantissa, exponent = math.frexp(value)
         mantissa = mantissa * 2 - 1
@@ -112,6 +116,7 @@ local function info_changed(driver, device, event, args)
   end
 end
 
+
 local plug_driver_template = {
   supported_capabilities = {
     capabilities.switch,
@@ -124,6 +129,11 @@ local plug_driver_template = {
   lifecycle_handlers = {
     added = added_handler,
     infoChanged = info_changed,
+  },
+  capability_handlers = {
+    [capabilities.energyMeter.ID] = {
+      [capabilities.energyMeter.commands.resetEnergyMeter.NAME] = xiaomi_utils.energy_reset_handler,
+    }
   },
   zigbee_handlers = {
     global = {},

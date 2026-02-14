@@ -21,7 +21,6 @@ components:
 preferences:
   - preferenceId: stse.restorePowerState
     explicit: true
-
   - preferenceId: stse.maxPowerCN
     explicit: true
   - preferenceId: stse.turnOffIndicatorLight
