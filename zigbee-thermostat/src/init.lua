@@ -4,6 +4,8 @@ local device_management     = require "st.zigbee.device_management"
 local defaults              = require "st.zigbee.defaults"
 local utils                 = require "st.utils"
 local constants             = require "st.zigbee.constants"
+local data_types            = require "st.zigbee.data_types"
+local cluster_base          = require "st.zigbee.cluster_base"
 local xiaomi_utils          = require "xiaomi_utils"
 
 -- Zigbee Spec Utils
@@ -36,17 +38,29 @@ local Refresh                   = capabilities.refresh
 local BAT_MIN = 50.0
 local BAT_MAX = 65.0
 
-local W500_MODEL = "lumi.airrtc.aeu001"
+local MFG_CODE = 0x115F
+local W500_PRESET_ATTR = 0x0311
 
 local DEFAULT_ELECTRICAL_MEASUREMENT_DIVISOR = 10
 local DEFAULT_SIMPLE_METERING_DIVISOR = 1000
 
-local THERMOSTAT_MODE_MAP = {
-  [ThermostatSystemMode.OFF]               = ThermostatMode.thermostatMode.off,
-  [ThermostatSystemMode.AUTO]              = ThermostatMode.thermostatMode.auto,
-  [ThermostatSystemMode.COOL]              = ThermostatMode.thermostatMode.cool,
-  [ThermostatSystemMode.HEAT]              = ThermostatMode.thermostatMode.heat,
-  [ThermostatSystemMode.EMERGENCY_HEATING] = ThermostatMode.thermostatMode.emergency_heat
+-- W500 preset attribute values (original preset strings in comments)
+local W500_PRESET_VALUE_TO_THERMOSTAT_MODE = {
+  [1] = ThermostatMode.thermostatMode.home,    -- home
+  [2] = ThermostatMode.thermostatMode.away,    -- away
+  [3] = ThermostatMode.thermostatMode.asleep,  -- sleep
+  [5] = ThermostatMode.thermostatMode.dayoff,  -- vacation
+  [6] = ThermostatMode.thermostatMode.comfort, -- evening
+  [8] = ThermostatMode.thermostatMode.manual   -- manual
+}
+
+local W500_THERMOSTAT_MODE_TO_PRESET_VALUE = {
+  [ThermostatMode.thermostatMode.home.NAME] = 1,    -- home
+  [ThermostatMode.thermostatMode.away.NAME] = 2,    -- away
+  [ThermostatMode.thermostatMode.asleep.NAME] = 3,  -- sleep
+  [ThermostatMode.thermostatMode.dayoff.NAME] = 5,  -- vacation
+  [ThermostatMode.thermostatMode.comfort.NAME] = 6, -- evening
+  [ThermostatMode.thermostatMode.manual.NAME] = 8   -- manual
 }
 
 -- Map the Zigbee attribute value to the corresponding capability for supported modes
@@ -75,7 +89,12 @@ local SUPPORTED_THERMOSTAT_MODES = {
 
 local W500_SUPPORTED_MODES = {
   ThermostatMode.thermostatMode.off.NAME,
-  ThermostatMode.thermostatMode.heat.NAME
+  ThermostatMode.thermostatMode.home.NAME,
+  ThermostatMode.thermostatMode.away.NAME,
+  ThermostatMode.thermostatMode.comfort.NAME,
+  ThermostatMode.thermostatMode.dayoff.NAME,
+  ThermostatMode.thermostatMode.manual.NAME,
+  ThermostatMode.thermostatMode.asleep.NAME
 }
 
 -- TemperatureMeasurement cluster defaults
@@ -92,10 +111,6 @@ local battery_voltage_handler = function(driver, device, battery_voltage)
     local perc_value = utils.round((battery_voltage.value - BAT_MIN)/(BAT_MAX - BAT_MIN) * 100)
     device:emit_event(Battery.battery(utils.clamp_value(perc_value, 0, 100)))
   end
-end
-
-local function is_w500(device)
-  return device:get_model() == W500_MODEL
 end
 
 local function get_divisor(device, key)
@@ -133,18 +148,16 @@ local power_source_handler = function(driver, device, battery_alarm_mask)
 end
 
 local supported_thermostat_modes_handler = function(driver, device, supported_modes)
-  if is_w500(device) then
-    device:emit_event(ThermostatMode.supportedThermostatModes(W500_SUPPORTED_MODES, { visibility = { displayed = false } }))
-    return
-  end
-
-  device:emit_event(ThermostatMode.supportedThermostatModes(SUPPORTED_THERMOSTAT_MODES[supported_modes.value], { visibility = { displayed = false } }))
+  device:emit_event(ThermostatMode.supportedThermostatModes(W500_SUPPORTED_MODES, { visibility = { displayed = false } }))
 end
 
 local thermostat_mode_handler = function(driver, device, thermostat_mode)
-  if THERMOSTAT_MODE_MAP[thermostat_mode.value] then
-    device:emit_event(THERMOSTAT_MODE_MAP[thermostat_mode.value]())
+  if thermostat_mode.value == ThermostatSystemMode.OFF then
+    device:emit_event(ThermostatMode.thermostatMode.off())
+    return
   end
+
+  device:send(cluster_base.read_manufacturer_specific_attribute(device, xiaomi_utils.OppleCluster, W500_PRESET_ATTR, MFG_CODE))
 end
 
 local thermostat_operating_state_handler = function(driver, device, operating_state)
@@ -159,16 +172,43 @@ local thermostat_operating_state_handler = function(driver, device, operating_st
   end
 end
 
-local set_thermostat_mode = function(driver, device, command)
-  for zigbee_attr_val, st_cap_val in pairs(THERMOSTAT_MODE_MAP) do
-    if command.args.mode == st_cap_val.NAME then
-      device:send_to_component(command.component, Thermostat.attributes.SystemMode:write(device, zigbee_attr_val))
-      device.thread:call_with_delay(1, function(d)
-        device:send_to_component(command.component, Thermostat.attributes.SystemMode:read(device))
-      end)
-      break
-    end
+local preset_mode_handler = function(driver, device, value, zb_rx)
+  local event_builder = W500_PRESET_VALUE_TO_THERMOSTAT_MODE[value.value]
+  if event_builder ~= nil then
+    device:emit_event(event_builder())
   end
+end
+
+local set_thermostat_mode = function(driver, device, command)
+  if command.args.mode == ThermostatMode.thermostatMode.off.NAME then
+    device:send_to_component(command.component, Thermostat.attributes.SystemMode:write(device, ThermostatSystemMode.OFF))
+    device.thread:call_with_delay(1, function(d)
+      device:send_to_component(command.component, Thermostat.attributes.SystemMode:read(device))
+    end)
+    return
+  end
+
+  local preset_value = W500_THERMOSTAT_MODE_TO_PRESET_VALUE[command.args.mode]
+  if preset_value ~= nil then
+    device:send_to_component(command.component, Thermostat.attributes.SystemMode:write(device, ThermostatSystemMode.HEAT))
+    local message = cluster_base.write_attribute(
+      device,
+      data_types.ClusterId(xiaomi_utils.OppleCluster),
+      data_types.AttributeId(W500_PRESET_ATTR),
+      data_types.Uint8(preset_value)
+    )
+    message.body.zcl_header.frame_ctrl:set_mfg_specific()
+    message.body.zcl_header.mfg_code = data_types.validate_or_build_type(MFG_CODE, data_types.Uint16, "mfg_code")
+    device:send(message)
+
+    device.thread:call_with_delay(1, function(d)
+      device:send_to_component(command.component, Thermostat.attributes.SystemMode:read(device))
+      device:send(cluster_base.read_manufacturer_specific_attribute(device, xiaomi_utils.OppleCluster, W500_PRESET_ATTR, MFG_CODE))
+    end)
+    return
+  end
+
+  -- No other system modes supported besides OFF/HEAT; preset write handled above.
 end
 
 local thermostat_mode_setter = function(mode_name)
@@ -176,6 +216,7 @@ local thermostat_mode_setter = function(mode_name)
     return set_thermostat_mode(driver, device, {component = command.component, args = {mode = mode_name}})
   end
 end
+
 
 local setpoint_limit_handler_factory = function(min_or_max, heat_or_cool)
 
@@ -191,10 +232,7 @@ local setpoint_limit_handler_factory = function(min_or_max, heat_or_cool)
     if device:get_field(field) and device:get_field(paired_field) then
 
       local event_constructor = capabilities.thermostatHeatingSetpoint.heatingSetpointRange
-      if heat_or_cool == 'cool' then
-        event_constructor = capabilities.thermostatCoolingSetpoint.coolingSetpointRange
-      end
-
+      
       device:emit_event(event_constructor(
         {
           unit = 'C',
@@ -274,6 +312,10 @@ local do_refresh = function(self, device)
   for _, attribute in pairs(attributes) do
     device:send(attribute:read(device))
   end
+
+  device:emit_event(ThermostatMode.supportedThermostatModes(W500_SUPPORTED_MODES, { visibility = { displayed = false } }))
+
+  device:send(cluster_base.read_manufacturer_specific_attribute(device, xiaomi_utils.OppleCluster, W500_PRESET_ATTR, MFG_CODE))
 end
 
 local do_configure = function(self, device)
@@ -281,24 +323,13 @@ local do_configure = function(self, device)
   device:send(device_management.build_bind_request(device, PowerConfiguration.ID, self.environment_info.hub_zigbee_eui))
   device:send(PowerConfiguration.attributes.BatteryVoltage:configure_reporting(device, 30, 21600, 1))
 
-  if is_w500(device) then
-    device:send(device_management.build_bind_request(device, ElectricalMeasurement.ID, self.environment_info.hub_zigbee_eui))
-    device:send(device_management.build_bind_request(device, SimpleMetering.ID, self.environment_info.hub_zigbee_eui))
-  end
+  device:send(device_management.build_bind_request(device, ElectricalMeasurement.ID, self.environment_info.hub_zigbee_eui))
+  device:send(device_management.build_bind_request(device, SimpleMetering.ID, self.environment_info.hub_zigbee_eui))
 end
 
 local device_added = function(self, device)
-  if is_w500(device) then
-    device:set_field(constants.ELECTRICAL_MEASUREMENT_DIVISOR_KEY, DEFAULT_ELECTRICAL_MEASUREMENT_DIVISOR, { persists = true })
-    device:set_field(constants.SIMPLE_METERING_DIVISOR_KEY, DEFAULT_SIMPLE_METERING_DIVISOR, { persists = true })
-  else
-    if device:supports_capability(capabilities.powerMeter, "main") then
-      device:set_field(constants.ELECTRICAL_MEASUREMENT_DIVISOR_KEY, DEFAULT_ELECTRICAL_MEASUREMENT_DIVISOR, { persists = true })
-    end
-    if device:supports_capability(capabilities.energyMeter, "main") then
-      device:set_field(constants.SIMPLE_METERING_DIVISOR_KEY, DEFAULT_SIMPLE_METERING_DIVISOR, { persists = true })
-    end
-  end
+  device:set_field(constants.ELECTRICAL_MEASUREMENT_DIVISOR_KEY, DEFAULT_ELECTRICAL_MEASUREMENT_DIVISOR, { persists = true })
+  device:set_field(constants.SIMPLE_METERING_DIVISOR_KEY, DEFAULT_SIMPLE_METERING_DIVISOR, { persists = true })
 
   device:send(TemperatureMeasurement.attributes.MinMeasuredValue:read(device))
   device:send(TemperatureMeasurement.attributes.MaxMeasuredValue:read(device))
@@ -326,7 +357,8 @@ local zigbee_thermostat_driver = {
         [PowerConfiguration.attributes.BatteryAlarmState.ID] = power_source_handler
       },
       [xiaomi_utils.OppleCluster] = {
-        [0x00F7] = xiaomi_utils.handler
+        [0x00F7] = xiaomi_utils.handler,
+        [W500_PRESET_ATTR] = preset_mode_handler
       },
       [Thermostat.ID] = {
         [Thermostat.attributes.ControlSequenceOfOperation.ID] = supported_thermostat_modes_handler,
