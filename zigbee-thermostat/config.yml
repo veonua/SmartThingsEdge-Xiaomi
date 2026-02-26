@@ -1,4 +1,4 @@
-name: 'Aqara Thermostat v1'
+name: 'Aqara Thermostat v2'
 defaultProfile: 'floor-thermostat'
 packageKey: 'aqara-thermostat'
 permissions:
