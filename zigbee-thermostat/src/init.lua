@@ -166,6 +166,9 @@ local power_source_handler = function(driver, device, battery_alarm_mask)
   end
 end
 
+local scale_preset_temp
+local build_preset_temps
+
 local function info_changed(driver, device, event, args)
   local preset_temps_changed = false
   for id, value in pairs(device.preferences) do
@@ -278,11 +281,18 @@ local function parse_preset_temps(data)
   return temps
 end
 
-local function scale_preset_temp(value)
+local function bytes_to_string(data)
+  if type(data) == "string" then
+    return data
+  end
+  return string.char(table.unpack(data))
+end
+
+scale_preset_temp = function(value)
   return math.floor((tonumber(value) or 0) * 100 + 0.5)
 end
 
-local function build_preset_temps(temps)
+build_preset_temps = function(temps)
   local data = { #PRESET_TEMP_ORDER }
   for _, mode_id in ipairs(PRESET_TEMP_ORDER) do
     local temp = temps[mode_id]
@@ -299,7 +309,7 @@ local function build_preset_temps(temps)
   table.insert(data, 0x00)
   table.insert(data, 0x00)
   table.insert(data, 0x00)
-  return data
+  return bytes_to_string(data)
 end
 
 local preset_temps_handler = function(driver, device, value, zb_rx)
