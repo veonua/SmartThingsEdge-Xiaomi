@@ -6,6 +6,7 @@ local log = require('log')
 local config = require('config')
 local json = require('dkjson')
 local mdns = require("st.mdns")
+local net_utils = require("st.net_utils")
 
 local function parse_ssdp(data)
   local res = {}
@@ -31,7 +32,7 @@ end
 
 local function scanNetwork()
   local discover_responses = mdns.discover("_nanoleafapi._tcp", "local") or {}
-  --log.debug("Found mdns devices: " .. json.encode(discover_responses))
+  log.debug("Found mdns devices: " .. json.encode(discover_responses))
 
   if discover_responses == nil then
     return {}
@@ -57,6 +58,17 @@ local function scanNetwork()
 
   local res = discover_responses.found or {}
 
+  -- I need to filter out devices keep only ipv4 addresses because socket.http does not support ipv6
+  -- look into net_utils.validate_ipv4_string(found.host_info.address)
+
+  for i = #res, 1, -1 do
+    local found = res[i]
+    if not net_utils.validate_ipv4_string(found.host_info.address) then
+      log.debug("Filtering out non-ipv4 address: " .. tostring(address))
+      table.remove(res, i)
+    end
+  end
+  
   -- decode txt.text
   for _, row in ipairs(res) do
     row.extra = {}
@@ -133,7 +145,7 @@ function disco.start(driver, opts, cons)
 
     for _, scan in ipairs(scan_results) do
       local host_info = scan['host_info']
-      local device_url = "http://" .. host_info['name'] .. ":" .. host_info['port']  .."/api/v1/"
+      local device_url = "http://" .. host_info['address'] .. ":" .. host_info['port']  .."/api/v1/"
 
       log.debug("scan: " .. json.encode(scan))
 
