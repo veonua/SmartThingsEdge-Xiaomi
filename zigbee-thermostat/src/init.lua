@@ -34,6 +34,7 @@ local RelativeHumidity          = capabilities.relativeHumidityMeasurement
 local PowerMeter                = capabilities.powerMeter
 local EnergyMeter               = capabilities.energyMeter
 local Refresh                   = capabilities.refresh
+local PowerConsumptionReport    = capabilities.powerConsumptionReport
 
 -- lux thermostat uses min 5V, max of 6.5V
 local BAT_MIN = 50.0
@@ -42,41 +43,6 @@ local BAT_MAX = 65.0
 local MFG_CODE = 0x115F
 local W500_PRESET_ATTR = 0x0311
 local W500_PRESET_TEMPS_ATTR = 0x0317
--- Additional manufacturer-specific preset temperature attributes (not handled yet):
--- preset_temps_packed = 0x0317 (LVBytes)
--- home_preset_temperature = 0x1001 (uint16)
--- away_preset_temperature = 0x1002 (uint16)
--- sleep_preset_temperature = 0x1003 (uint16)
--- day_off_preset_temperature = 0x1005 (uint16)
--- comfort_preset_temperature = 0x1006 (uint16)
-
--- Reference (Python) for parsing/building preset_temps_packed:
--- def _parse_preset_temps(self, data: bytes) -> dict:
---     """Parse packed preset temperatures."""
---     temps = {}
---     if len(data) < 6:
---         return temps
---     num_presets = data[0]  # First byte is the count (0x05 = 5 presets)
---     pos = 1
---     for _ in range(num_presets):  # Only parse the expected number of records
---         if pos + 5 > len(data):
---             break
---         mode_id = data[pos]
---         temp = data[pos + 3] | (data[pos + 4] << 8)
---         if mode_id in (PRESET_HOME, PRESET_AWAY, PRESET_SLEEP, PRESET_DAYOFF, PRESET_COMFORT):
---             temps[mode_id] = temp
---         pos += 5
---     return temps
---
--- def _build_preset_temps(self, temps: dict) -> bytes:
---     """Build packed preset temperatures byte array."""
---     data = bytearray([0x05])
---     for mode_id in [PRESET_HOME, PRESET_AWAY, PRESET_SLEEP, PRESET_DAYOFF, PRESET_COMFORT]:
---         if mode_id in temps:
---             temp = temps[mode_id]
---             data.extend([mode_id, 0x00, 0x00, temp & 0xFF, (temp >> 8) & 0xFF])
---     data.extend([0x06, 0x00, 0x00, 0x00, 0x00])
---     return bytes(data)
 
 local DEFAULT_ELECTRICAL_MEASUREMENT_DIVISOR = 10
 local DEFAULT_SIMPLE_METERING_DIVISOR = 1000
@@ -138,6 +104,34 @@ local battery_voltage_handler = function(driver, device, battery_voltage)
   end
 end
 
+local LAST_REPORT_TIME = "LAST_REPORT_TIME"
+
+local function emit_power_consumption_report_event(device, value)
+  -- powerConsumptionReport report interval
+  local current_time = os.time()
+  local last_time = device:get_field(LAST_REPORT_TIME) or 0
+  local next_time = last_time + 60 * 15 -- 15 mins, the minimum interval allowed between reports
+  if current_time < next_time then
+    return
+  end
+  device:set_field(LAST_REPORT_TIME, current_time, { persist = true })
+  local raw_value = value.value * 1000 -- 'Wh'
+
+  local delta_energy = 0.0
+  local current_power_consumption = device:get_latest_state('main', capabilities.powerConsumptionReport.ID,
+    capabilities.powerConsumptionReport.powerConsumption.NAME)
+  if current_power_consumption ~= nil then
+    delta_energy = math.max(raw_value - current_power_consumption.energy, 0.0)
+  end
+  device:emit_event(capabilities.powerConsumptionReport.powerConsumption({
+    energy = raw_value,
+    deltaEnergy = delta_energy
+  }))
+
+  log.warn("Emitted power consumption report event: energy=" .. tostring(raw_value) .. " deltaEnergy=" .. tostring(delta_energy))
+end
+
+
 local function active_power_handler(driver, device, value, zb_rx)
   local divisor = driver_utils.get_divisor(
     device,
@@ -156,6 +150,7 @@ local function current_summation_delivered_handler(driver, device, value, zb_rx)
   )
   local energy = value.value / divisor
   device:emit_event(EnergyMeter.energy({ value = energy, unit = "kWh" }))
+  emit_power_consumption_report_event(device, energy)
 end
 
 local power_source_handler = function(driver, device, battery_alarm_mask)
@@ -419,6 +414,7 @@ local zigbee_thermostat_driver = {
     PowerMeter,
     EnergyMeter,
     Battery,
+    PowerConsumptionReport,
     PowerSource,
     Refresh
   },

@@ -151,7 +151,11 @@ zigbeeManufacturer:
     model: lumi.switch.b2nc01
     deviceProfileName: switch-neutral-button-2
 
-  
+  - id: "KD-R01D"
+    deviceLabel: KD-R01D Dimmer Switch H2 EU
+    manufacturer: Aqara
+    model: lumi.switch.agl011
+    deviceProfileName: switch-kd-r01d
 
   - id: "WXKG01LM"
     deviceLabel: WXKG01LM Wireless Switch

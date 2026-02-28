@@ -243,6 +243,85 @@ local function zdo_binding_table_handler(driver, device, zb_rx)
   end
 end
 
+local function make_manu_attr_handler(name)
+  return function(_, device, value)
+    local v = value.value
+    log.info(string.format("manuSpecificLumi %s: %s", name, tostring(v)))
+    device:set_field("manu_" .. name, v, { persist = true })
+  end
+end
+
+local KNOB_ACTIONS = {
+  [0x00] = "off",
+  [0x01] = "start_rotation",
+  [0x02] = "rotation",
+  [0x03] = "stop_rotation",
+  [0x81] = "hold_start_rotation",
+  [0x82] = "hold_rotation",
+  [0x83] = "hold_stop_rotation",
+}
+
+local function knob_action_handler(_, device, value)
+  local v = value.value
+  local label = KNOB_ACTIONS[v] or string.format("unknown_0x%02X", v)
+  log.info(string.format("manuSpecificLumi action: %s (%s)", label, tostring(v)))
+  device:set_field("manu_action", v, { persist = true })
+end
+
+local function rotation_percent_delta_handler(_, device, value, zb_rx)
+  local scroll_amount = value.value
+  local endpoint_id = zb_rx and zb_rx.address_header and zb_rx.address_header.src_endpoint and zb_rx.address_header.src_endpoint.value
+
+  if endpoint_id ~= nil and device:supports_capability(capabilities.knob, "main") then
+    device:emit_event_for_endpoint(endpoint_id, capabilities.knob.rotateAmount(scroll_amount, {state_change = true}))
+  end
+
+  log.info(string.format("manuSpecificLumi rotation_percent_delta: %s", tostring(scroll_amount)))
+  device:set_field("manu_rotation_percent_delta", scroll_amount, { persist = true })
+end
+
+local function set_level(_, device, command)
+  local level = command.args.level or 0
+  if level < 0 then level = 0 end
+  if level > 100 then level = 100 end
+
+  local zb_level = math.floor((level * 254) / 100)
+
+  local ep = component_to_endpoint(device, command.component or "main") or device.fingerprinted_endpoint_id
+  device:send(
+    zcl_clusters.Level.commands.MoveToLevel(device, zb_level, 0)
+      :to_endpoint(ep)
+  )
+
+  device:emit_event(capabilities.switchLevel.level(level))
+end
+
+local function step_level(_, device, command)
+  local level = device:get_latest_state("main", capabilities.switchLevel.ID, capabilities.switchLevel.level.NAME) or 0
+  local step = command.args.stepSize
+  
+  if type(step) ~= "number" then
+    step = tonumber(step) or 10
+  end
+
+  local step_mode = 0x00 -- up
+  if step < 0 then
+    step_mode = 0x01 -- down
+  end
+
+  local step_abs = math.abs(step)
+  local step_zb = math.floor((step_abs * 254) / 100)
+  if step_zb < 1 then step_zb = 1 end
+  if step_zb > 254 then step_zb = 254 end
+
+  local ep = component_to_endpoint(device, command.component or "main") or device.fingerprinted_endpoint_id
+  device:send(
+    zcl_clusters.Level.commands.Step(device, step_mode, step_zb, 0)
+      :to_endpoint(ep)
+  )
+
+end
+
 function info_changed(driver, device, event, args)
   local preferences = device.preferences
   local old_preferences = args.old_st_store.preferences
@@ -283,6 +362,8 @@ end
 local switch_driver_template = {
   supported_capabilities = {
     capabilities.switch,
+    capabilities.switchLevel,
+    capabilities.statelessSwitchLevelStep,
     capabilities.powerMeter,
     capabilities.temperatureAlarm,
     capabilities.refresh,
@@ -290,6 +371,12 @@ local switch_driver_template = {
   capability_handlers = {
     [capabilities.refresh.ID] = {
       [capabilities.refresh.commands.refresh.NAME] = do_refresh,
+    },
+    [capabilities.switchLevel.ID] = {
+      [capabilities.switchLevel.commands.setLevel.NAME] = set_level,
+    },
+    [capabilities.statelessSwitchLevelStep.ID] = {
+      [capabilities.statelessSwitchLevelStep.commands.stepLevel.NAME] = step_level,  
     }
   },
   cluster_configurations = {
@@ -329,6 +416,17 @@ local switch_driver_template = {
       [zcl_clusters.basic_id] = xiaomi_utils.basic_id,
       [MultistateInput] = { 
         [WIRELESS_SWITCH_ATTRIBUTE_ID] = button_attr_handler
+      },
+      [PRIVATE_CLUSTER_ID] = {
+        [0x0301] = make_manu_attr_handler("multiplier"),
+        [0x022C] = make_manu_attr_handler("rotation_time_delta"),
+        [0x0231] = make_manu_attr_handler("rotation_time"),
+        [0x0238] = make_manu_attr_handler("unknown_0238"),
+        [0x0230] = make_manu_attr_handler("rotation_angle_delta"),
+        [0x022E] = make_manu_attr_handler("rotation_angle"),
+        [0x0232] = rotation_percent_delta_handler,
+        [0x0233] = make_manu_attr_handler("rotation_percent"),
+        [0x023A] = knob_action_handler,
       },
     }
   },

@@ -54,10 +54,20 @@ function command_handler.refresh(_, device, slow)
     end
     
     if raw_data.on.value == true then
+      
       device:emit_event(caps.switchLevel.level(raw_data.brightness.value))
-      device:emit_event(caps.colorControl.saturation(raw_data.sat.value))
-      device:emit_event(caps.colorControl.hue(raw_data.hue.value))
-      device:emit_event(caps.colorTemperature.colorTemperature(raw_data.ct.value))
+
+      if raw_data.colorMode == 'hs' then
+        local hue_st = utils.round(utils.clamp_value((raw_data.hue.value / 360) * 100, 0, 100))
+        
+        device:emit_event(caps.colorControl.saturation(raw_data.sat.value))
+        device:emit_event(caps.colorControl.hue(hue_st))
+      elseif raw_data.colorMode == 'ct' then
+        device:emit_event(caps.colorTemperature.colorTemperature(raw_data.ct.value))
+      elseif raw_data.colorMode ~= 'effect' then
+        log.warn("Unsupported color mode: " .. tostring(raw_data.colorMode))
+      end
+
     end
     
   else
@@ -108,10 +118,23 @@ function command_handler.set_level(_, device, command)
   device:emit_event(caps.switchLevel.level(lvl))
 end
 
+function command_handler.step_level(_, device, command)
+  local current = device:get_latest_state("main", caps.switchLevel.ID, caps.switchLevel.level.NAME) or 0
+  local step = command.args.stepSize
+  --if type(step) ~= "number" then
+  --  step = tonumber(step) or 10
+  --end
+
+  local next_level = utils.clamp_value(current + step, 0, 100)
+  command.args.level = next_level
+  command_handler.set_level(_, device, command)
+end
+
 function command_handler.set_color(_, device, command)
   local hue = math.floor(command.args.color.hue * 360 / 100)
+  local hue_st = utils.round(utils.clamp_value(command.args.color.hue, 0, 100))
   local sat = math.floor(command.args.color.saturation)
-
+  
   local palette = {
     { hue= hue, saturation= sat, brightness= 60 },
     { hue= hue, saturation= sat, brightness= 80 },
@@ -131,7 +154,7 @@ function command_handler.set_color(_, device, command)
   if success then
     device:emit_event(caps.switch.switch.on())
     device:emit_event(caps.colorControl.saturation(sat))
-    device:emit_event(caps.colorControl.hue(hue))
+    device:emit_event(caps.colorControl.hue(hue_st))
     return
   end
   log.error('no response from device')
@@ -161,33 +184,7 @@ function command_handler.playPreset(_, device, command)
   log.error('no response from device')
 end
 
-----
 
--- function command_handler.level_Steps_handler(_, device, command)
---   local level = command.args.value
---   device:emit_event(level_Steps.levelSteps(level))
-  
---   local prev_level = device:get_latest_state("main", caps.switchLevel.ID, caps.switchLevel.level.NAME)
---   level = utils.round( utils.clamp_value( math.floor( level + prev_level ), 1, 100 ) )
---   --print("new Level value =", level, "Prev value =", prev_level)
-  
---   command.args.level = level
---   command_handler.set_level(_, device, command)
--- end
-
-
--- function command_handler.color_Temperature_Steps_handler(self, device, command)
---     ---Next Color Temperature calculation
---     local colorTemp = command.args.value
---     device:emit_event(color_Temperature_Steps.colorTempSteps(colorTemp))
---     --print("Last Color Temperature =", device:get_latest_state("main", caps.colorTemperature.ID, caps.colorTemperature.colorTemperature.NAME))
---     colorTemp = utils.clamp_value( colorTemp + device:get_latest_state("main", caps.colorTemperature.ID, caps.colorTemperature.colorTemperature.NAME), 
---                                    2700, 6000 )
---     --print("colorTemp", colorTemp)
-
---     command.args.temperature = math.floor(colorTemp)
---     command_handler.set_temp(_, device, command)
--- end
 
 ------------------------
 -- Send LAN HTTP Request
@@ -215,7 +212,8 @@ function command_handler.send_lan_command(device, method, path, body)
     }})
 
   -- Handle response
-  if code and tonumber(code) < 300 then
+  local status_code = tonumber(code)
+  if status_code and status_code < 300 then
     return true, res_body
   end
 

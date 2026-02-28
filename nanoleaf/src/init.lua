@@ -43,6 +43,7 @@ local driver =
       supported_capabilities = {
         caps.switch,
         caps.switchLevel,
+        caps.statelessSwitchLevelStep,
         caps.colorControl,
         caps.mediaPresets,
         caps.refresh
@@ -59,6 +60,9 @@ local driver =
         },
         [caps.switchLevel.ID] = {
           [caps.switchLevel.commands.setLevel.NAME] = commands.set_level
+        },
+        [caps.statelessSwitchLevelStep.ID] = {
+          [caps.statelessSwitchLevelStep.commands.stepLevel.NAME] = commands.step_level
         },
         [caps.colorControl.ID] = {
           [caps.colorControl.commands.setColor.NAME] = commands.set_color

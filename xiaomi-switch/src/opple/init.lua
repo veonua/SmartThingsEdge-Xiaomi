@@ -19,6 +19,7 @@ local Groups = zcl_clusters.Groups
 
 local OPPLE_FINGERPRINTS = {
     { model = "^lumi.switch...aeu1" },
+    { model = "^lumi.switch.agl011" },
     { model = "^lumi.remote.b.8" },
     { model = "^lumi.switch.b.lc04" },
     { model = "^lumi.switch..3acn." },
@@ -121,7 +122,7 @@ local function info_changed(driver, device, event, args)
             payload = data_types.validate_or_build_type(data, data_types.Boolean, id)
             attr = 0x0201
         elseif id == "stse.turnOffIndicatorLight" then
-            payload = data_types.validate_or_build_type(data, data_types.Boolean, id)
+            payload = data_types.validate_or_build_type(data and 0 or 1, data_types.Boolean, id)
             attr = 0x0203
         elseif id == "stse.changeToWirelessSwitch" then
             attr = 0x0200
@@ -139,6 +140,26 @@ local function info_changed(driver, device, event, args)
             attr = 0x0200
             endpoint = 3
             payload = data_types.validate_or_build_type(data<0xF0 and 1 or 0, data_types.Uint8, id)
+        elseif id == "minBrightness" then
+            local v = tonumber(data) or 0
+            if v < 0 then v = 0 end
+            if v > 99 then v = 99 end
+            attr = 0x0515
+            payload = data_types.validate_or_build_type(v, data_types.Uint8, id)
+        elseif id == "maxBrightness" then
+            local v = tonumber(data) or 100
+            if v < 1 then v = 1 end
+            if v > 100 then v = 100 end
+            attr = 0x0516
+            payload = data_types.validate_or_build_type(v, data_types.Uint8, id)
+        elseif id == "phase" then
+            local v = tonumber(data) or 0
+            attr = 0x030A
+            payload = data_types.validate_or_build_type(v, data_types.Uint8, id)
+        elseif id == "sensitivity" then
+            local v = tonumber(data) or 360
+            attr = 0x0234
+            payload = data_types.validate_or_build_type(v, data_types.Uint16, id)
         end
 
         if attr then

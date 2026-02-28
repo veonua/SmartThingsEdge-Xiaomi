@@ -2,3 +2,4 @@ homebridge
 config.json
 Dockerfile
 zigbee-cube/matched-from-SmartThingsEdgeDrivers/
+.DS_Store
