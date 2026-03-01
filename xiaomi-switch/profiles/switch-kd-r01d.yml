@@ -73,6 +73,15 @@ preferences:
       maximum: 100
       default: 100
 
+  - title: "Kick-off brightness threshold"
+    name: kickOffThreshold
+    required: false
+    preferenceType: integer
+    definition:
+      minimum: 0
+      maximum: 99
+      default: 0
+
   - title: "Flip indicator light"
     name: flipIndicatorLight
     required: false

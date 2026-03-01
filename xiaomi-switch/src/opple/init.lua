@@ -44,6 +44,61 @@ local send_opple_message = function (device, attr, payload, endpoint)
     device:send(message)
 end
 
+local function switch_on(driver, device, command)
+    local attr = capabilities.switch.switch
+    if command.component == "main" then
+        log.info(string.format("opple switch_on main: device=%s", device.id))
+        local level = device:get_latest_state("main", capabilities.switchLevel.ID, capabilities.switchLevel.level.NAME) or 0
+        local kick_threshold = device.preferences and device.preferences.kickOffThreshold or 0
+        kick_threshold = tonumber(kick_threshold) or 0
+        if kick_threshold < 0 then kick_threshold = 0 end
+        if kick_threshold > 100 then kick_threshold = 100 end
+
+        device:send(zcl_clusters.OnOff.commands.On(device):to_endpoint(device.fingerprinted_endpoint_id))
+        if level > 0 and level < kick_threshold then
+            local kick_zb_level = math.floor((kick_threshold * 254) / 100)
+            local target_zb_level = math.floor((level * 254) / 100)
+
+            log.info(string.format("opple kick-off: level=%s threshold=%s", tostring(level), tostring(kick_threshold)))
+            device:send(
+                zcl_clusters.Level.commands.MoveToLevelWithOnOff(device, kick_zb_level, 0)
+                    :to_endpoint(device.fingerprinted_endpoint_id)
+            )
+
+            device.thread:call_with_delay(1, function()
+                log.info(string.format("opple kick-off: dim to target=%s", tostring(level)))
+                device:send(
+                    zcl_clusters.Level.commands.MoveToLevel(device, target_zb_level, 5)
+                        :to_endpoint(device.fingerprinted_endpoint_id)
+                )
+            end)
+
+            device:emit_event_for_endpoint(device.fingerprinted_endpoint_id, attr.on())
+        else
+            device:emit_event_for_endpoint(device.fingerprinted_endpoint_id, attr.on())
+            -- device.thread:call_with_delay(1, function()
+            --     device:emit_event_for_endpoint(device.fingerprinted_endpoint_id, attr.off())
+            -- end)
+        end
+    else
+        log.info(string.format("opple switch_on component: %s", command.component))
+        device:send_to_component(command.component, zcl_clusters.OnOff.server.commands.On(device))
+    end
+end
+
+local function switch_off(driver, device, command)
+    local attr = capabilities.switch.switch
+    if command.component == "main" then
+        log.info(string.format("opple switch_off main: device=%s", device.id))
+        device:send(zcl_clusters.OnOff.commands.Off(device):to_endpoint(device.fingerprinted_endpoint_id))
+        device:emit_event_for_endpoint(device.fingerprinted_endpoint_id, attr.off())
+    else
+        log.info(string.format("opple switch_off component: %s", command.component))
+        device:send_to_component(command.component, zcl_clusters.OnOff.server.commands.Off(device))
+    end
+end
+---
+
 local do_refresh = function(self, device)
     device:send(PowerConfiguration.attributes.BatteryVoltage:read(device))
 
@@ -178,6 +233,10 @@ end
 local switch_handler = {
     NAME = "Zigbee3 Aqara/Opple",
     capability_handlers = {
+        [capabilities.switch.ID] = {
+            [capabilities.switch.commands.on.NAME] = switch_on,
+            [capabilities.switch.commands.off.NAME] = switch_off,
+        },
         [capabilities.refresh.ID] = {
           [capabilities.refresh.commands.refresh.NAME] = do_refresh,
         }
