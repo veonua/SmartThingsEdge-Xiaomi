@@ -269,12 +269,9 @@ local function knob_action_handler(_, device, value)
 end
 
 local function rotation_percent_delta_handler(_, device, value, zb_rx)
-  local scroll_amount = value.value
-  local endpoint_id = zb_rx and zb_rx.address_header and zb_rx.address_header.src_endpoint and zb_rx.address_header.src_endpoint.value
+  local scroll_amount = math.floor(value.value)
 
-  if endpoint_id ~= nil and device:supports_capability(capabilities.knob, "main") then
-    device:emit_event_for_endpoint(endpoint_id, capabilities.knob.rotateAmount(scroll_amount, {state_change = true}))
-  end
+  device:emit_event(capabilities.knob.rotateAmount(scroll_amount, {state_change = true}))
 
   log.info(string.format("manuSpecificLumi rotation_percent_delta: %s", tostring(scroll_amount)))
   device:set_field("manu_rotation_percent_delta", scroll_amount, { persist = true })
