@@ -12,10 +12,6 @@ local ltn12 = require('ltn12')
 
 local command_handler = {}
 
--- local level_Steps = caps["legendabsolute60149.levelSteps"]
--- local color_Temperature_Steps = caps["legendabsolute60149.colorTemperatureSteps"]
-
-
 function command_handler.new(_, device)
   local token = command_handler.send_lan_command(device, 'POST', 'new')
   device:set_field('token', token, {persist = true})

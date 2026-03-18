@@ -64,7 +64,7 @@ local function scanNetwork()
   for i = #res, 1, -1 do
     local found = res[i]
     if not net_utils.validate_ipv4_string(found.host_info.address) then
-      log.debug("Filtering out non-ipv4 address: " .. tostring(address))
+      log.debug("Filtering out non-ipv4 address: " .. tostring(found.host_info.address))
       table.remove(res, i)
     end
   end
@@ -103,7 +103,9 @@ local function try_get_token(device_url)
   end
 
   log.debug("POST " .. url.. ": " .. tostring(code))
-  if  code / 100 == 2 then
+
+  local status_code = tonumber(code)
+  if status_code and status_code / 100 == 2 then
      local decoded_body = json.decode(table.concat(res_body))
      if decoded_body and decoded_body['auth_token'] then
        return decoded_body['auth_token']

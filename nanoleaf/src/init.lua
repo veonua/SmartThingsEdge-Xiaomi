@@ -6,9 +6,6 @@ local config = require('config')
 local discovery = require('discovery')
 local commands = require('commands')
 local log = require('log')
----
-local level_Steps = caps["legendabsolute60149.levelSteps"]
-local color_Temperature_Steps = caps["legendabsolute60149.colorTemperatureSteps"]
 
 
 local function device_removed(self, device)
@@ -73,15 +70,6 @@ local driver =
         [caps.mediaPresets.ID] = {
           [caps.mediaPresets.commands.playPreset.NAME] = commands.playPreset
         },
-        ---
-
-        [level_Steps.ID] = {
-          [level_Steps.commands.setLevelSteps.ID] = commands.level_Steps_handler,
-        },
-        [color_Temperature_Steps.ID] = {
-          [color_Temperature_Steps.commands.setColorTempSteps.ID] = commands.color_Temperature_Steps_handler,
-        },
-        ---
         [caps.refresh.ID] = {
           [caps.refresh.commands.refresh.NAME] = commands.refresh
         }
