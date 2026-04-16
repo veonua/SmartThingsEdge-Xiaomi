@@ -304,3 +304,9 @@ zigbeeManufacturer:
     manufacturer: LUMI
     model: lumi.remote.acn009
     deviceProfileName: button-2  
+
+  - id: "ZNXNKG02LM"
+    deviceLabel: Aqara wireless Smart Knob H1
+    manufacturer: LUMI
+    model: lumi.remote.rkba01
+    deviceProfileName: opple-knob

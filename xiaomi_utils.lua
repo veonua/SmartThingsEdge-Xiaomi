@@ -9,6 +9,9 @@ local log = require "log"
 
 local battery_defaults = require "st.zigbee.defaults.battery_defaults"
 
+local ENERGY_RESET_OFFSET_FIELD = "energyResetOffsetWh"
+local ENERGY_LAST_RAW_FIELD = "energyLastRawWh"
+
 local xiaomi_key_map = {
                    --                 Large   Kitchen Bed1    Corrid  Bed2                Charger  AndrewB      Bathroom     LMotion          Cube Smoke
   [0x01] = "battery_mV",
@@ -91,14 +94,49 @@ local function emit_temperature_event(device, temperature_record)
   device:emit_event(alarm)
 end
 
+local LAST_REPORT_TIME = "LAST_REPORT_TIME"
+
+local function emit_power_consumption_report_event(device, kWh_value)
+  -- powerConsumptionReport report interval
+  local current_time = os.time()
+  local last_time = device:get_field(LAST_REPORT_TIME) or 0
+  local next_time = last_time + 60 * 15 -- 15 mins, the minimum interval allowed between reports
+  if current_time < next_time then
+    return
+  end
+  device:set_field(LAST_REPORT_TIME, current_time, { persist = true })
+  local raw_value = kWh_value.value * 1000 -- 'Wh'
+
+  local delta_energy = 0.0
+  local current_power_consumption = device:get_latest_state('main', capabilities.powerConsumptionReport.ID,
+    capabilities.powerConsumptionReport.powerConsumption.NAME)
+  if current_power_consumption ~= nil then
+    delta_energy = math.max(raw_value - current_power_consumption.energy, 0.0)
+  end
+  device:emit_event(capabilities.powerConsumptionReport.powerConsumption({
+    energy = raw_value,
+    deltaEnergy = delta_energy
+  }))
+end
+
+
 local function emit_consumption_event(device, e_value)
   local value = utils.round(e_value.value * 10)/10.0
-  local latest = device:get_latest_state("main", capabilities.energyMeter.ID, capabilities.energyMeter.energy.NAME)
+  local latest = device:get_field(ENERGY_LAST_RAW_FIELD)
   
   if latest ~= nil and value - latest < 0.01 then
     return
   end
-  device:emit_event( capabilities.energyMeter.energy({value=value, unit="kWh"}) )
+
+  device:set_field(ENERGY_LAST_RAW_FIELD, value, {persist = true})
+  local offset = device:get_field(ENERGY_RESET_OFFSET_FIELD) or 0
+  local adjusted = value - offset
+  if adjusted < 0 then
+    adjusted = 0
+  end
+  log.info("Setting energy " .. tostring(value) .. " - " .. tostring(offset) .. " = " .. tostring(adjusted))
+  device:emit_event( capabilities.energyMeter.energy({value=adjusted, unit="kWh"}) )
+  emit_power_consumption_report_event(device, e_value)
 end
 
 local function emit_voltage_event(device, value)
@@ -139,6 +177,33 @@ local ignore_events = {
   [0x6e] = "button1",
   [0x6f] = "button2",
 }
+
+function xiaomi_utils.get_energy_offset(device)
+  return device:get_field(ENERGY_RESET_OFFSET_FIELD) or 0
+end
+
+function xiaomi_utils.set_energy_offset(device, offset)
+  log.info("Setting energy offset to " .. tostring(offset))
+  device:set_field(ENERGY_RESET_OFFSET_FIELD, offset, {persist = true})
+end
+
+function xiaomi_utils.energy_reset_handler(driver, device, command)
+  local offset = xiaomi_utils.get_energy_offset(device)
+  local raw = device:get_field(ENERGY_LAST_RAW_FIELD)
+  if raw == nil then
+    local latest = device:get_latest_state("main", capabilities.energyMeter.ID, capabilities.energyMeter.energy.NAME)
+    log.info("No cached raw energy value, using latest event value: " .. tostring(latest) .. " with offset " .. tostring(offset))
+    if latest ~= nil then
+      raw = latest + offset
+    end
+  end
+
+  log.info("Resetting energy meter, current offset " .. tostring(offset) .. " raw value " .. tostring(raw))
+  raw = raw or 0
+  xiaomi_utils.set_energy_offset(device, raw)
+  device:emit_event( capabilities.energyMeter.energy({value=0.0, unit="Wh"}) )
+end
+
 
 function xiaomi_utils.emit_battery_event(driver, device, value, zb_rx)
   emit_battery_event(device, value)

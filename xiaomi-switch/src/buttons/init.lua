@@ -5,7 +5,7 @@ local OnOff = zcl_clusters.OnOff
 local log = require "log"
 local utils = require "utils"
 
-function on_off_attr_handler(driver, device, value, zb_rx)
+function on_off_attr_handler(_driver, device, value, zb_rx)
     local click_type = zb_rx.body_length.value>8 and capabilities.button.button.pushed or capabilities.button.button.held
     
     endpoint = zb_rx.address_header.src_endpoint.value
@@ -20,12 +20,11 @@ function on_off_attr_handler(driver, device, value, zb_rx)
         local f_down_counter = device:get_field(DOWN_COUNTER)
         local button = capabilities.button.button
         log.debug("down_counter: " .. tostring(f_down_counter))
-  
-        local click_type
-        click_type = utils.click_types[f_down_counter]   
-        
-        if click_type then
-            utils.emit_button_event(device, endpoint, click_type({state_change = true}))
+
+        local func_click_type = utils.click_types[f_down_counter]
+
+        if func_click_type then
+            utils.emit_button_event(device, endpoint, func_click_type({state_change = true}))
         end
 
         device:set_field(CLICK_TIMER, nil)

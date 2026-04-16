@@ -1,6 +1,6 @@
 local capabilities = require "st.capabilities"
 local log = require "log"
---local json = require "dkjson"
+local json = require "dkjson"
 
 utils = {}
 

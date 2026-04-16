@@ -1,12 +1,9 @@
 local zcl_clusters = require "st.zigbee.zcl.clusters"
-local cluster_base = require "st.zigbee.cluster_base"
-local data_types = require "st.zigbee.data_types"
 local capabilities = require "st.capabilities"
 
 local OnOff = zcl_clusters.OnOff
 local log = require "log"
 local utils = require "utils"
-local json = require "dkjson"
 
 function old_button_handler(device, endpoint, value)
     local CLICK_TIMER  = string.format("button_timer%d", endpoint)
@@ -49,7 +46,7 @@ function old_button_handler(device, endpoint, value)
         end
     else
         if not value.value then
-            timer = device.thread:call_with_delay(1, held)
+            local timer = device.thread:call_with_delay(1, held)
             device:emit_event_for_endpoint(component_id, capabilities.button.button.down())
 
             device:set_field(CLICK_TIMER, timer)
@@ -61,7 +58,7 @@ function old_button_handler(device, endpoint, value)
     end
 end
 
-function on_off_attr_handler(driver, device, value, zb_rx)
+local function on_off_attr_handler(_driver, device, value, zb_rx)
     local ep = zb_rx.address_header.src_endpoint.value
     local first_button_ep = utils.first_button_ep(device)
 
@@ -118,7 +115,7 @@ local old_switch_handler = {
             }
         },
     },
-    can_handle = function(opts, driver, device)
+    can_handle = function(_opts, _driver, device)
         return utils.first_switch_ep(device) > 0 and utils.first_button_ep(device) == 4
     end
 }

@@ -1,0 +1,46 @@
+name: opple-knob
+components:
+  - id: main
+    capabilities:
+    - id: button
+      version: 1
+      config:
+        values:
+          - key: "button.supportedButtonValues"
+            enabledValues:
+              - pushed
+              - held
+              - double
+              
+    - id: knob
+      version: 1
+    - id: batteryLevel
+      version: 1
+    - id: firmwareUpdate
+      version: 1
+    - id: refresh
+      version: 1
+    categories:
+    - name: Button
+preferences:
+- title: "Mode"
+  description: "press a button to wake up the device"
+  name: operationMode
+  required: true
+  preferenceType: enumeration
+  definition:
+    options:
+      0: "Light Commands (Bind to Group)"
+      1: "Button Events (Normal)"
+    default: "1"
+- title: "Group"
+  name: group
+  required: false
+  preferenceType: integer
+  definition:
+    minimum: 0
+    maximum: 65535
+    default: 0
+- preferenceId: stse.knobSensitivity
+  explicit: true
+

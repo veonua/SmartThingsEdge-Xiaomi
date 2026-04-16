@@ -1,11 +1,12 @@
 local zcl_clusters = require "st.zigbee.zcl.clusters"
 local capabilities = require "st.capabilities"
+local data_types = require "st.zigbee.data_types"
+local zigbee_utils = require "zigbee_utils"
 
-local OnOff = zcl_clusters.OnOff
 local log = require "log"
 local utils = require "utils"
 
-local function analog_input_handler(driver, device, e_value, zb_rx)
+local function analog_input_handler(_driver, device, e_value, zb_rx)
     local endpoint = zb_rx.address_header.src_endpoint.value
     local value = utils.round(e_value.value * 100)/100.0
     
@@ -18,11 +19,11 @@ local function analog_input_handler(driver, device, e_value, zb_rx)
     end
 end
 
-function bool_to_number(value)
+local function bool_to_number(value)
     return value and 0x01 or 0x00
 end
   
-function octetstring_from(t)
+local function octetstring_from(t)
     local bytearr = {}
     for _, v in ipairs(t) do
       local utf8byte = v < 0 and (0xff + v + 1) or v
@@ -31,7 +32,7 @@ function octetstring_from(t)
     return data_types.OctetString(table.concat(bytearr))
 end
   
-local function info_changed(driver, device, event, args)
+local function info_changed(_driver, device, _event, args)
     zigbee_utils.print_clusters(device)
   
     for id, value in pairs(device.preferences) do
