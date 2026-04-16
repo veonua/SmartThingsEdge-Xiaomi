@@ -1,21 +1,17 @@
-local capabilities = require "st.capabilities"
 local zcl_clusters = require "st.zigbee.zcl.clusters"
 local constants = require "st.zigbee.constants"
-local defaults = require "st.zigbee.defaults"
 local utils = require "st.utils"
-local json = require "dkjson"
 local log = require "log"
-local zigbee_utils = require "st.zigbee.utils"
 
 local messages = require "st.zigbee.messages"
 local bind_request = require "st.zigbee.zdo.bind_request"
 local zdo_messages = require "st.zigbee.zdo"
-  
+
 
 local zutils = {}
 
 zutils.supports_client_cluster = function(device, cluster_id)
-  for ep_id, ep in pairs(device.zigbee_endpoints) do
+  for _id, ep in pairs(device.zigbee_endpoints) do
     for _, cluster in ipairs(ep.client_clusters) do
       if cluster == cluster_id then
         return true
@@ -30,8 +26,8 @@ zutils.find_first_ep = function (eps, cluster)
   local tkeys = {}
   for k in pairs(eps) do table.insert(tkeys, k) end
   table.sort(tkeys)
-  
-  for _, k in ipairs(tkeys) do 
+
+  for _, k in ipairs(tkeys) do
     local ep = eps[k]
     for _, clus in ipairs(ep.server_clusters) do
       if clus == cluster then
@@ -56,27 +52,27 @@ id_to_name_map[0xFCC0] = "AqaraOpple"
 local function clusters_to_string(name, cluster_table)
   local res = name.."["
   for _, cluster in ipairs(cluster_table) do
-    local name = id_to_name_map[cluster] or to_hex(cluster)
-    res = res .. name .. ", "
+    local cluster_name = id_to_name_map[cluster] or to_hex(cluster)
+    res = res .. cluster_name .. ", "
   end
   return res .. "]"
 end
-  
+
 zutils.print_clusters = function(device)
-  for ep_id, ep in pairs(device.zigbee_endpoints) do
-    local msg = "Ep#" .. ep.id .. 
+  for _, ep in pairs(device.zigbee_endpoints) do
+    local msg = "Ep#" .. ep.id ..
                 " device_id:" .. to_hex(ep.device_id) ..
                 " profile_id:" .. to_hex(ep.profile_id)
-    
+
     if ep.model then
       msg = msg .. " model:'" .. ep.model .. "'"
     end
-    
+
     if ep.manufacturer then
       msg = msg .. " manufacturer:'" .. ep.manufacturer .. "'"
     end
 
-    log.info( msg .. 
+    log.info( msg ..
               clusters_to_string(" Client clusters:", ep.client_clusters) ..
               clusters_to_string(" Server clusters:", ep.server_clusters) )
   end
@@ -84,18 +80,18 @@ end
 
 zutils.build_bind_request = function(device, cluster, group)
   local addr_header = messages.AddressHeader(
-    constants.HUB.ADDR, 
-    constants.HUB.ENDPOINT, 
-    device:get_short_address(), 
-    device.fingerprinted_endpoint_id, 
-    constants.ZDO_PROFILE_ID, 
+    constants.HUB.ADDR,
+    constants.HUB.ENDPOINT,
+    device:get_short_address(),
+    device.fingerprinted_endpoint_id,
+    constants.ZDO_PROFILE_ID,
     bind_request.BindRequest.ID)
-    
+
   local bind_req = bind_request.BindRequest(
-    device.zigbee_eui, 
-    device:get_endpoint(cluster), 
-    cluster, 
-    bind_request.ADDRESS_MODE_16_BIT, 
+    device.zigbee_eui,
+    device:get_endpoint(cluster),
+    cluster,
+    bind_request.ADDRESS_MODE_16_BIT,
     group)
 
   return messages.ZigbeeMessageTx({
@@ -128,18 +124,18 @@ end
 zutils.send_unbind_request = function(device, cluster, group)
   -- not tested
   local addr_header = messages.AddressHeader(
-    constants.HUB.ADDR, 
-    constants.HUB.ENDPOINT, 
-    device:get_short_address(), 
-    device.fingerprinted_endpoint_id, 
-    constants.ZDO_PROFILE_ID, 
+    constants.HUB.ADDR,
+    constants.HUB.ENDPOINT,
+    device:get_short_address(),
+    device.fingerprinted_endpoint_id,
+    constants.ZDO_PROFILE_ID,
     0x0022)
 
   local bind_req = bind_request.BindRequest(
-    device.zigbee_eui, 
-    device:get_endpoint(cluster), 
-    cluster, 
-    bind_request.ADDRESS_MODE_16_BIT, 
+    device.zigbee_eui,
+    device:get_endpoint(cluster),
+    cluster,
+    bind_request.ADDRESS_MODE_16_BIT,
     group)
 
   return device:send( messages.ZigbeeMessageTx({
