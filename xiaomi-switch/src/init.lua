@@ -442,11 +442,11 @@ local switch_driver_template = {
         --[0x0231] = make_manu_attr_handler("rotation_time"),
         [0x0232] = rotation_percent_delta_handler,
         --[0x0233] = make_manu_attr_handler("rotation_percent"),
-        
+
         --[0x0238] = make_manu_attr_handler("unknown_0238"),
         [0x023A] = knob_action_handler,
         --[0x0301] = make_manu_attr_handler("multiplier"),
-        
+
       },
     }
   },

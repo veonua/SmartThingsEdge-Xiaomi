@@ -11,7 +11,7 @@ local zdo_messages = require "st.zigbee.zdo"
 local zutils = {}
 
 zutils.supports_client_cluster = function(device, cluster_id)
-  for _id, ep in pairs(device.zigbee_endpoints) do
+  for _, ep in pairs(device.zigbee_endpoints) do
     for _, cluster in ipairs(ep.client_clusters) do
       if cluster == cluster_id then
         return true
