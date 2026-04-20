@@ -7,24 +7,24 @@ components:
       version: 1
     - id: refresh
       version: 1
-    - id: battery
+    - id: batteryLevel
       version: 1
     categories:
-    - name: RemoteController
+    - name: Button
   - id: button2
     label: "Right"
     capabilities:
     - id: button
       version: 1
     categories:
-    - name: RemoteController
+    - name: Button
   - id: group1
     label: "Both buttons"
     capabilities:
     - id: button
       version: 1
     categories:
-    - name: RemoteController
+    - name: Button
 
 preferences:
 - title: "Dual Button Actions"
@@ -37,9 +37,3 @@ preferences:
       0: "Individual events"
       1: "Grouped event"
     default: "0"
-
-
-metadata:
-  deviceType: RemoteController
-  ocfDeviceType: x.com.st.d.remotecontroller
-  deviceTypeId: RemoteController  

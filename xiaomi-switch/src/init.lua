@@ -125,7 +125,7 @@ local function device_added(driver, device)
   device:set_field("number_of_channels", configs.number_of_channels, {persist = true})
   device:set_field("neutral_wire", configs.neutral_wire, {persist = true})
 
-  local battery_info = configs.battery
+  local battery_info = configs.battery_info
   if battery_info then
     local type = battery_info.type or "CR2032"
     local quantity = battery_info.quantity or 1
