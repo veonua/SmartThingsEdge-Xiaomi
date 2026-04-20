@@ -5,6 +5,8 @@ local data_types = require "st.zigbee.data_types"
 local capabilities = require "st.capabilities"
 local buf = require "st.buf"
 local utils = require "st.utils"
+local cluster_base = require "st.zigbee.cluster_base"
+local zcl_clusters = require "st.zigbee.zcl.clusters"
 local log = require "log"
 
 local ENERGY_RESET_OFFSET_FIELD = "energyResetOffsetWh"
@@ -55,11 +57,23 @@ local function deserialize(data_buf)
 end
 
 local function emit_battery_event(device, battery_record)
+  local raw_bat_volt = (battery_record.value / 1000)
+  local raw_bat_perc = (raw_bat_volt - 2.5) * 100 / (3.0 - 2.5)
+  local bat_perc = utils.round( utils.clamp_value(raw_bat_perc, 0, 100) )
+
   if device:supports_capability(capabilities.battery, "main") then
-    local raw_bat_volt = (battery_record.value / 1000)
-    local raw_bat_perc = (raw_bat_volt - 2.5) * 100 / (3.0 - 2.5)
-    local bat_perc = utils.round( utils.clamp_value(raw_bat_perc, 0, 100) )
     device:emit_event(capabilities.battery.battery(bat_perc))
+  end
+
+  if device:supports_capability(capabilities.batteryLevel, "main") then
+    local batteryLevel = "normal"
+
+    if raw_bat_perc < 20 then
+      batteryLevel = "critical"
+    elseif raw_bat_perc < 40 then
+      batteryLevel = "warning"
+    end
+    device:emit_event(capabilities.batteryLevel(batteryLevel))
   end
 end
 
@@ -284,8 +298,43 @@ function xiaomi_utils.handlerFF02(_driver, device, svalue, _zb_rx)
   end
 end
 
+local function bytes_starts_with(raw, prefix)
+    if raw == nil then return false end
+
+    if type(raw) == "string" then
+        if #raw < #prefix then return false end
+        for i = 1, #prefix do
+            if string.byte(raw, i) ~= prefix[i] then return false end
+        end
+        return true
+    end
+
+    if type(raw) == "table" then
+        if #raw < #prefix then return false end
+        for i = 1, #prefix do
+            if raw[i] ~= prefix[i] then return false end
+        end
+        return true
+    end
+
+    return false
+end
+
+function xiaomi_utils.prevent_reset_handler(_driver, device, value, _zb_rx)
+  local incoming = value.value
+  local prefix = {0xAA, 0x10, 0x05, 0x41, 0x87}
+
+  if not bytes_starts_with(incoming, prefix) then
+      return
+  end
+
+  log.info("xiaomi_utils.prevent_reset_handler: sending write to prevent reset")
+  local payload = data_types.OctetString( {0xAA, 0x10, 0x05, 0x41, 0x47, 0x01, 0x01, 0x10, 0x01} )
+  device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, 0xFFF0, 0x115F, payload) )
+end
 
 xiaomi_utils.basic_id = {
+  [0xFF00] = xiaomi_utils.prevent_reset_handler,
   [0xFF01] = xiaomi_utils.handler,
   [0xFF02] = xiaomi_utils.handlerFF02
 }
@@ -296,24 +345,3 @@ xiaomi_utils.opple_id = {
 }
 
 return xiaomi_utils
-
--- https://github.com/Koenkk/zigbee-herdsman-converters/blob/master/devices/xiaomi.js#L22
--- const preventReset = async (type, data, device) => {
---   if (
---       // options.allow_reset ||
---       type !== 'message' ||
---       data.type !== 'attributeReport' ||
---       data.cluster !== 'genBasic' ||
---       !data.data[0xfff0] ||
---       // eg: [0xaa, 0x10, 0x05, 0x41, 0x87, 0x01, 0x01, 0x10, 0x00]
---       !data.data[0xFFF0].slice(0, 5).equals(Buffer.from([0xaa, 0x10, 0x05, 0x41, 0x87]))
---   ) {
---       return;
---   }
---   const options = {manufacturerCode: 0x115f};
---   const payload = {[0xfff0]: {
---       value: [0xaa, 0x10, 0x05, 0x41, 0x47, 0x01, 0x01, 0x10, 0x01],
---       type: 0x41,
---   }};
---   await device.getEndpoint(1).write('genBasic', payload, options);
--- };

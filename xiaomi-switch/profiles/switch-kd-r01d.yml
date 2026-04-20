@@ -34,16 +34,8 @@ preferences:
   - preferenceId: stse.changeToWirelessSwitch
     explicit: true
 
-  - title: "Rotation sensitivity"
-    name: sensitivity
-    required: true
-    preferenceType: enumeration
-    definition:
-      options:
-        720: "Low"
-        360: "Medium"
-        180: "High"
-      default: 360
+  - preferenceId: stse.knobSensitivity
+    explicit: true
 
   - title: "Dimming phase"
     name: phase

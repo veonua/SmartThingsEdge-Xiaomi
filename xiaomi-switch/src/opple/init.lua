@@ -17,6 +17,9 @@ local Groups = zcl_clusters.Groups
 
 local MFG_CODE = 0x115F
 local PRIVATE_ATTRIBUTE_ID = 0x0009
+local KNOB_SENSITIVITY_ATTR_ID = 0x0234
+local KNOB_SENSITIVITY_LOOKUP = {720, 360, 180}
+
 
 local OPPLE_FINGERPRINTS = {
     { model = "^lumi.switch...aeu1" },
@@ -166,7 +169,7 @@ local do_configure = function(_self, device)
         local group = device.preferences.group or 1
         group = tonumber(group)
 
-        --device:send(zigbee_utils.build_bind_request(device, OnOff.ID, group))
+        device:send(zigbee_utils.build_bind_request(device, OnOff.ID, group))
         device:send(zigbee_utils.build_bind_request(device, Level.ID, group))
         device:send(zigbee_utils.build_bind_request(device, Scenes.ID, group))
         device:send(zigbee_utils.build_bind_request(device, ColorControl.ID, group))
@@ -174,6 +177,7 @@ local do_configure = function(_self, device)
     end
 
     if device:supports_capability(capabilities.battery, "main") then
+        -- TODO: update to device:add_configured_attribute(attribute)
         device:send(
             PowerConfiguration.attributes.BatteryPercentageRemaining:configure_reporting(
                 device,
@@ -253,9 +257,9 @@ local function info_changed(driver, device, event, args)
                 local v = tonumber(data) or 0
                 attr = 0x030A
                 payload = data_types.validate_or_build_type(v, data_types.Uint8, id)
-            elseif id == "sensitivity" then
-                local v = tonumber(data) or 360
-                attr = 0x0234
+            elseif id == "stse.knobSensitivity" then
+                local v = KNOB_SENSITIVITY_LOOKUP[tonumber(data)] or 360
+                attr = KNOB_SENSITIVITY_ATTR_ID
                 payload = data_types.validate_or_build_type(v, data_types.Uint16, id)
             end
 
@@ -270,6 +274,19 @@ end
 local function attr_operation_mode_handler(_driver, device, value, _zb_rx)
     log.info("attr_operation_mode_handler " .. tostring(value))
     device:set_field("operationMode", value.value, {persist = true})
+end
+
+local function battery_level_handler(_driver, device, value, _zb_rx)
+  local voltage = value.value
+  local batteryLevel = "normal"
+
+  if voltage <= 25 then
+    batteryLevel = "critical"
+  elseif voltage < 28 then
+    batteryLevel = "warning"
+  end
+
+  device:emit_event(capabilities.batteryLevel.battery(batteryLevel))
 end
 
 local switch_handler = {
@@ -290,7 +307,7 @@ local switch_handler = {
                 [0x00F7] = xiaomi_utils.handler
             },
             [PowerConfiguration.ID] = {
-                [PowerConfiguration.attributes.BatteryVoltage.ID] = xiaomi_utils.emit_battery_event,
+                [PowerConfiguration.attributes.BatteryVoltage.ID] = battery_level_handler
             }
         }
     },

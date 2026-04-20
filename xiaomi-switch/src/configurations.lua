@@ -87,6 +87,7 @@ local configs = {}
 local MULTISTATE_INPUT_CLUSTER_ID = 0x0012
 local BATTERY_MAP = {
   -- CR2450 x1
+  ["lumi.remote.b18ac1"]         = { type = "CR2450", quantity = 1 },  -- WRS-R02 Wireless Switch (Two Button)
   ["lumi.remote.b28ac1"]         = { type = "CR2450", quantity = 1 },  -- WRS-R02 Wireless Switch (Two Button)
   ["lumi.remote.acn008"]         = { type = "CR2450", quantity = 1 },  -- Aqara H1M Wireless Switch (One Button)
   ["lumi.remote.acn009"]         = { type = "CR2450", quantity = 1 },  -- Aqara H1M Wireless Switch (Two Button)
@@ -106,7 +107,6 @@ local function find_config(model)
     end
   end
 
-  -- if model matches lumi.remote.* use first_button_ep = 0x0001 and supported_button_values = {"pushed", "pushed_2x", "held"}
   if string.find(model, "^lumi%.remote%..*") then
     log.info( "Using default remote config for: " .. model )
     return {
