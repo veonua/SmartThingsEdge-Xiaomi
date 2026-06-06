@@ -164,7 +164,17 @@ local do_configure = function(_self, device)
         -- if value is 1 - there will be single clicks, 2 - multiple.
         -- Equivalent write:
         -- cluster_base.write_manufacturer_specific_attribute(...)
-        send_opple_message(device, 0x0125, data_types.Uint8(0x02), 0x01)
+
+        local model = device:get_model()
+
+        -- KD-R01D (Dimmer H2 EU) uses a different multi-click attribute (0x0286 in 0xFCC0)
+        -- than standard opple switches (0x0125). See ZHA quirk and zigbee-herdsman-converter PRs #9460/#9463.
+        if model == "lumi.switch.agl011" then
+            send_opple_message(device, 0x0286, data_types.Uint8(0x02), 0x01)
+            log.info("KD-R01D: enabled multi-click mode via attr 0x0286")
+        else
+            send_opple_message(device, 0x0125, data_types.Uint8(0x02), 0x01)
+        end
     elseif operationMode == 0 then      -- light group binding
         local group = device.preferences.group or 1
         group = tonumber(group)

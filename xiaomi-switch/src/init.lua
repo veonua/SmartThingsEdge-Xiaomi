@@ -25,6 +25,8 @@ local PRIVATE_CLUSTER_ID = 0xFCC0
 local PRIVATE_ATTRIBUTE_ID = 0x0009
 local MFG_CODE = 0x115F
 
+local knob = capabilities.knob
+
 
 local function component_to_endpoint(device, component_id)
   local first_switch_ep = utils.first_switch_ep(device)
@@ -112,6 +114,9 @@ local function device_added(driver, device)
     log.info("Device is not Zigbee")
     return
   end
+
+  device:emit_event(knob.supportedAttributes({"rotateAmount"}, {visibility = {displayed = false}}))
+
 
   device:emit_event(capabilities.powerMeter.power({ value = 0.0, unit = "W" }))
   device:emit_event(capabilities.energyMeter.energy({ value = 0.0, unit = "Wh" }))
@@ -380,6 +385,7 @@ local switch_driver_template = {
   supported_capabilities = {
     capabilities.switch,
     capabilities.switchLevel,
+    capabilities.knob,
     capabilities.statelessSwitchLevelStep,
     capabilities.powerMeter,
     capabilities.temperatureAlarm,

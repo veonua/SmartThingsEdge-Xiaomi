@@ -24,6 +24,7 @@ components:
         - key: "supportedButtonValues.value"
           enabledValues:
             - pushed
+            - pushed_2x
             - held
   - id: knob
     version: 1
