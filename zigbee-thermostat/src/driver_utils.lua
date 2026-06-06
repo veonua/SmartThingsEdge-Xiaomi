@@ -34,9 +34,19 @@ function driver_utils.setpoint_limit_handler_factory(capabilities, min_or_max, h
     local celsius_value = setpoint.value / 100.0
     device:set_field(field, celsius_value)
     if device:get_field(field) and device:get_field(paired_field) then
-      local event_constructor = capabilities.thermostatHeatingSetpoint.heatingSetpointRange
+      local event_constructor = (heat_or_cool == "cool")
+        and capabilities.thermostatCoolingSetpoint.coolingSetpointRange
+        or capabilities.thermostatHeatingSetpoint.heatingSetpointRange
 
       device:emit_event(event_constructor(
+        {
+          unit = "C",
+          value = {
+            minimum = device:get_field("setpoint_min_" .. heat_or_cool),
+            maximum = device:get_field("setpoint_max_" .. heat_or_cool)
+          }
+        }
+      ))
         {
           unit = "C",
           value = {

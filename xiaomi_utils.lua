@@ -73,7 +73,7 @@ local function emit_battery_event(device, battery_record)
     elseif raw_bat_perc < 40 then
       batteryLevel = "warning"
     end
-    device:emit_event(capabilities.batteryLevel(batteryLevel))
+    device:emit_event(capabilities.batteryLevel.battery(batteryLevel))
   end
 end
 
@@ -213,7 +213,7 @@ function xiaomi_utils.energy_reset_handler(_driver, device, _command)
   log.info("Resetting energy meter, current offset " .. tostring(offset) .. " raw value " .. tostring(raw))
   raw = raw or 0
   xiaomi_utils.set_energy_offset(device, raw)
-  device:emit_event( capabilities.energyMeter.energy({value=0.0, unit="Wh"}) )
+  device:emit_event(capabilities.energyMeter.energy({ value = 0.0, unit = "kWh" }))
 end
 
 
@@ -329,8 +329,8 @@ function xiaomi_utils.prevent_reset_handler(_driver, device, value, _zb_rx)
   end
 
   log.info("xiaomi_utils.prevent_reset_handler: sending write to prevent reset")
-  local payload = data_types.OctetString( {0xAA, 0x10, 0x05, 0x41, 0x47, 0x01, 0x01, 0x10, 0x01} )
-  device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, 0xFFF0, 0x115F, payload) )
+  local payload = string.char(0xAA, 0x10, 0x05, 0x41, 0x47, 0x01, 0x01, 0x10, 0x01)
+  device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, 0xFFF0, 0x115F, data_types.OctetString, payload))
 end
 
 xiaomi_utils.basic_id = {

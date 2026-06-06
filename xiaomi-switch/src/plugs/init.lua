@@ -119,7 +119,7 @@ local plug_handler = {
           }
     },
   can_handle = function(_opts, _driver, device)
-        return device:get_model() ~= "lumi.plug"
+        return device:get_model():find("^lumi%.plug") ~= nil
     end
 }
 

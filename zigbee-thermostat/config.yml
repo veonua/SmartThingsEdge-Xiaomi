@@ -1,5 +1,5 @@
 name: 'Aqara Thermostat v3'
-defaultProfile: 'floor-thermostat'
+defaultProfile: 'floor-thermostat-w500'
 packageKey: 'aqara-thermostat'
 permissions:
   zigbee: {}

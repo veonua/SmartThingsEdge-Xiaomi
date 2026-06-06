@@ -10,7 +10,7 @@ components:
             enabledValues:
               - pushed
               - held
-              - double
+              - pushed_2x
               
     - id: knob
       version: 1
