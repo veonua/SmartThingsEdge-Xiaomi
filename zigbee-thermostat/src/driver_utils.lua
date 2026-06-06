@@ -30,7 +30,7 @@ function driver_utils.setpoint_limit_handler_factory(capabilities, min_or_max, h
     paired_field = "setpoint_max_" .. heat_or_cool
   end
 
-  return function(driver, device, setpoint)
+  return function(_driver, device, setpoint)
     local celsius_value = setpoint.value / 100.0
     device:set_field(field, celsius_value)
     if device:get_field(field) and device:get_field(paired_field) then
@@ -47,14 +47,6 @@ function driver_utils.setpoint_limit_handler_factory(capabilities, min_or_max, h
           }
         }
       ))
-        {
-          unit = "C",
-          value = {
-            minimum = device:get_field("setpoint_min_" .. heat_or_cool),
-            maximum = device:get_field("setpoint_max_" .. heat_or_cool)
-          }
-        }
-      ))
 
       device:set_field(field, nil)
       device:set_field(paired_field, nil)
@@ -63,21 +55,21 @@ function driver_utils.setpoint_limit_handler_factory(capabilities, min_or_max, h
 end
 
 function driver_utils.set_setpoint_factory(utils, setpoint_attribute)
-  return function(driver, device, command)
+  return function(_driver, device, command)
     local value = command.args.setpoint
     if value >= 40 then
       value = utils.f_to_c(value)
     end
     device:send_to_component(command.component, setpoint_attribute:write(device, utils.round(value * 100)))
 
-    device.thread:call_with_delay(2, function(d)
+    device.thread:call_with_delay(2, function(_d)
       device:send_to_component(command.component, setpoint_attribute:read(device))
     end)
   end
 end
 
 function driver_utils.temperature_measurement_min_max_attr_handler(capabilities, temperature_measurement_defaults, min_or_max)
-  return function(driver, device, value, zb_rx)
+  return function(_driver, device, value, zb_rx)
     local raw_temp = value.value
     local celc_temp = raw_temp / 100.0
     local temp_scale = "C"
