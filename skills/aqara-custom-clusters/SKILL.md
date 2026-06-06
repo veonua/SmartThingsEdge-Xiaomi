@@ -92,7 +92,7 @@ These mappings are repeatedly confirmed in upstream drivers and converters.
 | `0x0206` / `518` | `SINGLE_PREC` | Charging power limit on certain outlets. | Numeric watts, model range-specific | Medium |
 | `0x020B` / `523` | `SINGLE_PREC` | Overload protection threshold. | Numeric watts (e.g., ~100-3840 depending device) | High |
 | `0x0285` / `645` | `UINT8` | Relay lock. | `0/1` unlock/lock | High |
-| `0x0286` / `646` | `UINT8` | Multi-click mode variant used by newer H2/Z1 devices. | `1=single-oriented`, `2=multi-click` | High |
+| `0x0286` / `646` | `UINT8` | KD-R01D/H2 off-state event mode selector (button/knob behavior while relay output is off). | `1=single press oriented`, `2=multi-click + knob events` | High |
 
 ## Thermostat/Valve Private IDs (Aqara TRV Family)
 
@@ -217,6 +217,8 @@ find . -type f \( -name "*.lua" -o -name "*.yml" -o -name "*.yaml" \) -print0 \
 ## Practical Notes For This Repo
 
 - Local handlers already write key switch attrs on `0xFCC0`: `0x0200`, `0x0201`, `0x0203`, `0x020B`.
+- KD-R01D (`lumi.switch.agl011`) uses `0x0286` for off-state event mode; code keeps `0x0125` writes for broader Opple compatibility.
+- Preference mapping in this repo: `offStateEventMode` -> `0x0286`/`0x0125` with values `1` (single-oriented) and `2` (multi-click + knob while off).
 - Motion path uses `0x010C` for sensitivity configuration.
 - Some legacy/private operations still use `genBasic` payload channels (`0xFFF0`) in addition to `0xFCC0`.
 

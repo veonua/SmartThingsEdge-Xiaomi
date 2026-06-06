@@ -1,8 +1,8 @@
-name: switch-kd-r01d
+name: switch-kd-r01d-basic
 components:
 - id: main
   capabilities:
- 
+
   - id: switch
     version: 1
   - id: switchLevel
@@ -17,25 +17,11 @@ components:
     version: 1
   - id: refresh
     version: 1
-  - id: button
-    version: 1
-    config:
-      values:
-        - key: "supportedButtonValues.value"
-          enabledValues:
-            - pushed
-            - pushed_2x
-            - held
-  - id: knob
-    version: 1
   categories:
   - name: Switch
 
 preferences:
   - preferenceId: stse.changeToWirelessSwitch
-    explicit: true
-
-  - preferenceId: stse.knobSensitivity
     explicit: true
 
   - title: "Off-state button/knob events"
@@ -47,7 +33,7 @@ preferences:
       options:
         1: "Single press only (fast detection)"
         2: "Multi-click + knob events while off"
-      default: "1"
+      default: "2"
 
   - title: "Dimming phase"
     name: phase
