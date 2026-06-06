@@ -395,8 +395,8 @@ local do_configure = function(self, device)
 end
 
 local device_added = function(self, device)
-  device:set_field(constants.ELECTRICAL_MEASUREMENT_DIVISOR_KEY, DEFAULT_ELECTRICAL_MEASUREMENT_DIVISOR, { persists = true })
-  device:set_field(constants.SIMPLE_METERING_DIVISOR_KEY, DEFAULT_SIMPLE_METERING_DIVISOR, { persists = true })
+  device:set_field(constants.ELECTRICAL_MEASUREMENT_DIVISOR_KEY, DEFAULT_ELECTRICAL_MEASUREMENT_DIVISOR, { persist = true })
+  device:set_field(constants.SIMPLE_METERING_DIVISOR_KEY, DEFAULT_SIMPLE_METERING_DIVISOR, { persist = true })
 
   device:send(TemperatureMeasurement.attributes.MinMeasuredValue:read(device))
   device:send(TemperatureMeasurement.attributes.MaxMeasuredValue:read(device))
