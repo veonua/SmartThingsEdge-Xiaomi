@@ -38,6 +38,17 @@ preferences:
   - preferenceId: stse.knobSensitivity
     explicit: true
 
+  - title: "Off-state button/knob events"
+    description: "Choose fast single-press only, or enable multi-click plus knob events while the main dimmer output is off"
+    name: clickMode
+    required: true
+    preferenceType: enumeration
+    definition:
+      options:
+        1: "Single press only (fast detection)"
+        2: "Multi-click + knob events while off"
+      default: "2"
+
   - title: "Dimming phase"
     name: phase
     required: true

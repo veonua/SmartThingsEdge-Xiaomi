@@ -20,6 +20,10 @@ local PRIVATE_ATTRIBUTE_ID = 0x0009
 local KNOB_SENSITIVITY_ATTR_ID = 0x0234
 local KNOB_SENSITIVITY_LOOKUP = {720, 360, 180}
 
+local EVENTS_WHILE_OFF_MODE = 0x02
+local KD_R01D_MODEL = "lumi.switch.agl011"
+local KD_R01D_PROFILE_EVENTS = "switch-kd-r01d"
+local KD_R01D_PROFILE_BASIC = "switch-kd-r01d-basic"
 
 local OPPLE_FINGERPRINTS = {
     { model = "^lumi.switch...aeu1" },
@@ -52,6 +56,23 @@ local send_opple_message = function (device, attr, payload, endpoint)
         message:to_endpoint(endpoint)
     end
     device:send(message)
+end
+
+local function get_off_state_event_mode(device)
+    local pref = device.preferences and (device.preferences.offStateEventMode or device.preferences.clickMode)
+    return tonumber(pref) or EVENTS_WHILE_OFF_MODE
+end
+
+local function sync_profile(device)
+    if device:get_model() ~= KD_R01D_MODEL then return end
+
+    local mode = get_off_state_event_mode(device)
+    local target_profile = mode == EVENTS_WHILE_OFF_MODE and KD_R01D_PROFILE_EVENTS or KD_R01D_PROFILE_BASIC
+    local current_profile = device.profile and device.profile.name or ""
+
+    if current_profile ~= target_profile then
+        device:try_update_metadata({ profile = target_profile })
+    end
 end
 
 local function switch_on(_driver, device, command)
@@ -124,14 +145,14 @@ local do_refresh = function(_self, device)
             MFG_CODE
         )
     )
-    device:send(
-        cluster_base.read_manufacturer_specific_attribute(
-            device,
-            xiaomi_utils.OppleCluster,
-            0x0125,
-            MFG_CODE
-        )
-    )
+    -- device:send(
+    --     cluster_base.read_manufacturer_specific_attribute(
+    --         device,
+    --         xiaomi_utils.OppleCluster,
+    --         0x0125,
+    --         MFG_CODE
+    --     )
+    -- )
     zigbee_utils.print_clusters(device)
     device:send(Groups.server.commands.GetGroupMembership(device, {}))
     log.info("---")
@@ -146,6 +167,7 @@ end
 --    Binding request is mandatory, in other way commands will be sent to all connected devices
 -- 1: Normal mode which sends button click messages to the hub, and actions can be reprogrammed by the user
 local do_configure = function(_self, device)
+    sync_profile(device)
     device:configure()
     local operationMode = device.preferences.operationMode or 1
     operationMode = tonumber(operationMode)
@@ -160,21 +182,15 @@ local do_configure = function(_self, device)
     send_opple_message(device, PRIVATE_ATTRIBUTE_ID, data_types.Uint8(operationMode), 0x01)
 
     if operationMode == 1 then -- button events
-        -- turn on the "multiple clicks" mode, otherwise the only "single click" events.
-        -- if value is 1 - there will be single clicks, 2 - multiple.
+        -- offStateEventMode controls how events are generated while relay output is off:
+        -- 1 = single press only (faster), 2 = multi-click + knob events.
         -- Equivalent write:
         -- cluster_base.write_manufacturer_specific_attribute(...)
 
-        local model = device:get_model()
+        local click_mode = get_off_state_event_mode(device)
 
-        -- KD-R01D (Dimmer H2 EU) uses a different multi-click attribute (0x0286 in 0xFCC0)
-        -- than standard opple switches (0x0125). See ZHA quirk and zigbee-herdsman-converter PRs #9460/#9463.
-        if model == "lumi.switch.agl011" then
-            send_opple_message(device, 0x0286, data_types.Uint8(0x02), 0x01)
-            log.info("KD-R01D: enabled multi-click mode via attr 0x0286")
-        else
-            send_opple_message(device, 0x0125, data_types.Uint8(0x02), 0x01)
-        end
+        send_opple_message(device, 0x0286, data_types.Uint8(click_mode), 0x01) -- for new devices
+        send_opple_message(device, 0x0125, data_types.Uint8(click_mode), 0x01)
     elseif operationMode == 0 then      -- light group binding
         local group = device.preferences.group or 1
         group = tonumber(group)
@@ -224,6 +240,11 @@ local function info_changed(driver, device, event, args)
 
             if id == "operationMode" then
                 do_configure(driver, device)
+            elseif id == "offStateEventMode" or id == "clickMode" then
+                sync_profile(device)
+                local click_mode = tonumber(data) or EVENTS_WHILE_OFF_MODE
+                send_opple_message(device, 0x0286, data_types.Uint8(click_mode), 0x01) -- for new devices
+                send_opple_message(device, 0x0125, data_types.Uint8(click_mode), 0x01)
             elseif id == "group" then
                 device:send(zigbee_utils.build_bind_request(device, OnOff.ID, data))
                 device:send(zigbee_utils.build_bind_request(device, Level.ID, data))

@@ -24,9 +24,9 @@ local ENERGY_METER_ENDPOINT = 0x1F
 local PRIVATE_CLUSTER_ID = 0xFCC0
 local PRIVATE_ATTRIBUTE_ID = 0x0009
 local MFG_CODE = 0x115F
+local ROTATION_SCALE = 5
 
 local knob = capabilities.knob
-
 
 local function component_to_endpoint(device, component_id)
   local first_switch_ep = utils.first_switch_ep(device)
@@ -256,13 +256,13 @@ local function zdo_binding_table_handler(driver, _device, zb_rx)
   end
 end
 
-local function make_manu_attr_handler(name)
-  return function(_, device, value)
-    local v = value.value
-    log.info(string.format("manuSpecificLumi %s: %s", name, tostring(v)))
-    device:set_field("manu_" .. name, v, { persist = true })
-  end
-end
+-- local function make_manu_attr_handler(name)
+--   return function(_, device, value)
+--     local v = value.value
+--     log.info(string.format("manuSpecificLumi %s: %s", name, tostring(v)))
+--     device:set_field("manu_" .. name, v, { persist = true })
+--   end
+-- end
 
 local KNOB_ACTIONS = {
   [0x00] = "off",
@@ -284,11 +284,14 @@ end
 local function rotation_percent_delta_handler(_, device, value, zb_rx)
   local end_point = zb_rx.address_header.src_endpoint.value
   local raw_val = st_utils.round(value.value)
+  local scaled_val = raw_val * ROTATION_SCALE
+  if scaled_val > 100 then scaled_val = 100 end
+  if scaled_val < -100 then scaled_val = -100 end
 
   if end_point == 0x47 then -- normal
-    device:emit_event(capabilities.knob.rotateAmount({value = raw_val}, {state_change = true}))
+    device:emit_event(capabilities.knob.rotateAmount({value = scaled_val}, {state_change = true}))
   elseif end_point == 0x48 then -- press
-    device:emit_event(capabilities.knob.heldRotateAmount({value = raw_val}, {state_change = true}))
+    device:emit_event(capabilities.knob.heldRotateAmount({value = scaled_val}, {state_change = true}))
   end
 
   -- log.info(string.format("manuSpecificLumi rotation_percent_delta: %s", tostring(scroll_amount)))
