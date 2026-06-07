@@ -254,7 +254,7 @@ local function info_changed(driver, device, event, args)
                 payload = data_types.validate_or_build_type(data, data_types.Boolean, id)
                 attr = 0x0201
             elseif id == "stse.turnOffIndicatorLight" then
-                payload = data_types.validate_or_build_type(data and 0 or 1, data_types.Boolean, id)
+                payload = data_types.validate_or_build_type(not data, data_types.Boolean, id)
                 attr = 0x0203
             elseif id == "stse.changeToWirelessSwitch" then
                 attr = 0x0200

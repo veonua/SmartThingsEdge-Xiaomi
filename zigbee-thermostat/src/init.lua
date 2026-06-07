@@ -106,7 +106,7 @@ end
 
 local LAST_REPORT_TIME = "LAST_REPORT_TIME"
 
-local function emit_power_consumption_report_event(device, value)
+local function emit_power_consumption_report_event(device, kWh_value)
   -- powerConsumptionReport report interval
   local current_time = os.time()
   local last_time = device:get_field(LAST_REPORT_TIME) or 0
@@ -115,7 +115,7 @@ local function emit_power_consumption_report_event(device, value)
     return
   end
   device:set_field(LAST_REPORT_TIME, current_time, { persist = true })
-  local raw_value = value.value * 1000 -- 'Wh'
+  local raw_value = kWh_value * 1000 -- 'Wh'
 
   local delta_energy = 0.0
   local current_power_consumption = device:get_latest_state('main', capabilities.powerConsumptionReport.ID,
