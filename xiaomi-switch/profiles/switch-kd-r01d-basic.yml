@@ -33,7 +33,7 @@ preferences:
       options:
         1: "Single press only (fast detection)"
         2: "Multi-click + knob events while off"
-      default: "2"
+      default: "1"
 
   - title: "Dimming phase"
     name: phase

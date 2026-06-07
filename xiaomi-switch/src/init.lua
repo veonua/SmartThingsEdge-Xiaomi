@@ -17,6 +17,7 @@ local utils = require "utils"
 
 local MULTISTATE_INPUT_CLUSTER_ID = 0x0012
 local WIRELESS_SWITCH_ATTRIBUTE_ID = 0x0055
+local NO_PERIODIC_REPORTS_MAX_INTERVAL = 0xFFFF
 
 local POWER_METER_ENDPOINT = 0x15
 local ENERGY_METER_ENDPOINT = 0x1F
@@ -410,8 +411,8 @@ local switch_driver_template = {
       {
         cluster = MULTISTATE_INPUT_CLUSTER_ID,
         attribute = WIRELESS_SWITCH_ATTRIBUTE_ID,
-        minimum_interval = 100,
-        maximum_interval = 7200,
+        minimum_interval = 0,
+        maximum_interval = NO_PERIODIC_REPORTS_MAX_INTERVAL,
         data_type = data_types.Uint16,
         reportable_change = 1
       },
