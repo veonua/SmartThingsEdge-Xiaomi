@@ -1,14 +1,17 @@
 local zcl_clusters = require "st.zigbee.zcl.clusters"
 local capabilities = require "st.capabilities"
+local data_types = require "st.zigbee.data_types"
+local cluster_base = require "st.zigbee.cluster_base"
+local xiaomi_utils = require "xiaomi_utils"
+local zigbee_utils = require "zigbee_utils"
 
-local OnOff = zcl_clusters.OnOff
 local log = require "log"
 local utils = require "utils"
 
-local function analog_input_handler(driver, device, e_value, zb_rx)
+local function analog_input_handler(_driver, device, e_value, zb_rx)
     local endpoint = zb_rx.address_header.src_endpoint.value
     local value = utils.round(e_value.value * 100)/100.0
-    
+
     if endpoint == 2 or endpoint == 21 then
       device:emit_event( capabilities.powerMeter.power({value=value, unit="W"}) )
     elseif endpoint == 3 then
@@ -18,11 +21,11 @@ local function analog_input_handler(driver, device, e_value, zb_rx)
     end
 end
 
-function bool_to_number(value)
+local function bool_to_number(value)
     return value and 0x01 or 0x00
 end
-  
-function octetstring_from(t)
+
+local function octetstring_from(t)
     local bytearr = {}
     for _, v in ipairs(t) do
       local utf8byte = v < 0 and (0xff + v + 1) or v
@@ -30,61 +33,63 @@ function octetstring_from(t)
     end
     return data_types.OctetString(table.concat(bytearr))
 end
-  
-local function info_changed(driver, device, event, args)
+
+local function temp_attr_handler(_driver, device, value, _zb_rx)
+    device:emit_event(capabilities.temperatureMeasurement.temperature({ value = value.value, unit = "C"}) )
+end
+
+local function info_changed(_driver, device, _event, args)
     zigbee_utils.print_clusters(device)
-  
+
     for id, value in pairs(device.preferences) do
       if args.old_st_store.preferences[id] ~= value then
-        local value = device.preferences[id]
+        local pref_value = device.preferences[id]
         local cluster_id = xiaomi_utils.OppleCluster
-        
-        log.info("preferences changed: " .. id .. " " .. tostring(value))
-  
+
+        log.info("preferences changed: " .. id .. " " .. tostring(pref_value))
+
         local model = device:get_model()
-        local data_type
         local payload
         local attr
-        
+
         if id == "stse.restorePowerState" then
           if model == "lumi.plug" then
-            payload = octetstring_from({ 0xaa, 0x80, 0x05, 0xd1, 0x47, value and 0x09 or 0x07, 0x01, 0x10, bool_to_number(not value)})
+            payload = octetstring_from({ 0xaa, 0x80, 0x05, 0xd1, 0x47, pref_value and 0x09 or 0x07, 0x01, 0x10, bool_to_number(not pref_value)})
             cluster_id = zcl_clusters.basic_id
             attr = 0xFFF0
           else
-            payload = data_types.Boolean(value)
+            payload = data_types.Boolean(pref_value)
             attr = 0x0201
           end
         elseif id == "autoOff" then
           if model == "lumi.plug" then
-            payload = octetstring_from({ 0xaa, 0x80, 0x05, 0xd1, 0x47, bool_to_number(not value), 0x02, 0x10, bool_to_number(value)})
+            payload = octetstring_from({ 0xaa, 0x80, 0x05, 0xd1, 0x47, bool_to_number(not pref_value), 0x02, 0x10, bool_to_number(pref_value)})
             cluster_id = zcl_clusters.basic_id
             attr = 0xFFF0
           else
-            payload = data_types.Boolean(value)
+            payload = data_types.Boolean(pref_value)
             attr = 0x0202
           end
-        elseif id == "ledDisabledNight" then
+        elseif id == "stse.turnOffIndicatorLight" then
           if model == "lumi.plug.aq1" or model == "lumi.plug" then
-            local pl = bool_to_number(not value)
+            local pl = bool_to_number(not pref_value)
             payload = octetstring_from({ 0xaa, 0x80, 0x05, 0xd1, 0x47, pl, 0x03, 0x10, pl})
             attr = 0xFFF0
             cluster_id = zcl_clusters.basic_id
           else
-            payload = data_types.Boolean(value)
+            payload = data_types.Boolean(pref_value)
             attr = 0x0203
           end
-        elseif id == "overloadProtection" then
+        elseif id == "stse.maxPowerCN" then
           local sign = 0
-          local mantissa, exponent = math.frexp(value)
+          local mantissa, exponent = math.frexp(pref_value)
           mantissa = mantissa * 2 - 1
           exponent = exponent - 1
-          
+
           payload = data_types.SinglePrecisionFloat(sign, exponent, mantissa)
-          data_type = data_types.SinglePrecisionFloat
           attr = 0x020b
         end
-  
+
         if payload then
           local message = cluster_base.write_attribute(device, data_types.ClusterId(cluster_id), data_types.AttributeId(attr), payload)
           message.body.zcl_header.frame_ctrl:set_mfg_specific()
@@ -98,6 +103,9 @@ end
 
 local plug_handler = {
     NAME = "Plug Handler",
+    lifecycle_handlers = {
+      infoChanged = info_changed,
+    },
     zigbee_handlers = {
         attr = {
             --[zcl_clusters.basic_id] = xiaomi_utils.basic_id,
@@ -110,9 +118,9 @@ local plug_handler = {
             }
           }
     },
-    can_handle = function(opts, driver, device)
-        return device:get_model() ~= "lumi.plug"
+  can_handle = function(_opts, _driver, device)
+        return device:get_model():find("^lumi%.plug") ~= nil
     end
 }
 
-return button_handler
+return plug_handler

@@ -5,21 +5,24 @@ local data_types = require "st.zigbee.data_types"
 local capabilities = require "st.capabilities"
 local buf = require "st.buf"
 local utils = require "st.utils"
+local cluster_base = require "st.zigbee.cluster_base"
+local zcl_clusters = require "st.zigbee.zcl.clusters"
 local log = require "log"
 
-local battery_defaults = require "st.zigbee.defaults.battery_defaults"
+local ENERGY_RESET_OFFSET_FIELD = "energyResetOffsetWh"
+local ENERGY_LAST_RAW_FIELD = "energyLastRawWh"
 
 local xiaomi_key_map = {
                    --                 Large   Kitchen Bed1    Corrid  Bed2                Charger  AndrewB      Bathroom     LMotion          Cube Smoke
   [0x01] = "battery_mV",
   [0x02] = "battery_??",
   [0x03] = "device_temperature",
-  [0x04] = "0x04", -- Uint16: 0x??A8                                                               0x43 A8                   0x31 A8-> 13 A8  43A8  43A8 
+  [0x04] = "0x04", -- Uint16: 0x??A8                                                               0x43 A8                   0x31 A8-> 13 A8  43A8  43A8
   [0x05] = "RSSI_dB",
   [0x06] = "LQI",
   [0x07] = "0x07", -- Uint64: 0                               0000000                  507C5D84BA
   [0x08] = "0x08", -- Uint16: 0x0204, 0x2612, 0x2616, 0x2616, 0x103D, 0x103D,              0x1320                                                   0204
-  [0x09] = "0x09", -- Uint16: 0x1308  ------, ------,         0x150A, 0x(13|12|11)[08],0x(0A|0B)00  
+  [0x09] = "0x09", -- Uint16: 0x1308  ------, ------,         0x150A, 0x(13|12|11)[08],0x(0A|0B)00
   [0x0a] = "router_id",
   [0x0b] = "illuminance/?switch", -- Uint8: 0
   [0x0c] = "0x0c",
@@ -54,11 +57,23 @@ local function deserialize(data_buf)
 end
 
 local function emit_battery_event(device, battery_record)
+  local raw_bat_volt = (battery_record.value / 1000)
+  local raw_bat_perc = (raw_bat_volt - 2.5) * 100 / (3.0 - 2.5)
+  local bat_perc = utils.round( utils.clamp_value(raw_bat_perc, 0, 100) )
+
   if device:supports_capability(capabilities.battery, "main") then
-    local raw_bat_volt = (battery_record.value / 1000)
-    local raw_bat_perc = (raw_bat_volt - 2.5) * 100 / (3.0 - 2.5)
-    local bat_perc = utils.round( utils.clamp_value(raw_bat_perc, 0, 100) )
     device:emit_event(capabilities.battery.battery(bat_perc))
+  end
+
+  if device:supports_capability(capabilities.batteryLevel, "main") then
+    local batteryLevel = "normal"
+
+    if raw_bat_perc < 20 then
+      batteryLevel = "critical"
+    elseif raw_bat_perc < 40 then
+      batteryLevel = "warning"
+    end
+    device:emit_event(capabilities.batteryLevel.battery(batteryLevel))
   end
 end
 
@@ -91,21 +106,56 @@ local function emit_temperature_event(device, temperature_record)
   device:emit_event(alarm)
 end
 
+local LAST_REPORT_TIME = "LAST_REPORT_TIME"
+
+local function emit_power_consumption_report_event(device, kWh_value)
+  -- powerConsumptionReport report interval
+  local current_time = os.time()
+  local last_time = device:get_field(LAST_REPORT_TIME) or 0
+  local next_time = last_time + 60 * 15 -- 15 mins, the minimum interval allowed between reports
+  if current_time < next_time then
+    return
+  end
+  device:set_field(LAST_REPORT_TIME, current_time, { persist = true })
+  local raw_value = kWh_value.value * 1000 -- 'Wh'
+
+  local delta_energy = 0.0
+  local current_power_consumption = device:get_latest_state('main', capabilities.powerConsumptionReport.ID,
+    capabilities.powerConsumptionReport.powerConsumption.NAME)
+  if current_power_consumption ~= nil then
+    delta_energy = math.max(raw_value - current_power_consumption.energy, 0.0)
+  end
+  device:emit_event(capabilities.powerConsumptionReport.powerConsumption({
+    energy = raw_value,
+    deltaEnergy = delta_energy
+  }))
+end
+
+
 local function emit_consumption_event(device, e_value)
   local value = utils.round(e_value.value * 10)/10.0
-  local latest = device:get_latest_state("main", capabilities.energyMeter.ID, capabilities.energyMeter.energy.NAME)
-  
+  local latest = device:get_field(ENERGY_LAST_RAW_FIELD)
+
   if latest ~= nil and value - latest < 0.01 then
     return
   end
-  device:emit_event( capabilities.energyMeter.energy({value=value, unit="kWh"}) )
+
+  device:set_field(ENERGY_LAST_RAW_FIELD, value, {persist = true})
+  local offset = device:get_field(ENERGY_RESET_OFFSET_FIELD) or 0
+  local adjusted = value - offset
+  if adjusted < 0 then
+    adjusted = 0
+  end
+  log.info("Setting energy " .. tostring(value) .. " - " .. tostring(offset) .. " = " .. tostring(adjusted))
+  device:emit_event( capabilities.energyMeter.energy({value=adjusted, unit="kWh"}) )
+  emit_power_consumption_report_event(device, e_value)
 end
 
 local function emit_voltage_event(device, value)
   device:emit_event( capabilities.voltageMeasurement.voltage({value=value.value//10, unit="V"}) )
 end
 
-local function emit_current_event(device, value)
+local function emit_current_event(_device, value)
   log.info("Current mA:", value.value)
 end
 
@@ -134,44 +184,71 @@ local ignore_events = {
   [0x05] = "RSSI_dB",
   [0x06] = "LQI",
   [0x0a] = "router_id",
-  [0x64] = "user1", 
+  [0x64] = "user1",
   [0x65] = "user2",
   [0x6e] = "button1",
   [0x6f] = "button2",
 }
 
-function xiaomi_utils.emit_battery_event(driver, device, value, zb_rx)
+function xiaomi_utils.get_energy_offset(device)
+  return device:get_field(ENERGY_RESET_OFFSET_FIELD) or 0
+end
+
+function xiaomi_utils.set_energy_offset(device, offset)
+  log.info("Setting energy offset to " .. tostring(offset))
+  device:set_field(ENERGY_RESET_OFFSET_FIELD, offset, {persist = true})
+end
+
+function xiaomi_utils.energy_reset_handler(_driver, device, _command)
+  local offset = xiaomi_utils.get_energy_offset(device)
+  local raw = device:get_field(ENERGY_LAST_RAW_FIELD)
+  if raw == nil then
+    local latest = device:get_latest_state("main", capabilities.energyMeter.ID, capabilities.energyMeter.energy.NAME)
+    log.info("No cached raw energy value, using latest event value: " .. tostring(latest) .. " with offset " .. tostring(offset))
+    if latest ~= nil then
+      raw = latest + offset
+    end
+  end
+
+  log.info("Resetting energy meter, current offset " .. tostring(offset) .. " raw value " .. tostring(raw))
+  raw = raw or 0
+  xiaomi_utils.set_energy_offset(device, raw)
+  device:emit_event(capabilities.energyMeter.energy({ value = 0.0, unit = "kWh" }))
+end
+
+
+function xiaomi_utils.emit_battery_event(_driver, device, value, _zb_rx)
   emit_battery_event(device, value)
 end
 
-function xiaomi_utils.emit_voltage_event(driver, device, value, zb_rx)
+function xiaomi_utils.emit_voltage_event(_driver, device, value, _zb_rx)
   emit_voltage_event(device, value)
 end
 
-function xiaomi_utils.handler(driver, device, value, zb_rx)
+function xiaomi_utils.handler(_driver, device, value, _zb_rx)
   if value.ID ~= data_types.CharString.ID and value.ID ~= data_types.OctetString.ID then
     log.warn("xiaomi_utils.handler: unknown data type: " .. tostring (value) )
     return
   end
-    
+
   local bytes = value.value
   local message_buf = buf.Reader(bytes)
-  
+
   local xiaomi_data_type = deserialize(message_buf)
-  for key, value in pairs(xiaomi_data_type.items) do
+  for key, item in pairs(xiaomi_data_type.items) do
     local event = xiaomi_utils.events[key]
     if event ~= nil then
-      event(device, value)
+      event(device, item)
     elseif ignore_events[key] == nil then
       local skey = "xi"..tostring(key)
       local name = xiaomi_key_map[key] or skey
       local prev = device:get_field(skey)
-      if prev ~= nil and prev.value ~= value.value then
-        log.warn(name, "prev:", prev, "new:", value)
+      if prev ~= nil and prev.value ~= item.value then
+        log.warn(name, "prev:", prev, "new:", item)
       else
-        log.debug(name, value) -- unhandled event
+        log.debug(name, item) -- unhandled event
       end
-      device:set_field(skey, value)
+      device:set_field(skey, item)
     end
   end
 
@@ -183,13 +260,13 @@ function xiaomi_utils.handler(driver, device, value, zb_rx)
   end
 end
 
-function xiaomi_utils.handlerFF02(driver, device, svalue, zb_rx)
+function xiaomi_utils.handlerFF02(_driver, device, svalue, _zb_rx)
   if svalue.ID ~= data_types.Structure.ID then
     log.error("FF02 unknown data type: ", svalue)
     return
   end
 
-  elements = svalue.elements
+  local elements = svalue.elements
 
   local battery = elements[0x02]
   log.info("battery:", battery)
@@ -197,15 +274,15 @@ function xiaomi_utils.handlerFF02(driver, device, svalue, zb_rx)
     emit_battery_event(device, battery.data)
   end
   -- https://github.com/dresden-elektronik/deconz-rest-plugin/issues/1069
-  -- Xiaomi Motion Sensor  xiaomi_utils.handlerFF02: Structure: 
-  --        on/off         battery    0x04  0x??A8          ????          DEV_ID?         Signal?% [85-98]              
+  -- Xiaomi Motion Sensor  xiaomi_utils.handlerFF02: Structure:
+  --        on/off         battery    0x04  0x??A8          ????          DEV_ID?         Signal?% [85-98]
   --[Boolean: true, Uint16: 0x0BC7, Uint16: 0x13A8, Uint40: 0x0000000001, Uint16: 0x002C, Uint8: 0x5A]
   --[Boolean: true, Uint16: 0x0BC7, Uint16: 0x43A8, Uint40: 0x0000000001, Uint16: 0x002C, Uint8: 0x59]
   --[Boolean: true, Uint16: 0x0BC7, Uint16: 0x13A8, Uint40: 0x0000000003, Uint16: 0x002C, Uint8: 0x59]
   --[Boolean: true, Uint16: 0x0BD8, Uint16: 0x43A8, Uint40: 0x0000000001, Uint16: 0x01AD, Uint8: 0x58]
-  --[Boolean: true, Uint16: 0x0BD1, Uint16: 0x13A8, Uint40: 0x0000000001, Uint16: 0x0014, Uint8: 0x5B] 
+  --[Boolean: true, Uint16: 0x0BD1, Uint16: 0x13A8, Uint40: 0x0000000001, Uint16: 0x0014, Uint8: 0x5B]
   --[Boolean: true, Uint16: 0x0BD1, Uint16: 0x13A8, Uint40: 0x0000000011, Uint16: 0x0015, Uint8: 0x5B]
-  --[Boolean: true, Uint16: 0x0BD1, Uint16: 0x13A8, Uint40: 0x0000000001, Uint16: 0x0015, Uint8: 0x5B] 
+  --[Boolean: true, Uint16: 0x0BD1, Uint16: 0x13A8, Uint40: 0x0000000001, Uint16: 0x0015, Uint8: 0x5B]
   --[Boolean: true, Uint16: 0x0BD1, Uint16: 0x13A8, Uint40: 0x0000000007, Uint16: 0x0015, Uint8: 0x5B]
 
 
@@ -221,8 +298,43 @@ function xiaomi_utils.handlerFF02(driver, device, svalue, zb_rx)
   end
 end
 
+local function bytes_starts_with(raw, prefix)
+    if raw == nil then return false end
+
+    if type(raw) == "string" then
+        if #raw < #prefix then return false end
+        for i = 1, #prefix do
+            if string.byte(raw, i) ~= prefix[i] then return false end
+        end
+        return true
+    end
+
+    if type(raw) == "table" then
+        if #raw < #prefix then return false end
+        for i = 1, #prefix do
+            if raw[i] ~= prefix[i] then return false end
+        end
+        return true
+    end
+
+    return false
+end
+
+function xiaomi_utils.prevent_reset_handler(_driver, device, value, _zb_rx)
+  local incoming = value.value
+  local prefix = {0xAA, 0x10, 0x05, 0x41, 0x87}
+
+  if not bytes_starts_with(incoming, prefix) then
+      return
+  end
+
+  log.info("xiaomi_utils.prevent_reset_handler: sending write to prevent reset")
+  local payload = string.char(0xAA, 0x10, 0x05, 0x41, 0x47, 0x01, 0x01, 0x10, 0x01)
+  device:send(cluster_base.write_manufacturer_specific_attribute(device, zcl_clusters.basic_id, 0xFFF0, 0x115F, data_types.OctetString, payload))
+end
 
 xiaomi_utils.basic_id = {
+  [0xFF00] = xiaomi_utils.prevent_reset_handler,
   [0xFF01] = xiaomi_utils.handler,
   [0xFF02] = xiaomi_utils.handlerFF02
 }
@@ -233,24 +345,3 @@ xiaomi_utils.opple_id = {
 }
 
 return xiaomi_utils
-
--- https://github.com/Koenkk/zigbee-herdsman-converters/blob/master/devices/xiaomi.js#L22
--- const preventReset = async (type, data, device) => {
---   if (
---       // options.allow_reset ||
---       type !== 'message' ||
---       data.type !== 'attributeReport' ||
---       data.cluster !== 'genBasic' ||
---       !data.data[0xfff0] ||
---       // eg: [0xaa, 0x10, 0x05, 0x41, 0x87, 0x01, 0x01, 0x10, 0x00]
---       !data.data[0xFFF0].slice(0, 5).equals(Buffer.from([0xaa, 0x10, 0x05, 0x41, 0x87]))
---   ) {
---       return;
---   }
---   const options = {manufacturerCode: 0x115f};
---   const payload = {[0xfff0]: {
---       value: [0xaa, 0x10, 0x05, 0x41, 0x47, 0x01, 0x01, 0x10, 0x01],
---       type: 0x41,
---   }};
---   await device.getEndpoint(1).write('genBasic', payload, options);
--- };

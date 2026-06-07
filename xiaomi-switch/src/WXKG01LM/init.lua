@@ -2,9 +2,8 @@ local zcl_clusters = require "st.zigbee.zcl.clusters"
 local capabilities = require "st.capabilities"
 
 local OnOff = zcl_clusters.OnOff
-local log = require "log"
+--local log = require "log"
 local utils = require "utils"
-local socket = require "socket"
 
 local CLICK_TIMER = "timer"
 
@@ -14,7 +13,7 @@ local FINGERPRINTS = {
 }
 
 
-function on_off_attr_handler(driver, device, value, zb_rx)
+local function on_off_attr_handler(_driver, device, value, _zb_rx)
     local held = function()
         device:emit_event(capabilities.button.button.held({state_change = true}))
         device:set_field(CLICK_TIMER, nil)
@@ -27,14 +26,14 @@ function on_off_attr_handler(driver, device, value, zb_rx)
     elseif timer then -- release
         device.thread:cancel_timer(timer)
         device:set_field(CLICK_TIMER, nil)
-        device:emit_event(capabilities.button.button.pushed({state_change = true})) 
+        device:emit_event(capabilities.button.button.pushed({state_change = true}))
     end
 end
 
-function multi_click_handler(driver, device, zb_rx)
+local function multi_click_handler(_driver, device, zb_rx)
     local val = zb_rx.value
     if val>5 then -- we don't count after 4
-        val = 5 
+        val = 5
     end
 
     local click_type = utils.click_types[val]
@@ -53,7 +52,7 @@ local wxkg_handler = {
             }
         },
     },
-    can_handle = function(opts, driver, device)
+    can_handle = function(_opts, _driver, device)
         for _, fingerprint in ipairs(FINGERPRINTS) do
             if (device:get_model() == fingerprint.model) then
                 return true

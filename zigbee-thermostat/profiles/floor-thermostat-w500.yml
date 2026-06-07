@@ -1,0 +1,161 @@
+name: floor-thermostat-w500
+components:
+- id: main
+  capabilities:
+
+  - id: thermostatMode
+    version: 1
+    config:
+      values:
+        - key: "thermostatMode.value"
+          enabledValues:
+            - off
+            - heat
+            - home
+            - away
+            - asleep
+            - comfort
+            - dayoff
+            - manual
+            
+  - id: thermostatHeatingSetpoint
+    version: 1
+    config:
+      values:
+        - key: "heatingSetpoint.value"
+          range: [ 5, 40 ]
+          step: 0.5
+
+  - id: thermostatOperatingState
+    version: 1
+    config:
+      values:
+        - key: "thermostatOperatingState.value"
+          enabledValues:
+            - heating
+            - idle
+        - key: "temperatureAlarm.value"
+          enabledValues:
+            - cleared
+            - freeze
+            - heat
+  
+  - id: temperatureMeasurement
+    version: 1
+  - id: relativeHumidityMeasurement
+    version: 1
+  - id: powerMeter
+    version: 1
+  - id: energyMeter
+    version: 1
+  - id: powerConsumptionReport
+    version: 1
+  - id: firmwareUpdate
+    version: 1
+  - id: refresh
+    version: 1
+
+  categories:
+  - name: Thermostat
+
+preferences:
+  - title: "Temperature sensor"
+    description: "Temperature sensor source"
+    name: sensor
+    required: true
+    preferenceType: enumeration
+    definition:
+      options:
+        0: "Internal"
+        1: "External"
+        2: "NTC"
+      default: "0"
+
+  - title: "NTC sensor type"
+    description: "NTC sensor type (kΩ)"
+    name: ntcSensorType
+    required: true
+    preferenceType: enumeration
+    definition:
+      options:
+        10: "NTC 10k"
+        50: "NTC 50k"
+        100: "NTC 100k"
+        10000: "Unknown"
+      default: "10"
+
+  - title: "Window detection"
+    description: "Enable/disable window detection"
+    name: windowDetection
+    required: true
+    preferenceType: boolean
+    definition:
+      default: false
+
+  - title: "Child lock"
+    description: "Enable/disable physical input"
+    name: childLock
+    required: true
+    preferenceType: boolean
+    definition:
+      default: false
+
+  - title: "Hysteresis"
+    description: "Hysteresis (°C)"
+    name: hysteresis
+    required: true
+    preferenceType: number
+    definition:
+      min: 0
+      max: 3
+      default: 0.5
+
+  - title: "Home preset temperature"
+    description: "Home preset temperature (°C)"
+    name: homePresetTemp
+    required: true
+    preferenceType: number
+    definition:
+      min: 5
+      max: 40
+      default: 26
+
+  - title: "Away preset temperature"
+    description: "Away preset temperature (°C)"
+    name: awayPresetTemp
+    required: true
+    preferenceType: number
+    definition:
+      min: 5
+      max: 40
+      default: 18
+
+  - title: "Sleep preset temperature"
+    description: "Sleep preset temperature (°C)"
+    name: sleepPresetTemp
+    required: true
+    preferenceType: number
+    definition:
+      min: 5
+      max: 40
+      default: 20
+
+  - title: "Day Off preset temperature"
+    description: "Day Off preset temperature (°C)"
+    name: dayOffPresetTemp
+    required: true
+    preferenceType: number
+    definition:
+      min: 5
+      max: 40
+      default: 10
+
+  - title: "Comfort preset temperature"
+    description: "Comfort preset temperature (°C)"
+    name: comfortPresetTemp
+    required: true
+    preferenceType: number
+    definition:
+      min: 5
+      max: 40
+      default: 24

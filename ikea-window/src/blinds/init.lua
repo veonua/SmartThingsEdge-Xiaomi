@@ -78,6 +78,22 @@ function window_shade_level_cmd(driver, device, command)
     log.info(">> window_shade_level_cmd: " .. level .. " component: " .. command.component)
 end
 
+local function step_shade_level_cmd(driver, device, command)
+    local current = device:get_latest_state("main", capabilities.windowShadeLevel.ID, capabilities.windowShadeLevel.shadeLevel.NAME) or 0
+    local step = command.args.stepSize
+
+    if type(step) ~= "number" then
+      step = tonumber(step) or 10
+    end
+
+    local next_level = current + step
+    if next_level < 0 then next_level = 0 end
+    if next_level > 100 then next_level = 100 end
+
+    command.args.shadeLevel = next_level
+    window_shade_level_cmd(driver, device, command)
+end
+
 
 local function info_changed(driver, device, event, args)
     log.info(tostring(event))
@@ -106,6 +122,7 @@ local blinds_handler = {
     supported_capabilities = {
         capabilities.windowShade,
         capabilities.windowShadeLevel,
+        capabilities.statelessSwitchLevelStep,
         capabilities.windowShadePreset,
         capabilities.battery,
         capabilities.refresh,
@@ -118,6 +135,9 @@ local blinds_handler = {
     capability_handlers = {
         [capabilities.windowShadeLevel.ID] = {
             [capabilities.windowShadeLevel.commands.setShadeLevel.NAME] = window_shade_level_cmd
+    },
+    [capabilities.statelessSwitchLevelStep.ID] = {
+      [capabilities.statelessSwitchLevelStep.commands.stepLevel.NAME] = step_shade_level_cmd
         }
     },
     zigbee_handlers = {

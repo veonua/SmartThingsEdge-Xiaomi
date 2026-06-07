@@ -1,4 +1,4 @@
-name: 'LAN Nanoleaf v5'
+name: 'LAN Nanoleaf v6'
 packageKey: 'LAN-Nanoleaf'
 permissions:
   lan: {}

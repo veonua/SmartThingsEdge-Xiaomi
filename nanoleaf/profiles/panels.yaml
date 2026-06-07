@@ -6,6 +6,8 @@ components:
     version: 1
   - id: switchLevel
     version: 1
+  - id: statelessSwitchLevelStep
+    version: 1
   - id: mediaPresets
     version: 1
   - id: colorControl
@@ -13,9 +15,6 @@ components:
   - id: colorTemperature
     version: 1
 
-  - id: legendabsolute60149.levelSteps
-    version: 1
-  
   - id: refresh
     version: 1
   categories:

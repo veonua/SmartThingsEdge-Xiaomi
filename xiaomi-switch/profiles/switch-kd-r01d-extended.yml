@@ -1,0 +1,105 @@
+name: switch-kd-r01d
+components:
+- id: main
+  capabilities:
+ 
+  - id: switch
+    version: 1
+  - id: switchLevel
+    version: 1
+  - id: statelessSwitchLevelStep
+    version: 1
+  - id: powerMeter
+    version: 1
+  - id: energyMeter
+    version: 1
+  - id: powerConsumptionReport
+    version: 1
+  - id: refresh
+    version: 1
+  - id: button
+    version: 1
+    config:
+      values:
+        - key: "supportedButtonValues.value"
+          enabledValues:
+            - pushed
+            - pushed_2x
+            - held
+  - id: knob
+    version: 1
+  categories:
+  - name: Switch
+
+preferences:
+  - preferenceId: stse.changeToWirelessSwitch
+    explicit: true
+
+  - preferenceId: stse.knobSensitivity
+    explicit: true
+
+  - title: "Off-state button/knob events"
+    description: "Choose fast single-press only, or enable multi-click plus knob events while the main dimmer output is off"
+    name: offStateEventMode
+    required: true
+    preferenceType: enumeration
+    definition:
+      options:
+        1: "Single press only (fast detection)"
+        2: "Multi-click + knob events while off"
+      default: "2"
+
+  - title: "Dimming phase"
+    name: phase
+    required: true
+    preferenceType: enumeration
+    definition:
+      options:
+        0: "Forward"
+        1: "Reverse"
+      default: "0"
+
+  - title: "Minimum brightness"
+    name: minBrightness
+    required: false
+    preferenceType: integer
+    definition:
+      minimum: 0
+      maximum: 99
+      default: 0
+
+  - title: "Maximum brightness"
+    name: maxBrightness
+    required: false
+    preferenceType: integer
+    definition:
+      minimum: 1
+      maximum: 100
+      default: 100
+
+  - title: "Kick-off brightness threshold"
+    name: kickOffThreshold
+    required: false
+    preferenceType: integer
+    definition:
+      minimum: 0
+      maximum: 99
+      default: 0
+
+  - title: "Flip indicator light"
+    name: flipIndicatorLight
+    required: false
+    preferenceType: boolean
+    definition:
+      default: false
+
+  - preferenceId: stse.restorePowerState
+    explicit: true
+
+  - preferenceId: stse.turnOffIndicatorLight
+    explicit: true
+
+metadata:
+  deviceType: Switch
+  ocfDeviceType: oic.d.switch
+  deviceTypeId: Switch

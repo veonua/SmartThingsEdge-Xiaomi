@@ -1,4 +1,4 @@
-name: 'Xiaomi Plug'
+name: 'Xiaomi Plug v2'
 packageKey: 'lumi-plug'
 permissions:
   zigbee: {}

@@ -1,0 +1,6 @@
+zigbeeManufacturer:
+  - id: "Aqara/lumi.airrtc.aeu001"
+    deviceLabel: Aqara Floor Thermostat W500
+    manufacturer: Aqara
+    model: lumi.airrtc.aeu001
+    deviceProfileName: floor-thermostat-w500

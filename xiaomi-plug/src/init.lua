@@ -11,15 +11,43 @@ local cluster_base = require "st.zigbee.cluster_base"
 local json = require "dkjson"
 local zigbee_utils = require "zigbee_utils"
 
+local LAST_REPORT_TIME = "LAST_REPORT_TIME"
+
+local function emit_power_consumption_report_event(device, value, channel)
+  -- powerConsumptionReport report interval
+  local current_time = os.time()
+  local last_time = device:get_field(LAST_REPORT_TIME) or 0
+  local next_time = last_time + 60 * 15 -- 15 mins, the minimum interval allowed between reports
+  if current_time < next_time then
+    return
+  end
+  device:set_field(LAST_REPORT_TIME, current_time, { persist = true })
+  local raw_value = value.value * 1000 -- 'Wh'
+
+  local delta_energy = 0.0
+  local current_power_consumption = device:get_latest_state('main', capabilities.powerConsumptionReport.ID,
+    capabilities.powerConsumptionReport.powerConsumption.NAME)
+  if current_power_consumption ~= nil then
+    delta_energy = math.max(raw_value - current_power_consumption.energy, 0.0)
+  end
+  device:emit_event_for_endpoint(channel, capabilities.powerConsumptionReport.powerConsumption({
+    energy = raw_value,
+    deltaEnergy = delta_energy
+  }))
+end
+
 local function added_handler(self, device)
   -- https://github.com/veonua/SmartThingsEdge-Xiaomi/issues/6
   device:set_field(constants.SIMPLE_METERING_DIVISOR_KEY, 10, {persists= true})        -- Current Summation Delivered
   device:set_field(constants.ELECTRICAL_MEASUREMENT_DIVISOR_KEY, 10, {persists= true}) -- Active Power
+
+  xiaomi_utils.set_energy_offset(device, 0)
 end
 
 local function temp_attr_handler(driver, device, value, zb_rx)
   device:emit_event(capabilities.temperatureMeasurement.temperature({ value = value.value, unit = "C"}) )
 end
+
 
 local function analog_input_handler(driver, device, e_value, zb_rx)
   local endpoint = zb_rx.address_header.src_endpoint.value
@@ -29,10 +57,13 @@ local function analog_input_handler(driver, device, e_value, zb_rx)
     device:emit_event( capabilities.powerMeter.power({value=value, unit="W"}) )
   elseif endpoint == 3 then
     device:emit_event( capabilities.energyMeter.energy({value=value, unit="Wh"}) )
+
+    emit_power_consumption_report_event(device, e_value, "main")
   else
     log.warn("unknown AnalogInput ep:" .. tostring(endpoint) .. " value:" .. tostring(value) )
   end
 end
+
 
 function bool_to_number(value)
   return value and 0x01 or 0x00
@@ -90,7 +121,7 @@ local function info_changed(driver, device, event, args)
           payload = data_types.Boolean(value)
           attr = 0x0203
         end
-      elseif id == "overloadProtection" then
+      elseif id == "stse.maxPowerCN" then
         local sign = 0
         local mantissa, exponent = math.frexp(value)
         mantissa = mantissa * 2 - 1
@@ -112,11 +143,14 @@ local function info_changed(driver, device, event, args)
   end
 end
 
+
+
 local plug_driver_template = {
   supported_capabilities = {
     capabilities.switch,
     capabilities.powerMeter,
     capabilities.energyMeter,    
+    capabilities.powerConsumptionReport,
     capabilities.temperatureAlarm,
     capabilities.voltageMeasurement,
     capabilities.refresh,
@@ -124,6 +158,11 @@ local plug_driver_template = {
   lifecycle_handlers = {
     added = added_handler,
     infoChanged = info_changed,
+  },
+  capability_handlers = {
+    [capabilities.energyMeter.ID] = {
+      [capabilities.energyMeter.commands.resetEnergyMeter.NAME] = xiaomi_utils.energy_reset_handler,
+    }
   },
   zigbee_handlers = {
     global = {},
@@ -139,11 +178,9 @@ local plug_driver_template = {
       }
     }
   },
-  
+  health_check = false
 }
 
-defaults.register_for_default_handlers(plug_driver_template, plug_driver_template.supported_capabilities)
+defaults.register_for_default_handlers(plug_driver_template, plug_driver_template.supported_capabilities, {native_capability_cmds_enabled = true})
 local plug = ZigbeeDriver("plug", plug_driver_template)
 plug:run()
-
--- TODO: add zigbee binding for plug

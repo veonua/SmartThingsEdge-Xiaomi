@@ -1,0 +1,6 @@
+name: 'Aqara Thermostat v3'
+defaultProfile: 'floor-thermostat-w500'
+packageKey: 'aqara-thermostat'
+permissions:
+  zigbee: {}
+description: "SmartThings driver for Aqara Zigbee thermostat devices"

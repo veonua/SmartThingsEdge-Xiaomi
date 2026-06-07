@@ -4,14 +4,15 @@ components:
   capabilities:
   - id: winterdictionary35590.cube
     version: 1
-
-  # - id: stse.cubeAction
-  #   version: 1
-  # - id: stse.cubeFace
-  #   version: 1
+ 
+  - id: knob
+    version: 1
 
   - id: switchLevel
     version: 1
+  - id: statelessSwitchLevelStep
+    version: 1
+
   - id: switch
     version: 1
   - id: motionSensor
@@ -27,7 +28,3 @@ metadata:
   deviceType: MultiFunctionalSensor	
   ocfDeviceType: x.com.st.d.sensor.multifunction
   deviceTypeId: MultiFunctionalSensor	
-
-# metadata:
-#   mnmn: SolutionsEngineering
-#   vid: SmartThings-smartthings-Aqara_CubeT1Pro

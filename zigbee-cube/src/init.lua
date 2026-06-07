@@ -18,6 +18,7 @@ local SIDE = "side"
 local DEFAULT_LEVEL = 50
 
 local cube = capabilities["winterdictionary35590.cube"]
+local knob = capabilities.knob
 local map_side_to_name = { "up", "left", "front", "down", "right", "back" }
 
 local configuration = {
@@ -37,9 +38,14 @@ local generate_switch_level_event = function(device, value)
   device:set_field(LEVEL_TS, os.time())
 end
 
+local do_refresh = function(self, device)
+  device:send(PowerConfiguration.attributes.BatteryVoltage:read(device))
+end
+
 local function device_added(self, device)
   log.info("Added device: " .. device:get_model())
   device:emit_event(capabilities.switch.switch.on())
+  device:emit_event(knob.supportedAttributes({"rotateAmount"}, {visibility = {displayed = false}}))
 
   -- Set private attribute
   -- device:send(cluster_base.write_manufacturer_specific_attribute(device,
@@ -138,10 +144,10 @@ local function rotate_attr_handler(driver, device, value, zb_rx)
 
   local event = cube.rotation(val)
   event.state_change = true
-  device:emit_event( event )
-  device:emit_event( cubeAction.cubeAction("rotate") )
-  --- to force run subsequent actions  
-  device:emit_event( cube.rotation(0) )
+  device:emit_event(event)
+  device:emit_event(knob.rotateAmount(val, {state_change = true}))
+  --- to force run subsequent actions
+  device:emit_event(cube.rotation(0))
 end
 
 function set_level(_, device, command)
@@ -157,9 +163,6 @@ function set_level(_, device, command)
   -- device:set_field(CURRENT_LEVEL, value)
 end
 
-local do_refresh = function(self, device)
-  device:send(PowerConfiguration.attributes.BatteryVoltage:read(device))
-end
 
 function on_off(_, device, command)
   local last_state = device:get_latest_state("main", capabilities.switch.ID, capabilities.switch.switch.NAME)
@@ -204,6 +207,7 @@ local aqara_cube_driver_template = {
     capabilities.motionSensor,
     capabilities.battery,
     capabilities.temperatureAlarm,
+    capabilities.knob,
   },
   lifecycle_handlers = {
     init = device_init,
@@ -239,6 +243,7 @@ local aqara_cube_driver_template = {
       }
     }
   },
+  health_check = false,
 }
 
 local aqara_cube = ZigbeeDriver("aqara_cube", aqara_cube_driver_template)
