@@ -1,0 +1,4 @@
+interface:
+  display_name: "Zigbee Device Onboarding"
+  short_description: "Add Zigbee devices with evidence"
+  default_prompt: "Use $zigbee-device-onboarding to add support for this Zigbee device."
