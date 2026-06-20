@@ -1,0 +1,4 @@
+interface:
+  display_name: "SmartThings Capabilities"
+  short_description: "Verify standard capability APIs"
+  default_prompt: "Use $smartthings-capabilities to verify the SmartThings capabilities needed for this driver change."
