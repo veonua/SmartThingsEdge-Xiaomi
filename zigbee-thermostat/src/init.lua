@@ -94,7 +94,7 @@ local temperature_measurement_defaults = {
   MAX_TEMP = "MAX_TEMP"
 }
 
-local battery_voltage_handler = function(driver, device, battery_voltage)
+local battery_voltage_handler = function(_driver, device, battery_voltage)
   if (battery_voltage.value == 0) then -- this means we're plugged in
     device:emit_event(PowerSource.powerSource.mains())
     device:emit_event(Battery.battery(100))
@@ -132,7 +132,7 @@ local function emit_power_consumption_report_event(device, kWh_value)
 end
 
 
-local function active_power_handler(driver, device, value, zb_rx)
+local function active_power_handler(_driver, device, value, _zb_rx)
   local divisor = driver_utils.get_divisor(
     device,
     constants.ELECTRICAL_MEASUREMENT_DIVISOR_KEY,
@@ -142,7 +142,7 @@ local function active_power_handler(driver, device, value, zb_rx)
   device:emit_event(PowerMeter.power({ value = power, unit = "W" }))
 end
 
-local function current_summation_delivered_handler(driver, device, value, zb_rx)
+local function current_summation_delivered_handler(_driver, device, value, _zb_rx)
   local divisor = driver_utils.get_divisor(
     device,
     constants.SIMPLE_METERING_DIVISOR_KEY,
@@ -153,7 +153,7 @@ local function current_summation_delivered_handler(driver, device, value, zb_rx)
   emit_power_consumption_report_event(device, energy)
 end
 
-local power_source_handler = function(driver, device, battery_alarm_mask)
+local power_source_handler = function(_driver, device, battery_alarm_mask)
   if (battery_alarm_mask:is_bit_set(31)) then
     device:emit_event(PowerSource.powerSource.battery())
   else
@@ -164,7 +164,7 @@ end
 local scale_preset_temp
 local build_preset_temps
 
-local function info_changed(driver, device, event, args)
+local function info_changed(_driver, device, _event, args)
   local preset_temps_changed = false
   for id, value in pairs(device.preferences) do
     if args.old_st_store.preferences[id] ~= value then
@@ -211,11 +211,11 @@ local function info_changed(driver, device, event, args)
   end
 end
 
-local supported_thermostat_modes_handler = function(driver, device, supported_modes)
+local supported_thermostat_modes_handler = function(_driver, device, _supported_modes)
   device:emit_event(ThermostatMode.supportedThermostatModes(W500_SUPPORTED_MODES, { visibility = { displayed = false } }))
 end
 
-local thermostat_mode_handler = function(driver, device, thermostat_mode)
+local thermostat_mode_handler = function(_driver, device, thermostat_mode)
   if thermostat_mode.value == ThermostatSystemMode.OFF then
     device:emit_event(ThermostatMode.thermostatMode.off())
     return
@@ -224,7 +224,7 @@ local thermostat_mode_handler = function(driver, device, thermostat_mode)
   device:send(cluster_base.read_manufacturer_specific_attribute(device, xiaomi_utils.OppleCluster, W500_PRESET_ATTR, MFG_CODE))
 end
 
-local thermostat_operating_state_handler = function(driver, device, operating_state)
+local thermostat_operating_state_handler = function(_driver, device, operating_state)
   if (operating_state:is_heat_second_stage_on_set() or operating_state:is_heat_on_set()) then
     device:emit_event(ThermostatOperatingState.thermostatOperatingState.heating())
   elseif (operating_state:is_cool_second_stage_on_set() or operating_state:is_cool_on_set()) then
@@ -236,7 +236,7 @@ local thermostat_operating_state_handler = function(driver, device, operating_st
   end
 end
 
-local preset_mode_handler = function(driver, device, value, zb_rx)
+local preset_mode_handler = function(_driver, device, value, _zb_rx)
   local event_builder = W500_PRESET_VALUE_TO_THERMOSTAT_MODE[value.value]
   if event_builder ~= nil then
     device:emit_event(event_builder())
@@ -307,16 +307,16 @@ build_preset_temps = function(temps)
   return bytes_to_string(data)
 end
 
-local preset_temps_handler = function(driver, device, value, zb_rx)
+local preset_temps_handler = function(_driver, device, value, _zb_rx)
   local temps = parse_preset_temps(value.value)
   device:set_field("preset_temps", temps)
   log.info("Decoded preset temps", temps)
 end
 
-local set_thermostat_mode = function(driver, device, command)
+local set_thermostat_mode = function(_driver, device, command)
   if command.args.mode == ThermostatMode.thermostatMode.off.NAME then
     device:send_to_component(command.component, Thermostat.attributes.SystemMode:write(device, ThermostatSystemMode.OFF))
-    device.thread:call_with_delay(1, function(d)
+    device.thread:call_with_delay(1, function(_d)
       device:send_to_component(command.component, Thermostat.attributes.SystemMode:read(device))
     end)
     return
@@ -335,7 +335,7 @@ local set_thermostat_mode = function(driver, device, command)
     message.body.zcl_header.mfg_code = data_types.validate_or_build_type(MFG_CODE, data_types.Uint16, "mfg_code")
     device:send(message)
 
-    device.thread:call_with_delay(1, function(d)
+    device.thread:call_with_delay(1, function(_d)
       device:send_to_component(command.component, Thermostat.attributes.SystemMode:read(device))
       device:send(cluster_base.read_manufacturer_specific_attribute(device, xiaomi_utils.OppleCluster, W500_PRESET_ATTR, MFG_CODE))
     end)
@@ -353,14 +353,14 @@ end
 
 --TODO: Update this once we've decided how to handle setpoint commands
 
-local RelativeHumidityClusterHandler = function(driver, device, value, zb_rx)
+local RelativeHumidityClusterHandler = function(_driver, device, value, _zb_rx)
   local percent = utils.clamp_value(value.value / 100, 0.0, 100.0)
   if percent < 99 then -- filter out spurious values
     device:emit_event(RelativeHumidity.humidity(percent))
   end
 end
 
-local do_refresh = function(self, device)
+local do_refresh = function(_self, device)
   local attributes = {
     Thermostat.attributes.OccupiedHeatingSetpoint,
     Thermostat.attributes.LocalTemperature,
@@ -489,7 +489,7 @@ local zigbee_thermostat_driver = {
     added = device_added,
     infoChanged = info_changed
   },
-  
+
   health_check = false,
 }
 

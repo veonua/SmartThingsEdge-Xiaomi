@@ -1,18 +1,13 @@
-local constants = require "st.zigbee.constants"
 local clusters = require "st.zigbee.zcl.clusters"
 local capabilities = require "st.capabilities"
 local cluster_base = require "st.zigbee.cluster_base"
 local log = require "log"
 local OccupancySensing = clusters.OccupancySensing
-local OnOff = clusters.OnOff
 local PowerConfiguration = clusters.PowerConfiguration
 local data_types = require "st.zigbee.data_types"
 
 ---
 local device_management = require "st.zigbee.device_management"
-local messages = require "st.zigbee.messages"
-local mgmt_bind_resp = require "st.zigbee.zdo.mgmt_bind_response"
-local zdo_messages = require "st.zigbee.zdo"
 ---
 
 local OPPLE_CLUSTER = 0xFCC0
@@ -25,7 +20,7 @@ local ZIGBEE_LUMI_MOTION_SENSOR_FINGERPRINTS = {
 local MOTION_RESET_TIMER = "motionResetTimer"
 
 
-local is_zigbee_lumi_motion_sensor = function(opts, driver, device)
+local is_zigbee_lumi_motion_sensor = function(_opts, _driver, device)
   for _, fingerprint in ipairs(ZIGBEE_LUMI_MOTION_SENSOR_FINGERPRINTS) do
       if device:get_manufacturer() == fingerprint.mfr and device:get_model() == fingerprint.model then
         return true
@@ -36,7 +31,7 @@ end
 
 
 
-local function occupancy_attr_handler(driver, device, occupancy, zb_rx)
+local function occupancy_attr_handler(_driver, device, occupancy, _zb_rx)
   log.debug("occupancy_attr_handler " .. tostring(occupancy))
 
   local motion_reset_timer = device:get_field(MOTION_RESET_TIMER)
@@ -57,7 +52,7 @@ local function occupancy_attr_handler(driver, device, occupancy, zb_rx)
 end
 
 
-local function ias_zone_status_change_handler(driver, device, zone_status, zigbee_message)
+local function ias_zone_status_change_handler(_driver, device, zone_status, zigbee_message)
   -- never happens
   log.warn("ias_zone_status_change_handler " .. tostring(zone_status))
 
@@ -67,12 +62,12 @@ local function ias_zone_status_change_handler(driver, device, zone_status, zigbe
 end
 
 
-local function illuminance_attr_handler(driver, device, value, zb_rx)
+local function illuminance_attr_handler(_driver, device, value, zb_rx)
   local lux_value = value.value --math.floor(10 ^ ((value.value - 1) / 10000))
   device:emit_event_for_endpoint(zb_rx.address_header.src_endpoint.value, capabilities.illuminanceMeasurement.illuminance(lux_value))
 end
 
-local function device_added(self, device)
+local function device_added(_self, device)
   device:refresh()
 end
 
@@ -84,7 +79,7 @@ local do_configure = function(self, device)
   device:send(device_management.build_bind_request(device, OccupancySensing.ID, self.environment_info.hub_zigbee_eui))
 end
 
-local do_refresh = function(self, device)
+local do_refresh = function(_self, device)
   -- do_configure(self, device)
 
   device:send(OccupancySensing.attributes.Occupancy:read(device))
@@ -103,7 +98,7 @@ local lumi_motion_handler = {
     attr = {
       [clusters.IASZone.ID] = {
         [0x0002] = ias_zone_status_change_handler
-      },   
+      },
       [OccupancySensing.ID] = {
         [OccupancySensing.attributes.Occupancy.ID] = occupancy_attr_handler
       },

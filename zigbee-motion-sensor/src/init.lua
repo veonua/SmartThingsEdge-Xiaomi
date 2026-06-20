@@ -17,7 +17,6 @@ local ZigbeeDriver = require "st.zigbee"
 local defaults = require "st.zigbee.defaults"
 local constants = require "st.zigbee.constants"
 local clusters = require "st.zigbee.zcl.clusters"
-local log = require "log"
 local xiaomi_utils = require "xiaomi_utils"
 
 

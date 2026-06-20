@@ -1,29 +1,23 @@
 local capabilities = require "st.capabilities"
 local ZigbeeDriver = require "st.zigbee"
-local constants = require "st.zigbee.constants"
 local defaults = require "st.zigbee.defaults"
-local utils = require "st.utils"
 local json = require "dkjson"
 local log = require "log"
 
 local zcl_clusters = require "st.zigbee.zcl.clusters"
-local WindowCovering = zcl_clusters.WindowCovering
 local PowerConfiguration = zcl_clusters.PowerConfiguration
 local Groups = zcl_clusters.Groups
 
 local zigbee_utils = require "zigbee_utils"
 
-local device_management = require "st.zigbee.device_management"
-local messages = require "st.zigbee.messages"
 local mgmt_bind_resp = require "st.zigbee.zdo.mgmt_bind_response"
-local zdo_messages = require "st.zigbee.zdo"
 
 
-local function zdo_unbinding_table_handler(driver, device, zb_rx)
+local function zdo_unbinding_table_handler(_driver, _device, zb_rx)
   log.warn("zdo_unbinding_table_handler", json.encode(zb_rx.body.zdo_body))
 end
 
-local function zdo_binding_table_handler(driver, device, zb_rx)
+local function zdo_binding_table_handler(driver, _device, zb_rx)
   log.warn("zdo_binding_table_handler")
   for _, binding_table in pairs(zb_rx.body.zdo_body.binding_table_entries) do
     log.info("binding_table: " .. json.encode(binding_table))
@@ -36,18 +30,18 @@ local function zdo_binding_table_handler(driver, device, zb_rx)
   end
 end
 
-local function do_configure(self, device)
+local function do_configure(_self, device)
   log.info("do_configure")
   zigbee_utils.send_read_binding_table(device)
 end
 
-local do_refresh = function(self, device)
+local do_refresh = function(_self, device)
   zigbee_utils.print_clusters(device)
   zigbee_utils.send_read_binding_table(device)
-  device:send(Groups.server.commands.GetGroupMembership(device, {}))  
+  device:send(Groups.server.commands.GetGroupMembership(device, {}))
 end
 
-function battery_perc_attr_handler(driver, device, value, zb_rx)
+local function battery_perc_attr_handler(_driver, device, value, zb_rx)
   device:emit_event_for_endpoint(zb_rx.address_header.src_endpoint.value, capabilities.battery.battery(value.value))
 end
 

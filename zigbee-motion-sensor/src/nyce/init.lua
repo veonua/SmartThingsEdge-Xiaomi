@@ -23,7 +23,7 @@ local ZIGBEE_NYCE_MOTION_SENSOR_FINGERPRINTS = {
   { mfr = "NYCE", model = "3045" }
 }
 
-local is_zigbee_nyce_motion_sensor = function(opts, driver, device)
+local is_zigbee_nyce_motion_sensor = function(_opts, _driver, device)
   for _, fingerprint in ipairs(ZIGBEE_NYCE_MOTION_SENSOR_FINGERPRINTS) do
       if device:get_manufacturer() == fingerprint.mfr and device:get_model() == fingerprint.model then
           return true
@@ -32,7 +32,7 @@ local is_zigbee_nyce_motion_sensor = function(opts, driver, device)
   return false
 end
 
-local function occupancy_attr_handler(driver, device, occupancy, zb_rx)
+local function occupancy_attr_handler(_driver, device, occupancy, _zb_rx)
   device:emit_event(
       occupancy.value == 1 and capabilities.motionSensor.motion.active() or capabilities.motionSensor.motion.inactive())
 end

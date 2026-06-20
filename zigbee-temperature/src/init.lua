@@ -1,6 +1,5 @@
 local capabilities = require "st.capabilities"
 local ZigbeeDriver = require "st.zigbee"
-local constants = require "st.zigbee.constants"
 local defaults = require "st.zigbee.defaults"
 local utils = require "st.utils"
 local log = require "log"
@@ -8,7 +7,7 @@ local xiaomi_utils = require "xiaomi_utils"
 local zcl_clusters = require "st.zigbee.zcl.clusters"
 local atmos_Pressure = capabilities ["legendabsolute60149.atmosPressure"]
 
-local tempearture_value_attr_handler = function(driver, device, value, zb_rx)
+local tempearture_value_attr_handler = function(_driver, device, value, _zb_rx)
   local temperature = value.value / 100
 
   if temperature < -99 or temperature > 99 then
@@ -26,31 +25,31 @@ local tempearture_value_attr_handler = function(driver, device, value, zb_rx)
   end
 
   device:emit_event(capabilities.temperatureMeasurement.temperature({ value = temperature, unit = "C" }))
-  
+
   local alarm = "cleared"
   if temperature > 60 then
     alarm = "heat"
   elseif temperature < -20 then
     alarm = "freeze"
   end
-  
+
   device:emit_event(capabilities.temperatureAlarm.temperatureAlarm(alarm))
 end
 
-local humidity_value_attr_handler = function(driver, device, value, zb_rx)
+local humidity_value_attr_handler = function(_driver, device, value, _zb_rx)
   local percent = utils.clamp_value(value.value / 100, 0.0, 100.0)
   if percent<99 then -- filter out spurious values
     device:emit_event(capabilities.relativeHumidityMeasurement.humidity(percent))
   end
 end
 
-local pressure_value_attr_handler = function(driver, device, value, zb_rx)
+local pressure_value_attr_handler = function(_driver, device, value, _zb_rx)
   local mBar = value.value
   device:emit_event(capabilities.atmosphericPressureMeasurement.atmosphericPressure({value = utils.round(mBar/10), unit = "kPa"}))
   device:emit_event(atmos_Pressure.atmosPressure(mBar))
 end
 
-local function refresh_handler(driver, device, command)
+local function refresh_handler(_driver, device, _command)
   device:send(zcl_clusters.TemperatureMeasurement.attributes.MeasuredValue:read(device))
   device:send(zcl_clusters.RelativeHumidity.attributes.MeasuredValue:read(device))
   device:send(zcl_clusters.PressureMeasurement.attributes.MeasuredValue:read(device))

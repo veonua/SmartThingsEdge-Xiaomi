@@ -5,20 +5,18 @@ local zigbee_utils = require "zigbee_utils"
 
 local WindowCovering = zcl_clusters.WindowCovering
 local Groups = zcl_clusters.Groups
-local windowShade_defaults = require "st.zigbee.defaults.windowShade_defaults"
 
-local json = require "dkjson"
 local log  = require "log"
 
 
 ---
 local SHADE_SET_STATUS = "shade_set_status"
 
-local function current_position_attr_handler(driver, device, value, zb_rx)
+local function current_position_attr_handler(_driver, device, value, _zb_rx)
   log.info("current_position_attr_handler", value.value)
 
   local level = 100 - value.value
-  local current_level = device:get_latest_state("main", capabilities.windowShadeLevel.ID, capabilities.windowShadeLevel.shadeLevel.NAME)  
+  local current_level = device:get_latest_state("main", capabilities.windowShadeLevel.ID, capabilities.windowShadeLevel.shadeLevel.NAME)
   local windowShade = capabilities.windowShade.windowShade
   if level <= 1 then
     device:emit_event(windowShade.closed())
@@ -44,12 +42,12 @@ local function current_position_attr_handler(driver, device, value, zb_rx)
       device:set_field(SHADE_SET_STATUS, nil)
     end
     local set_window_shade_status = function()
-      local current_level = device:get_latest_state("main", capabilities.windowShadeLevel.ID, capabilities.windowShadeLevel.shadeLevel.NAME)
-      log.info("set_window_shade_status", current_level)
-      
-      if current_level <= 1 then
+      local latest_level = device:get_latest_state("main", capabilities.windowShadeLevel.ID, capabilities.windowShadeLevel.shadeLevel.NAME)
+      log.info("set_window_shade_status", latest_level)
+
+      if latest_level <= 1 then
         device:emit_event(windowShade.closed())
-      elseif current_level >= 99 then
+      elseif latest_level >= 99 then
         device:emit_event(windowShade.open())
       else
         device:emit_event(windowShade.partially_open())
@@ -61,17 +59,12 @@ local function current_position_attr_handler(driver, device, value, zb_rx)
 end
 ---
 
-local function device_added(self, device)
+local function device_added(_self, device)
     device:emit_event(capabilities.windowShade.supportedWindowShadeCommands({ value = { "open", "close", "pause"} }))
     device:refresh()
 end
 
-function current_lift_percentage_handler(driver, device, value, zb_rx)
-    value.value = 100 - value.value
-    windowShade_defaults.default_current_lift_percentage_handler(driver, device, value, zb_rx)
-end
-
-function window_shade_level_cmd(driver, device, command)
+local function window_shade_level_cmd(_driver, device, command)
     local level = 100 - command.args.shadeLevel
     device:send_to_component(command.component, WindowCovering.server.commands.GoToLiftPercentage(device, level))
 
@@ -95,20 +88,20 @@ local function step_shade_level_cmd(driver, device, command)
 end
 
 
-local function info_changed(driver, device, event, args)
+local function info_changed(_driver, device, event, args)
     log.info(tostring(event))
-    
+
     for id, value in pairs(device.preferences) do
       if args.old_st_store.preferences[id] ~= value then
         local data = device.preferences[id]
-        
+
         if id == "group" then
             device:send(Groups.server.commands.AddGroup(device, data, "Group"..tostring(data)))
         end
       end
     end
 end
-  
+
 local function do_configure(self, device)
    device:send(device_management.build_bind_request(device, WindowCovering.ID, self.environment_info.hub_zigbee_eui))
    device:send(WindowCovering.attributes.CurrentPositionLiftPercentage:configure_reporting(device, 5, 21600, 1))
@@ -148,7 +141,7 @@ local blinds_handler = {
             }
         }
     },
-    can_handle = function(opts, driver, device)
+    can_handle = function(_opts, _driver, device)
         return device:supports_server_cluster(WindowCovering.ID)
     end
 }

@@ -22,7 +22,7 @@ local ZIGBEE_MOTION_SENSOR_FINGERPRINTS = {
   { mfr = "HEIMAN", model = "PIRSensor-N", timeout = 20 }
 }
 
-local is_zigbee_motion_sensor = function(opts, driver, device)
+local is_zigbee_motion_sensor = function(_opts, _driver, device)
   for _, fingerprint in ipairs(ZIGBEE_MOTION_SENSOR_FINGERPRINTS) do
       if device:get_manufacturer() == fingerprint.mfr and device:get_model() == fingerprint.model then
           return true
@@ -31,12 +31,12 @@ local is_zigbee_motion_sensor = function(opts, driver, device)
   return false
 end
 
-local generate_event_from_zone_status = function(driver, device, zone_status, zigbee_message)
+local generate_event_from_zone_status = function(_driver, device, zone_status, _zigbee_message)
   device:emit_event(
       (zone_status:is_alarm1_set() or zone_status:is_alarm2_set()) and capabilities.motionSensor.motion.active() or capabilities.motionSensor.motion.inactive())
   for _, fingerprint in ipairs(ZIGBEE_MOTION_SENSOR_FINGERPRINTS) do
     if device:get_manufacturer() == fingerprint.mfr and device:get_model() == fingerprint.model then
-      device.thread:call_with_delay(fingerprint.timeout, function(d)
+      device.thread:call_with_delay(fingerprint.timeout, function(_d)
           device:emit_event(capabilities.motionSensor.motion.inactive())
         end)
       break

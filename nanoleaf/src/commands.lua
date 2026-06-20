@@ -1,6 +1,5 @@
 local caps = require('st.capabilities')
 local utils = require('st.utils')
-local neturl = require('net.url')
 local log = require('log')
 local json = require('dkjson')
 local cosock = require "cosock"
@@ -43,19 +42,19 @@ function command_handler.refresh(_, device, slow)
     local raw_data = json.decode(table.concat(data))
     -- log.warn(raw_data)
     device:online()
-    
+
     local latest = device:get_latest_state("main", caps.switch.ID, caps.switch.switch.NAME)
     if latest ~= raw_data.on.value then
       device:emit_event(raw_data.on.value and caps.switch.switch.on() or caps.switch.switch.off())
     end
-    
+
     if raw_data.on.value == true then
-      
+
       device:emit_event(caps.switchLevel.level(raw_data.brightness.value))
 
       if raw_data.colorMode == 'hs' then
         local hue_st = utils.round(utils.clamp_value((raw_data.hue.value / 360) * 100, 0, 100))
-        
+
         device:emit_event(caps.colorControl.saturation(raw_data.sat.value))
         device:emit_event(caps.colorControl.hue(hue_st))
       elseif raw_data.colorMode == 'ct' then
@@ -65,7 +64,7 @@ function command_handler.refresh(_, device, slow)
       end
 
     end
-    
+
   else
     log.error('failed to poll device state')
     device:offline()
@@ -75,12 +74,12 @@ function command_handler.refresh(_, device, slow)
     return
   end
 
-  local success, data = command_handler.send_lan_command(device, 'GET', 'effects')
-  if success then
-    local raw_data = json.decode(table.concat(data))
+  local effects_success, effects_data = command_handler.send_lan_command(device, 'GET', 'effects')
+  if effects_success then
+    local raw_data = json.decode(table.concat(effects_data))
     local presets = {}
 
-    for id, effect in ipairs(raw_data.effectsList) do
+    for _, effect in ipairs(raw_data.effectsList) do
       table.insert(presets, {id=effect, name=effect}) -- tostring(id)
     end
     device:emit_event(caps.mediaPresets.presets({ value = presets }))
@@ -109,7 +108,7 @@ function command_handler.set_level(_, device, command)
     log.error('no response from device')
     return
   end
-  
+
   device:emit_event(lvl == 0 and caps.switch.switch.off() or caps.switch.switch.on())
   device:emit_event(caps.switchLevel.level(lvl))
 end
@@ -130,22 +129,21 @@ function command_handler.set_color(_, device, command)
   local hue = math.floor(command.args.color.hue * 360 / 100)
   local hue_st = utils.round(utils.clamp_value(command.args.color.hue, 0, 100))
   local sat = math.floor(command.args.color.saturation)
-  
+
   local palette = {
     { hue= hue, saturation= sat, brightness= 60 },
     { hue= hue, saturation= sat, brightness= 80 },
     { hue= hue, saturation= sat, brightness= 100 }
   }
-  
+
   local transTime = { minValue= 0, maxValue= 20 }
-  local delayTime = { minValue= 0, maxValue= 3 }
   local payload = { write = {
-    command= "display", version= "2.0", animType= "random", 
+    command= "display", version= "2.0", animType= "random",
     colorType= "HSB", transTime= transTime,  palette= palette --    //delayTime= delayTime,
   } }
 
   local success = command_handler.send_lan_command(device, 'PUT', 'effects', payload)
-  
+
   -- Check if success
   if success then
     device:emit_event(caps.switch.switch.on())

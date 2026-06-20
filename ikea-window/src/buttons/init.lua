@@ -1,8 +1,4 @@
 local capabilities = require "st.capabilities"
-local constants = require "st.zigbee.constants"
-local defaults = require "st.zigbee.defaults"
-local utils = require "st.utils"
-local json = require "dkjson"
 local log = require "log"
 local zcl_clusters = require "st.zigbee.zcl.clusters"
 local device_management = require "st.zigbee.device_management"
@@ -13,7 +9,6 @@ local Level = zcl_clusters.Level
 
 
 local PowerConfiguration = zcl_clusters.PowerConfiguration
-local Groups = zcl_clusters.Groups
 local Scenes = zcl_clusters.Scenes
 
 local btn_cap = capabilities.button
@@ -21,11 +16,11 @@ local button  = capabilities.button.button
 
 local zigbee_utils = require "zigbee_utils"
 
-local can_handle = function(opts, driver, device)
+local can_handle = function(_opts, _driver, device)
   return zigbee_utils.supports_client_cluster(device, WindowCovering.ID) or zigbee_utils.supports_client_cluster(device, OnOff.ID)
 end
 
-local device_added = function(self, device)
+local device_added = function(_self, device)
   local supported_button_values = {"held", "up", "down"}
   device:emit_event(btn_cap.numberOfButtons({value = 1}))
   device:emit_event(btn_cap.supportedButtonValues(supported_button_values))
@@ -40,8 +35,8 @@ local device_added = function(self, device)
 end
 
 ---
-function build_button_handler(button_name, pressed_type)
-  return function(driver, device, zb_rx)
+local function build_button_handler(button_name, pressed_type)
+  return function(_driver, device, _zb_rx)
     local additional_fields = {
       state_change = true
     }
@@ -55,32 +50,23 @@ function build_button_handler(button_name, pressed_type)
   end
 end
 
-function build_button_payload_handler(pressed_type)
-  return function(driver, device, zb_rx)
-    local bytes = zb_rx.body.zcl_body.body_bytes
-    local button_name = bytes:byte(1) == 0x00 and "button2" or "button4"
-    local event = pressed_type({ state_change = true })
-    local comp = device.profile.components[button_name]
-    device:emit_component_event(comp, event)
-  end
-end
 ---
 
-function open_command_handler(driver, device, zb_rx)
+local function open_command_handler(_driver, device, _zb_rx)
   device:emit_event(button.up({state_change = true}))
 end
 
-function close_command_handler(driver, device, zb_rx)
+local function close_command_handler(_driver, device, _zb_rx)
   device:emit_event(button.down({state_change = true}))
 end
 
-function stop_command_handler(driver, device, zb_rx)
+local function stop_command_handler(_driver, device, _zb_rx)
   device:emit_event(button.held({state_change = true}))
 end
 
-function press_handler(driver, device, zb_rx)
+local function press_handler(_driver, device, zb_rx)
   local btn = zb_rx.body.zcl_body.body_bytes:byte(1)
-  
+
   if (device:get_model() == "Remote Control N2") then
     local btn_map = {button.down, button.up}
     local event = btn_map[btn+1]
@@ -92,13 +78,13 @@ function press_handler(driver, device, zb_rx)
     -- 01 01 0D 00 capabilities.button.button.pushed
     -- 02 01 00 00 -- release
   end
-  
+
   local button_name = btn == 0x00 and "button2" or "button4"
   local event = capabilities.button.button.pushed({ state_change = true })
   device:emit_component_event(device.profile.components[button_name], event)
 end
 
-function left_right_held_handler(driver, device, zb_rx)
+local function left_right_held_handler(_driver, device, zb_rx)
   log.debug("Handling Tradfri left/right button HELD, value: " .. zb_rx.body.zcl_body.body_bytes:byte(1))
   local btn = zb_rx.body.zcl_body.body_bytes:byte(1)
   local btn_map = {button.down_hold, button.up_hold}
@@ -110,7 +96,7 @@ function left_right_held_handler(driver, device, zb_rx)
   --device:emit_event(capabilities.button.button.held({ state_change = true }))
 end
 
-function hold_handler(driver, device, zb_rx)
+local function hold_handler(_driver, device, _zb_rx)
   device:emit_event(button.held({state_change = true}))
 end
 
@@ -122,23 +108,23 @@ local function do_configure(self, device)
 end
 
 
-local function info_changed(driver, device, event, args)
+local function info_changed(_driver, device, event, args)
   log.info(tostring(event))
-  
+
   for id, value in pairs(device.preferences) do
-    local old_value = args.old_st_store.preferences[id] 
+    local old_value = args.old_st_store.preferences[id]
     if old_value ~= value then
-      
+
       if id == "group" then
         if old_value > 0 then
           zigbee_utils.send_unbind_request(device, WindowCovering.ID, value)
-          -- 
+          --
           zigbee_utils.send_unbind_request(device, OnOff.ID, value)
           zigbee_utils.send_unbind_request(device, Level.ID, value)
         end
         if value > 0 then
           zigbee_utils.send_bind_request(device, WindowCovering.ID, value)
-          -- 
+          --
           zigbee_utils.send_bind_request(device, OnOff.ID, value)
           zigbee_utils.send_bind_request(device, Level.ID, value)
         end
@@ -160,7 +146,7 @@ local handler = {
   },
   zigbee_handlers = {
     cluster = {
-      [WindowCovering.ID] = { 
+      [WindowCovering.ID] = {
           [WindowCovering.server.commands.UpOrOpen.ID] = open_command_handler,
           [WindowCovering.server.commands.DownOrClose.ID] = close_command_handler,
           [WindowCovering.server.commands.Stop.ID] = stop_command_handler,

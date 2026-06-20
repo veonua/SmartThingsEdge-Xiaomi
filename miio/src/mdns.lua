@@ -57,29 +57,29 @@ local function mdns_make_query(service, type)
     -- question section: qname, qtype, qclass
     for n in service:gmatch('([^%.]+)') do
         data = data..string.char(#n)..n
-    end                          
+    end
     ---                                                     class: IN
     return data..string.char(0)..'\000'..string.char(type)..'\000\001'
 end
 
 
-local function mdns_parse(service, data, answers)
+local function mdns_parse(_service, data, answers)
 
     --- Helper function: parse DNS name field, supports pointers
     -- @param data     received datagram
     -- @param offset    offset within datagram (1-based)
     -- @return  parsed name
     -- @return  offset of first byte behind name (1-based)
-    local function parse_name(data, offset)
-        local n,d,l = '', '', data:byte(offset)
+    local function parse_name(packet_data, offset)
+        local n,d,l = '', '', packet_data:byte(offset)
         while (l > 0) do
             if (l >= 192) then -- pointer
-                local p = (l % 192) * 256 + data:byte(offset + 1)
-                return n..d..parse_name(data, p + 1), offset + 2
+                local p = (l % 192) * 256 + packet_data:byte(offset + 1)
+                return n..d..parse_name(packet_data, p + 1), offset + 2
             end
-            n = n..d..data:sub(offset + 1, offset + l)
+            n = n..d..packet_data:sub(offset + 1, offset + l)
             offset = offset + l + 1
-            l = data:byte(offset)
+            l = packet_data:byte(offset)
             d = '.'
         end
         return n, offset + 1
@@ -124,17 +124,17 @@ local function mdns_parse(service, data, answers)
     local name
     local offset = 13
     if (header.qdcount > 0) then
-        for i=1, header.qdcount do
+        for _=1, header.qdcount do
             if (offset > len) then
                 return nil, 'truncated'
             end
-            name, offset = parse_name(data, offset)
+            _, offset = parse_name(data, offset)
             offset = offset + 4
         end
     end
 
     -- evaluate answer section
-    for i=1, header.ancount do
+    for _=1, header.ancount do
         if (offset > len) then
             return nil, 'truncated'
         end
@@ -202,11 +202,11 @@ end
 
 --- Locate MDNS services in local network
 --
--- @param service   MDNS service name to search for (e.g. _ipps._tcp). A .local postfix will 
+-- @param service   MDNS service name to search for (e.g. _ipps._tcp). A .local postfix will
 --                  be appended if needed. If this parameter is not specified, all services
 --                  will be queried.
 --
--- @param timeout   Number of seconds to wait for MDNS responses. The default timeout is 2 
+-- @param timeout   Number of seconds to wait for MDNS responses. The default timeout is 2
 --                  seconds if this parameter is not specified.
 --
 -- @return          Table of MDNS services. Entry keys are service identifiers. Each entry
@@ -234,10 +234,10 @@ function mdns.query(service, timeout)
     end
 
     -- default timeout: 2 seconds
-    local timeout = timeout or 10.0
+    timeout = timeout or 10.0
     local answers = { srv = {}, a = {}, aaaa = {}, ptr = {} }
     local start = os.time()
-    
+
     -- create IPv4 socket for multicast DNS
     local ip, port = '*', 0
     local udp = socket.udp()
@@ -257,7 +257,7 @@ function mdns.query(service, timeout)
         print('data:', data, 'peeraddr:', peeraddr, 'peerport:', peerport)
         if data then --and (peerport == port) then
             log.info('mdns', 'received response from '..peeraddr)
-            val, err = mdns_parse(service, data, answers)
+            mdns_parse(service, data, answers)
             if (browse) then
                 for _, ptr in ipairs(answers.ptr) do
                     assert(udp:sendto(mdns_make_query(ptr, 12), ip, port))
@@ -270,7 +270,6 @@ function mdns.query(service, timeout)
     -- cleanup socket
     --assert(udp:setoption("ip-drop-membership", { interface = "0.0.0.0", multiaddr = ip }))
     assert(udp:close())
-    udp = nil
 
     log.warn('mdns_query', json.encode(answers))
     -- extract target services from answers, resolve hostnames

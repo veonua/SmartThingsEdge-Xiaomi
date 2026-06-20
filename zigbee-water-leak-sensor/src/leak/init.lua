@@ -8,7 +8,7 @@ local leak_handler = {
         capabilities.battery,
         capabilities.refresh,
     },
-    can_handle = function(opts, driver, device)
+    can_handle = function(_opts, _driver, device)
         local model = device:get_model()
         return model == "lumi.sensor_wleak.aq1" or model == "TS0207"
     end

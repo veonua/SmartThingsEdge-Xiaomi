@@ -16,7 +16,7 @@ local capabilities = require "st.capabilities"
 local zcl_clusters = require "st.zigbee.zcl.clusters"
 local IASZone = zcl_clusters.IASZone
 
-local generate_event_from_zone_status = function(driver, device, zone_status, zigbee_message)
+local generate_event_from_zone_status = function(_driver, device, zone_status, _zigbee_message)
   local result_occupied = 0x8000
   local result_open = 0x4000
   local result_close = 0x2000
@@ -25,7 +25,7 @@ local generate_event_from_zone_status = function(driver, device, zone_status, zi
   if zone_status:is_alarm1_set() then
     device:emit_event(capabilities.motionSensor.motion.active())
     -- emit inactive after 2 minutes
-    device.thread:call_with_delay(120, function(d)
+    device.thread:call_with_delay(120, function(_d)
       device:emit_event(capabilities.motionSensor.motion.inactive())
     end
     )
@@ -34,7 +34,7 @@ local generate_event_from_zone_status = function(driver, device, zone_status, zi
   elseif zone_status.value == result_occupied then
     device:emit_event(capabilities.presenceSensor.presence.present())
     -- emit inactive after 1 minute
-    device.thread:call_with_delay(60, function(d)
+    device.thread:call_with_delay(60, function(_d)
       device:emit_event(capabilities.presenceSensor.presence.not_present())
     end
     )
@@ -55,14 +55,14 @@ local function ias_zone_status_change_handler(driver, device, zb_rx)
   generate_event_from_zone_status(driver, device, zb_rx.body.zcl_body.zone_status, zb_rx)
 end
 
-local device_added = function(self, device)
+local device_added = function(_self, device)
   device:emit_event(capabilities.motionSensor.motion.inactive())
   device:emit_event(capabilities.contactSensor.contact.closed())
   device:emit_event(capabilities.presenceSensor.presence.not_present())
   device:emit_event(capabilities.battery.battery(100))
 end
 
-local do_configure = function(self, device)
+local do_configure = function(_self, _device)
   -- Override default as none of attribute requires to be configured
 end
 
@@ -84,7 +84,7 @@ local gator_handler = {
     added = device_added,
     doConfigure = do_configure
   },
-  can_handle = function(opts, driver, device, ...)
+  can_handle = function(_opts, _driver, device, ...) -- luacheck: ignore 212
     return device:get_manufacturer() == "GatorSystem" and device:get_model() == "GSHW01"
   end
 }

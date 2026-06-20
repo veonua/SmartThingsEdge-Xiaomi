@@ -30,7 +30,7 @@ local IKEA_MOTION_SENSOR_FINGERPRINTS = {
 
 local MOTION_RESET_TIMER = "motionResetTimer"
 
-function on_with_timed_off_command_handler(driver, device, zb_rx)
+local function on_with_timed_off_command_handler(_driver, device, zb_rx)
   local motion_reset_timer = device:get_field(MOTION_RESET_TIMER)
   local on_time_secs = zb_rx.body.zcl_body.on_time.value and zb_rx.body.zcl_body.on_time.value / 10 or 180
   device:emit_event(capabilities.motionSensor.motion.active())
@@ -45,7 +45,7 @@ function on_with_timed_off_command_handler(driver, device, zb_rx)
   device:set_field(MOTION_RESET_TIMER, motion_reset_timer)
 end
 
-local is_ikea_motion = function(opts, driver, device)
+local is_ikea_motion = function(_opts, _driver, device)
     for _, fingerprint in ipairs(IKEA_MOTION_SENSOR_FINGERPRINTS) do
         if device:get_manufacturer() == fingerprint.mfr and device:get_model() == fingerprint.model then
             return true
@@ -54,7 +54,7 @@ local is_ikea_motion = function(opts, driver, device)
     return false
 end
 
-local function zdo_binding_table_handler(driver, device, zb_rx)
+local function zdo_binding_table_handler(driver, _device, zb_rx)
   for _, binding_table in pairs(zb_rx.body.zdo_body.binding_table_entries) do
     if binding_table.dest_addr_mode.value == binding_table.DEST_ADDR_MODE_SHORT then
       -- send add hub to zigbee group command
@@ -63,7 +63,7 @@ local function zdo_binding_table_handler(driver, device, zb_rx)
   end
 end
 
-local function device_added(self, device)
+local function device_added(_self, device)
   device:refresh()
 end
 

@@ -6,7 +6,7 @@ local config = {}
 config.DEVICE_PROFILE='Mi'
 config.DEVICE_TYPE='LAN'
 -- SSDP Config
-config.MC_ADDRESS='224.0.0.251'--'239.255.255.250' 
+config.MC_ADDRESS='224.0.0.251'--'239.255.255.250'
 config.MC_PORT=5353--xiaomi:54321--ssdp:1900
 config.MC_TIMEOUT=2
 config.MSEARCH=table.concat({

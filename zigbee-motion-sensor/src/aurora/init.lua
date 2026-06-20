@@ -14,7 +14,7 @@
 
 local capabilities = require "st.capabilities"
 
-local function added_handler(self, device)
+local function added_handler(_self, device)
   -- Aurora Smart PIR Sensor doesn't report when there is no motion during pairing process
   -- reports are sent only if there is motion detected, so fake event is needed here
   device:emit_event(capabilities.motionSensor.motion.inactive())
@@ -25,7 +25,7 @@ local aurora_motion_driver = {
   lifecycle_handlers = {
     added = added_handler,
   },
-  can_handle = function(opts, driver, device, ...)
+  can_handle = function(_opts, _driver, device, ...) -- luacheck: ignore 212
     return device:get_manufacturer() == "Aurora" and device:get_model() == "MotionSensor51AU"
   end
 }

@@ -1,5 +1,4 @@
 local caps = require('st.capabilities')
-local utils = require('st.utils')
 local log = require('log')
 local json = require('dkjson')
 --local packet = require('packet')
@@ -44,13 +43,13 @@ function command_handler.refresh(_, device)
     device:offline()
   end
 
-  local success, data = command_handler.send_lan_command(
+  local effects_success, effects_data = command_handler.send_lan_command(
     device, 'GET', 'effects/effectsList')
-  if success then
-    local raw_data = json.decode(table.concat(data))
+  if effects_success then
+    local raw_data = json.decode(table.concat(effects_data))
     local presets = {}
 
-    for id, effect in ipairs(raw_data) do
+    for _, effect in ipairs(raw_data) do
       table.insert(presets, {id=effect, name=effect}) -- tostring(id)
     end
     device:emit_event(caps.mediaPresets.presets({ value = presets }))
@@ -59,7 +58,7 @@ end
 
 function command_handler.on_off(_, device, command)
   local on_off = command.command == 'on'
-  local success = command_handler.send_lan_command(device, 'PUT', 'state', 
+  local success = command_handler.send_lan_command(device, 'PUT', 'state',
     {on={value=on_off}} )
 
   if success then
@@ -73,7 +72,7 @@ end
 
 function command_handler.set_level(_, device, command)
   local lvl = command.args.level
-  local success = command_handler.send_lan_command( device, 'PUT', 'state',   
+  local success = command_handler.send_lan_command( device, 'PUT', 'state',
     {brightness = {value = lvl }})
 
   if success then
@@ -97,16 +96,15 @@ function command_handler.set_color(_, device, command)
     { hue= hue, saturation= sat, brightness= 80 },
     { hue= hue, saturation= sat, brightness= 100 }
   }
-  
+
   local transTime = { minValue= 0, maxValue= 20 }
-  local delayTime = { minValue= 0, maxValue= 3 }
   local payload = { write = {
-    command= "display", version= "2.0", animType= "random", 
+    command= "display", version= "2.0", animType= "random",
     colorType= "HSB", transTime= transTime,  palette= palette --    //delayTime= delayTime,
   } }
 
   local success = command_handler.send_lan_command(device, 'PUT', 'effects', payload)
-  
+
   -- no animation
   -- payload = {hue={value = hue}, sat={value = sat}}
   -- local success = command_handler.send_lan_command(device, 'PUT', 'state', payload)
@@ -146,10 +144,10 @@ end
 
 ------------------------
 -- Send LAN HTTP Request
-function command_handler.send_lan_command(device, method, body)
+function command_handler.send_lan_command(device, method, _body)
   local ip = device.device_network_id
   local port = 54321
-  
+
   log.info('Sending command to ' .. ip .. ':' .. port)
   local udp = socket.udp()
   --assert(udp:setsockname("*", 0))
@@ -158,14 +156,13 @@ function command_handler.send_lan_command(device, method, body)
   assert(udp:settimeout(0.1))
 
   --local Array = require("lockbox.util.array")
-  
-  local handshake = Array.fromHex("21310020ffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
+
   -- send query
-  log.info('sending command to ' .. ip .. ':' .. port .. ' ' .. method .. ' ' .. path)
+  log.info('sending command to ' .. ip .. ':' .. port .. ' ' .. method)
   --assert(udp:sendto(packet.handshake, ip, port))
   local data, peeraddr, peerport = udp:receivefrom()
   print('>> peeraddr:', peeraddr, 'peerport:', peerport, 'data:', data)
-        
+
 
   return false, nil
 end

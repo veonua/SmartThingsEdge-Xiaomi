@@ -8,7 +8,6 @@ local log = require "log"
 local xiaomi_utils = require "xiaomi_utils"
 local data_types = require "st.zigbee.data_types"
 local cluster_base = require "st.zigbee.cluster_base"
-local json = require "dkjson"
 local zigbee_utils = require "zigbee_utils"
 
 local LAST_REPORT_TIME = "LAST_REPORT_TIME"
@@ -36,7 +35,7 @@ local function emit_power_consumption_report_event(device, value, channel)
   }))
 end
 
-local function added_handler(self, device)
+local function added_handler(_self, device)
   -- https://github.com/veonua/SmartThingsEdge-Xiaomi/issues/6
   device:set_field(constants.SIMPLE_METERING_DIVISOR_KEY, 10, {persists= true})        -- Current Summation Delivered
   device:set_field(constants.ELECTRICAL_MEASUREMENT_DIVISOR_KEY, 10, {persists= true}) -- Active Power
@@ -44,15 +43,15 @@ local function added_handler(self, device)
   xiaomi_utils.set_energy_offset(device, 0)
 end
 
-local function temp_attr_handler(driver, device, value, zb_rx)
+local function temp_attr_handler(_driver, device, value, _zb_rx)
   device:emit_event(capabilities.temperatureMeasurement.temperature({ value = value.value, unit = "C"}) )
 end
 
 
-local function analog_input_handler(driver, device, e_value, zb_rx)
+local function analog_input_handler(_driver, device, e_value, zb_rx)
   local endpoint = zb_rx.address_header.src_endpoint.value
   local value = utils.round(e_value.value * 100)/100.0
-  
+
   if endpoint == 2 or endpoint == 21 then
     device:emit_event( capabilities.powerMeter.power({value=value, unit="W"}) )
   elseif endpoint == 3 then
@@ -65,11 +64,11 @@ local function analog_input_handler(driver, device, e_value, zb_rx)
 end
 
 
-function bool_to_number(value)
+local function bool_to_number(value)
   return value and 0x01 or 0x00
 end
 
-function octetstring_from(t)
+local function octetstring_from(t)
   local bytearr = {}
   for _, v in ipairs(t) do
     local utf8byte = v < 0 and (0xff + v + 1) or v
@@ -78,21 +77,20 @@ function octetstring_from(t)
   return data_types.OctetString(table.concat(bytearr))
 end
 
-local function info_changed(driver, device, event, args)
+local function info_changed(_driver, device, _event, args)
   zigbee_utils.print_clusters(device)
 
-  for id, value in pairs(device.preferences) do
-    if args.old_st_store.preferences[id] ~= value then
-      local value = device.preferences[id]
+  for id, pref_value in pairs(device.preferences) do
+    if args.old_st_store.preferences[id] ~= pref_value then
+      local value = pref_value
       local cluster_id = xiaomi_utils.OppleCluster
-      
+
       log.info("preferences changed: " .. id .. " " .. tostring(value))
 
       local model = device:get_model()
-      local data_type
       local payload
       local attr
-      
+
       if id == "stse.restorePowerState" then
         if model == "lumi.plug" then
           payload = octetstring_from({ 0xaa, 0x80, 0x05, 0xd1, 0x47, value and 0x09 or 0x07, 0x01, 0x10, bool_to_number(not value)})
@@ -126,9 +124,8 @@ local function info_changed(driver, device, event, args)
         local mantissa, exponent = math.frexp(value)
         mantissa = mantissa * 2 - 1
         exponent = exponent - 1
-        
+
         payload = data_types.SinglePrecisionFloat(sign, exponent, mantissa)
-        data_type = data_types.SinglePrecisionFloat
         attr = 0x020b
       end
 
@@ -149,7 +146,7 @@ local plug_driver_template = {
   supported_capabilities = {
     capabilities.switch,
     capabilities.powerMeter,
-    capabilities.energyMeter,    
+    capabilities.energyMeter,
     capabilities.powerConsumptionReport,
     capabilities.temperatureAlarm,
     capabilities.voltageMeasurement,

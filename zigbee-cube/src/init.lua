@@ -1,8 +1,6 @@
 local zcl_clusters = require "st.zigbee.zcl.clusters"
 local capabilities = require "st.capabilities"
 local ZigbeeDriver = require "st.zigbee"
-local constants = require "st.zigbee.constants"
-local defaults = require "st.zigbee.defaults"
 local utils = require "st.utils"
 local battery_defaults = require "st.zigbee.defaults.battery_defaults"
 
@@ -11,7 +9,6 @@ local PowerConfiguration = zcl_clusters.PowerConfiguration
 local log = require "log"
 local xiaomi_utils = require "xiaomi_utils"
 
-local MOTION_RESET_TIMER = "motionResetTimer"
 local LEVEL_TS  = "level_ts"
 local CURRENT_LEVEL = "current_level"
 local SIDE = "side"
@@ -38,7 +35,7 @@ local generate_switch_level_event = function(device, value)
   device:set_field(LEVEL_TS, os.time())
 end
 
-local do_refresh = function(self, device)
+local do_refresh = function(_self, device)
   device:send(PowerConfiguration.attributes.BatteryVoltage:read(device))
 end
 
@@ -69,8 +66,8 @@ local function emit_action_event(device, action, state_change)
   --device:emit_event(cubeAction.cubeAction("noAction"))
 end
 
-local function cube_attr_handler(driver, device, value, zb_rx)
-  local val = value.value 
+local function cube_attr_handler(_driver, device, value, _zb_rx)
+  local val = value.value
   local side = val & 0x7
   local action = (val >> 8) & 0xFF
   local prev_side = device:get_field(SIDE)
@@ -79,17 +76,16 @@ local function cube_attr_handler(driver, device, value, zb_rx)
     device:emit_event(capabilities.motionSensor.motion.inactive())
     emit_action_event(device, "Ready", false)
   end
-  motion_reset_timer = device.thread:call_with_delay(2, reset_motion_status)
+  device.thread:call_with_delay(2, reset_motion_status)
 
   if action == 0x00 then -- flip
     local flip_type = (val >> 6) & 0x3
-    
-    if flip_type == 0 then  
+
+    if flip_type == 0 then
       -- final side is unknown
       side = -1
-      prev_side = -1
       device:set_field(SIDE, side)
-      
+
       if val == 0 then -- shake
         emit_action_event(device, "shake")
       elseif val == 2 then -- wake up ~ pickUpAndHold
@@ -100,13 +96,13 @@ local function cube_attr_handler(driver, device, value, zb_rx)
 
       return
     else
-      prev_side = (val >> 3) & 0x7 
+      prev_side = (val >> 3) & 0x7
       log.debug("flip_type: ", flip_type, " prev_side: ", prev_side, " side: ", side)
-  
+
       if flip_type == 1 then
         log.info("flip  90* " .. tostring(prev_side) .. ">" .. tostring(side))
         emit_action_event(device, "flip90")
-        
+
       elseif flip_type == 2 then
         if side==0 then
           prev_side = 3 -- because of bug in cube
@@ -123,18 +119,18 @@ local function cube_attr_handler(driver, device, value, zb_rx)
 
   if side ~= prev_side then
     device:set_field(SIDE, side)
-    event = cube.face(map_side_to_name[side+1])
+    local event = cube.face(map_side_to_name[side+1])
     --event.state_change = true
     device:emit_event(event)
   end
 end
 
 
-local function rotate_attr_handler(driver, device, value, zb_rx)
+local function rotate_attr_handler(_driver, device, value, _zb_rx)
   local val = utils.round( utils.clamp_value(value.value, -180, 180) ) -- between -180 and 180
   local delta = math.floor( val / 18 * 8) -- 80 percent for every 180*
-  
-  -- if device is on 
+
+  -- if device is on
   local level = device:get_field(CURRENT_LEVEL) or DEFAULT_LEVEL
   if level >= 0 then
     log.debug("rotate: ", val, "old_level ", level, " delta: ", delta)
@@ -150,13 +146,13 @@ local function rotate_attr_handler(driver, device, value, zb_rx)
   device:emit_event(cube.rotation(0))
 end
 
-function set_level(_, device, command)
+local function set_level(_, device, command)
   local last_rotate = device:get_field(LEVEL_TS) or 0
   if os.time() - last_rotate < 5 then
     log.info("ignore dimmer loopback")
     return
   end
-  
+
   local value = command.args.level
   generate_switch_level_event(device, value)
   -- device:emit_event(capabilities.switchLevel.level(value))
@@ -164,29 +160,29 @@ function set_level(_, device, command)
 end
 
 
-function on_off(_, device, command)
+local function on_off(_, device, command)
   local last_state = device:get_latest_state("main", capabilities.switch.ID, capabilities.switch.switch.NAME)
-  
+
   local last_rotate = device:get_field(LEVEL_TS) or 0
   if (os.time() - last_rotate < 5) or (last_state == command.command) then
     log.info("ignore on/off loopback")
     return
   end
 
-  local on_off = command.command == 'on'
-  if on_off then
+  local is_on = command.command == 'on'
+  if is_on then
     local last_level = device:get_latest_state("main", capabilities.switchLevel.ID, capabilities.switchLevel.level.NAME)
     if last_level == nil then
       last_level = DEFAULT_LEVEL
     end
-    log.debug("on_off: ", on_off, " last_level: ", last_level)
+    log.debug("on_off: ", is_on, " last_level: ", last_level)
 
     device:set_field(CURRENT_LEVEL, last_level)
     return device:emit_event(capabilities.switch.switch.on())
   end
 
   device:set_field(CURRENT_LEVEL, -1)
-  log.debug("on_off: ", on_off)
+  log.debug("on_off: ", is_on)
   return device:emit_event(capabilities.switch.switch.off())
 end
 
@@ -234,7 +230,7 @@ local aqara_cube_driver_template = {
       [zcl_clusters.basic_id] = xiaomi_utils.basic_id,
       [0x12] = {
         [0x0055] = cube_attr_handler
-      }, 
+      },
       [zcl_clusters.analog_input_id] = {
         [zcl_clusters.AnalogInput.attributes.PresentValue.ID] = rotate_attr_handler
       },

@@ -8,18 +8,18 @@ local commands = require('commands')
 local log = require('log')
 
 
-local function device_removed(self, device)
+local function device_removed(_self, device)
   log.warn("!!! Device removed: " .. device.device_network_id)
-  local success, data = commands.send_lan_command(device, 'DELETE', '')
+  commands.send_lan_command(device, 'DELETE', '')
 end
 
-local function device_added(self, device)
+local function device_added(_self, device)
   log.info("dicso.token:".. discovery.token)
   device:set_field('token', discovery.token, {persist=true})
   --device:refresh()
 end
 
-local function device_init(driver, device)
+local function device_init(_driver, device)
   -- Refresh schedule
   device.thread:call_on_schedule(
     config.SCHEDULE_PERIOD,
@@ -80,6 +80,7 @@ local driver =
 ---------------------------------------
 -- Switch control for external commands
 function driver:on_off(device, on_off)
+  local _ = self
   if on_off == 'off' then
     return device:emit_event(caps.switch.switch.off())
   end
@@ -89,6 +90,7 @@ end
 ---------------------------------------------
 -- Switch level control for external commands
 function driver:set_level(device, lvl)
+  local _ = self
   if lvl == 0 then
     device:emit_event(caps.switch.switch.off())
   else

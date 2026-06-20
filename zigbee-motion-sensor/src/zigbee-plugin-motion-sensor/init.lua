@@ -20,7 +20,7 @@ local ZIGBEE_PLUGIN_MOTION_SENSOR_FINGERPRINTS = {
   { mfr = "eZEX", model = "E280-KR0A0Z0-HA" }
 }
 
-local is_zigbee_plugin_motion_sensor = function(opts, driver, device)
+local is_zigbee_plugin_motion_sensor = function(_opts, _driver, device)
   for _, fingerprint in ipairs(ZIGBEE_PLUGIN_MOTION_SENSOR_FINGERPRINTS) do
     if device:get_manufacturer() == fingerprint.mfr and device:get_model() == fingerprint.model then
       return true
@@ -29,11 +29,11 @@ local is_zigbee_plugin_motion_sensor = function(opts, driver, device)
   return false
 end
 
-local function occupancy_attr_handler(driver, device, occupancy, zb_rx)
+local function occupancy_attr_handler(_driver, device, occupancy, _zb_rx)
   device:emit_event(occupancy.value == 0x01 and capabilities.motionSensor.motion.active() or capabilities.motionSensor.motion.inactive())
 end
 
-local do_refresh = function(self, device)
+local do_refresh = function(_self, device)
   device:send(OccupancySensing.attributes.Occupancy:read(device))
 end
 
