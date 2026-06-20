@@ -1,0 +1,104 @@
+name: ZNQBKG41LM
+components:
+  - id: main
+    label: "Top"
+    capabilities:
+    - id: switch
+      version: 1
+    - id: button
+      version: 1
+    - id: powerMeter
+      version: 1
+    - id: energyMeter
+      version: 1
+    - id: refresh
+      version: 1
+    categories:
+    - name: Switch
+  - id: button2
+    label: "Center"
+    capabilities:
+    - id: switch
+      version: 1
+    - id: button
+      version: 1
+    categories:
+    - name: Switch
+  - id: button3
+    label: "Bottom"
+    capabilities:
+    - id: switch
+      version: 1
+    - id: button
+      version: 1
+    categories:
+    - name: Switch
+  - id: button4
+    label: "Wireless"
+    capabilities:
+    - id: button
+      version: 1
+    categories:
+    - name: RemoteController
+  - id: group1
+    label: "All buttons"
+    capabilities:
+    - id: button
+      version: 1
+    categories:
+    - name: RemoteController
+
+preferences:
+  - title: "Mode"
+    name: operationMode
+    required: true
+    preferenceType: enumeration
+    definition:
+      options:
+        0: "Light Commands (Bind to Group)"
+        1: "Button Events (Normal)"
+      default: "1"
+
+  - preferenceId: stse.changeToWirelessSwitch
+    explicit: true
+
+  - title: "Top button"
+    name: button1
+    required: true
+    preferenceType: enumeration
+    definition:
+      options:
+        0x12: "Switch 1"
+        0xFE: "Detached"
+      default: "0x12"
+
+  - title: "Center button"
+    name: button2
+    required: true
+    preferenceType: enumeration
+    definition:
+      options:
+        0x22: "Switch 2"
+        0xFE: "Detached"
+      default: "0x22"
+
+  - title: "Bottom button"
+    name: button3
+    required: true
+    preferenceType: enumeration
+    definition:
+      options:
+        0x32: "Switch 3"
+        0xFE: "Detached"
+      default: "0x32"
+
+  - preferenceId: stse.restorePowerState
+    explicit: true
+
+  - preferenceId: stse.turnOffIndicatorLight
+    explicit: true
+
+metadata:
+  deviceType: Switch
+  ocfDeviceType: oic.d.switch
+  deviceTypeId: Switch

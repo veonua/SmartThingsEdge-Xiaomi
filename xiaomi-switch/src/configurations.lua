@@ -75,6 +75,7 @@ local devices = {
       "lumi.sensor_swit", "lumi.sensor_switch.aq3",
       "lumi.switch.b1laus01", "lumi.switch.b2laus01",
       "lumi.switch.b1naus01", "lumi.switch.b2naus01",
+      "lumi.switch.acn055",
     },
     CONFIGS = {
       first_button_ep = 0x0001,
@@ -127,29 +128,35 @@ configs.get_device_parameters = function(zb_device)
   local neutral_wire = false
   local switch = false
 
-  local _, _, m = string.find(model, "^lumi%.switch%.[ln](%d)")
-  if m ~= nil then
+  if model == "lumi.switch.acn055" then
     switch = true
-    number_of_channels = tonumber(m)
-    neutral_wire = model:sub(12, 12) == "n"
+    number_of_channels = 3
+    neutral_wire = true
   else
-    _, _, m = string.find(model, "^lumi%.switch%.b(%d)[ln]")
+    local _, _, m = string.find(model, "^lumi%.switch%.[ln](%d)")
     if m ~= nil then
       switch = true
       number_of_channels = tonumber(m)
-      neutral_wire = model:sub(16, 16) == "n"
+      neutral_wire = model:sub(12, 12) == "n"
     else
-      _, _, m = string.find(model, "^lumi%.ctrl_ln(%d)")
+      _, _, m = string.find(model, "^lumi%.switch%.b(%d)[ln]")
       if m ~= nil then
         switch = true
         number_of_channels = tonumber(m)
-        neutral_wire = true
+        neutral_wire = model:sub(16, 16) == "n"
       else
-        _, _, m = string.find(model, "^lumi%.ctrl_neutral(%d)")
+        _, _, m = string.find(model, "^lumi%.ctrl_ln(%d)")
         if m ~= nil then
           switch = true
           number_of_channels = tonumber(m)
-          neutral_wire = false
+          neutral_wire = true
+        else
+          _, _, m = string.find(model, "^lumi%.ctrl_neutral(%d)")
+          if m ~= nil then
+            switch = true
+            number_of_channels = tonumber(m)
+            neutral_wire = false
+          end
         end
       end
     end
