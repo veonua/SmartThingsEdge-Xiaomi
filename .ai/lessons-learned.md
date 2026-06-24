@@ -1,0 +1,1 @@
+- `lumi.switch.acn058` (Aqara Z1 Pro 3-gang) must not reuse the existing `lumi.switch.acn055` quadruple profile. The Pro model matches the generic 3-relay neutral-switch pattern with relay children on endpoints 2 and 3, while `acn055` keeps its own profile because it also exposes a separate wireless-only fourth endpoint.
