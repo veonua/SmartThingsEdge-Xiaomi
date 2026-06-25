@@ -1,2 +1,1 @@
-- `lumi.switch.acn058` (Aqara Z1 Pro 3-gang) must not reuse the existing `lumi.switch.acn055` quadruple profile. The Pro model matches the generic 3-relay neutral-switch pattern with relay children on endpoints 2 and 3, while `acn055` keeps its own profile because it also exposes a separate wireless-only fourth endpoint.
 - Keep SmartThings platform `lua_libs` in a gitignored `lua_libs/` directory at the repository root. That makes local `integration_test` runs deterministic and keeps the validation helper simple without reintroducing `busted`.
