@@ -25,4 +25,4 @@ Inspect repository instructions, project metadata, and the changed-file list bef
 
 ## Lua repositories
 
-Run `bash ./scripts/validate.sh [repository-root]`. The script finds changed and untracked Lua files, compiles them with `luac -p`, lints them with `luacheck`, and runs each affected driver's `src/test/test_*.lua` files with `lua` using SmartThings `lua_libs` on `LUA_PATH`. It reports when no test directory is affected or the required Lua runtime or SmartThings `lua_libs` are unavailable.
+Run `bash ./scripts/validate.sh [repository-root]`. The script finds changed and untracked Lua files, compiles them with `luac -p`, lints them with `luacheck`, and runs each affected driver's `src/test/test_*.lua` files with `lua` using SmartThings `lua_libs` on `LUA_PATH`. By default it expects the extracted platform libraries at `./lua_libs` in the repository root and reports when the required Lua runtime or local `lua_libs` are unavailable.

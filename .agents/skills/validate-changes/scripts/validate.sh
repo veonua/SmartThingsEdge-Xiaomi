@@ -3,29 +3,7 @@ set -euo pipefail
 
 root="${1:-.}"
 cd "$root"
-
-find_smartthings_lua_libs() {
-  local candidate
-
-  if [[ -n "${SMARTTHINGS_LUA_LIBS:-}" && -d "${SMARTTHINGS_LUA_LIBS}" ]]; then
-    printf '%s\n' "${SMARTTHINGS_LUA_LIBS}"
-    return 0
-  fi
-
-  for candidate in \
-    "/Users/andrew/Downloads/lua_libs-api_v19_60X-beta/lua_libs-api_v19" \
-    "/Users/andrew/Downloads/lua_libs-api_v19_60X-beta" \
-    "$HOME/Downloads/lua_libs-api_v19_60X-beta/lua_libs-api_v19" \
-    "$HOME/Downloads/lua_libs-api_v19_60X-beta"
-  do
-    if [[ -d "$candidate/st" && -d "$candidate/integration_test" ]]; then
-      printf '%s\n' "$candidate"
-      return 0
-    fi
-  done
-
-  return 1
-}
+smartthings_lua_libs="${SMARTTHINGS_LUA_LIBS:-$root/lua_libs}"
 
 lua_files=()
 drivers=()
@@ -68,8 +46,8 @@ if ! command -v lua >/dev/null; then
   exit 0
 fi
 
-if ! smartthings_lua_libs="$(find_smartthings_lua_libs)"; then
-  echo "Skipping tests: SmartThings lua libs were not found. Set SMARTTHINGS_LUA_LIBS to the extracted lua_libs directory." >&2
+if [[ ! -d "$smartthings_lua_libs/st" || ! -d "$smartthings_lua_libs/integration_test" ]]; then
+  echo "Skipping tests: SmartThings lua libs were not found at $smartthings_lua_libs." >&2
   exit 0
 fi
 
