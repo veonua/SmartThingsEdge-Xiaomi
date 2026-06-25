@@ -7,6 +7,12 @@ local cluster_base = require "st.zigbee.cluster_base"
 
 local MULTISTATE_INPUT_CLUSTER_ID = 0x0012
 local WIRELESS_SWITCH_ATTRIBUTE_ID = 0x0055
+local WIRELESS_SWITCH_ATTRIBUTE = {
+  ID = WIRELESS_SWITCH_ATTRIBUTE_ID,
+  NAME = "WirelessSwitch",
+  base_type = data_types.Uint16,
+  _cluster = { ID = MULTISTATE_INPUT_CLUSTER_ID }
+}
 
 local mock_device = test.mock_device.build_test_zigbee_device({
   profile = t_utils.get_profile_definition("button.yml"),
@@ -34,6 +40,8 @@ end
 zigbee_test_utils.prepare_zigbee_env_info()
 local function test_init()
   test.mock_device.add_test_device(mock_device)
+  mock_device:set_field("first_switch_ep", 1, { persist = false })
+  mock_device:set_field("first_button_ep", 1, { persist = false })
   zigbee_test_utils.init_noop_health_check_timer()
   test.socket.capability:__set_channel_ordering("relaxed")
   expect_startup_button_metadata()
@@ -53,12 +61,7 @@ test.register_coroutine_test(
     test.wait_for_events()
     test.socket.zigbee:__queue_receive({
       mock_device.id,
-      cluster_base.build_test_attr_report(
-        mock_device,
-        data_types.ClusterId(MULTISTATE_INPUT_CLUSTER_ID),
-        data_types.AttributeId(WIRELESS_SWITCH_ATTRIBUTE_ID),
-        data_types.Uint16(1)
-      )
+      cluster_base.build_test_attr_report(WIRELESS_SWITCH_ATTRIBUTE, mock_device, data_types.Uint16(1))
     })
     test.socket.capability:__expect_send(
       mock_device:generate_test_message("main", capabilities.button.button.pushed({ state_change = true }))

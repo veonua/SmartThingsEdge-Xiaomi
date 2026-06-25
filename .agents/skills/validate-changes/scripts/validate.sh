@@ -4,6 +4,29 @@ set -euo pipefail
 root="${1:-.}"
 cd "$root"
 
+find_smartthings_lua_libs() {
+  local candidate
+
+  if [[ -n "${SMARTTHINGS_LUA_LIBS:-}" && -d "${SMARTTHINGS_LUA_LIBS}" ]]; then
+    printf '%s\n' "${SMARTTHINGS_LUA_LIBS}"
+    return 0
+  fi
+
+  for candidate in \
+    "/Users/andrew/Downloads/lua_libs-api_v19_60X-beta/lua_libs-api_v19" \
+    "/Users/andrew/Downloads/lua_libs-api_v19_60X-beta" \
+    "$HOME/Downloads/lua_libs-api_v19_60X-beta/lua_libs-api_v19" \
+    "$HOME/Downloads/lua_libs-api_v19_60X-beta"
+  do
+    if [[ -d "$candidate/st" && -d "$candidate/integration_test" ]]; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+
+  return 1
+}
+
 lua_files=()
 drivers=()
 while IFS= read -r file; do
@@ -40,10 +63,17 @@ if ((${#drivers[@]} == 0)); then
   exit 0
 fi
 
-if ! command -v busted >/dev/null; then
-  echo "Skipping tests: busted is not installed." >&2
+if ! command -v lua >/dev/null; then
+  echo "Skipping tests: lua is not installed." >&2
   exit 0
 fi
+
+if ! smartthings_lua_libs="$(find_smartthings_lua_libs)"; then
+  echo "Skipping tests: SmartThings lua libs were not found. Set SMARTTHINGS_LUA_LIBS to the extracted lua_libs directory." >&2
+  exit 0
+fi
+
+lua_path="${smartthings_lua_libs}/?.lua;${smartthings_lua_libs}/?/init.lua;./?.lua;./?/init.lua;;"
 
 tested_drivers='|'
 for driver in "${drivers[@]}"; do
@@ -52,5 +82,11 @@ for driver in "${drivers[@]}"; do
   esac
   tested_drivers="${tested_drivers}${driver}|"
   echo "Testing $driver/src/test"
-  busted "$driver/src/test"
+  while IFS= read -r test_file; do
+    (
+      cd "$driver/src"
+      local_test_file="${test_file#"$driver/src/"}"
+      LUA_PATH="$lua_path" lua "$local_test_file"
+    )
+  done < <(find "$driver/src/test" -maxdepth 1 -type f -name 'test_*.lua' | sort)
 done
