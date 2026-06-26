@@ -101,6 +101,7 @@ local CONFIG_MAP = {
   ["lumi.ctrl_ln2.aq1"]    = { children_amount = 2 },
   ["lumi.switch.l3acn3"]   = { children_amount = 3 },
   ["lumi.switch.n3acn3"]   = { children_amount = 3 },
+  ["lumi.switch.acn058"]   = { children_amount = 3 },
 }
 
 

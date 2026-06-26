@@ -75,7 +75,7 @@ local devices = {
       "lumi.sensor_swit", "lumi.sensor_switch.aq3",
       "lumi.switch.b1laus01", "lumi.switch.b2laus01",
       "lumi.switch.b1naus01", "lumi.switch.b2naus01",
-      "lumi.switch.acn055",
+      "lumi.switch.acn055", "lumi.switch.acn058",
     },
     CONFIGS = {
       first_button_ep = 0x0001,
@@ -128,7 +128,7 @@ configs.get_device_parameters = function(zb_device)
   local neutral_wire = false
   local switch = false
 
-  if model == "lumi.switch.acn055" then
+  if model:find("^lumi%.switch%.acn05[58]$") ~= nil then
     switch = true
     number_of_channels = 3
     neutral_wire = true

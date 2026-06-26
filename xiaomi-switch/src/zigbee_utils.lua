@@ -12,7 +12,7 @@ local zutils = {}
 
 zutils.supports_client_cluster = function(device, cluster_id)
   for _, ep in pairs(device.zigbee_endpoints) do
-    for _, cluster in ipairs(ep.client_clusters) do
+    for _, cluster in ipairs(ep.client_clusters or {}) do
       if cluster == cluster_id then
         return true
       end
@@ -40,6 +40,9 @@ zutils.find_first_ep = function (eps, cluster)
 end
 
 local function to_hex(value)
+  if value == nil then
+    return "nil"
+  end
   return string.format("0x%04X", value)
 end
 
@@ -51,7 +54,7 @@ id_to_name_map[0xFCC0] = "AqaraOpple"
 
 local function clusters_to_string(name, cluster_table)
   local res = name.."["
-  for _, cluster in ipairs(cluster_table) do
+  for _, cluster in ipairs(cluster_table or {}) do
     local cluster_name = id_to_name_map[cluster] or to_hex(cluster)
     res = res .. cluster_name .. ", "
   end

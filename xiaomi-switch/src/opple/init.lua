@@ -30,6 +30,7 @@ local OPPLE_FINGERPRINTS = {
     { model = "^lumi.switch.agl011" },
     { model = "^lumi.switch.b.lc04" },
     { model = "^lumi.switch..3acn." },
+    { model = "^lumi.switch.acn05[58]$" },
     { model = "^lumi.remote.b.8" },
     { model = "^lumi.remote.rkba01" }, -- NEW
 }

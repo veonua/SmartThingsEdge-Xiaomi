@@ -1,4 +1,5 @@
 homebridge
+lua_libs/
 config.json
 Dockerfile
 zigbee-cube/matched-from-SmartThingsEdgeDrivers/

@@ -1,0 +1,1 @@
+- Keep SmartThings platform `lua_libs` in a gitignored `lua_libs/` directory at the repository root. That makes local `integration_test` runs deterministic and keeps the validation helper simple without reintroducing `busted`.

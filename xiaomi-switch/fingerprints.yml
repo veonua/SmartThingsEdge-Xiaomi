@@ -157,6 +157,12 @@ zigbeeManufacturer:
     model: lumi.switch.acn055
     deviceProfileName: ZNQBKG41LM
 
+  - id: "ZNQBKG44LM"
+    deviceLabel: Aqara Z1 Pro Wall Switch (Triple Rocker)
+    manufacturer: Aqara
+    model: lumi.switch.acn058
+    deviceProfileName: switch-neutral-button-3-main
+
   - id: "KD-R01D"
     deviceLabel: KD-R01D Dimmer Switch H2 EU
     manufacturer: Aqara
