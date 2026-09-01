@@ -41,8 +41,8 @@ preferences:
     preferenceType: enumeration
     definition:
       options:
-        0: "Forward"
-        1: "Reverse"
+        0: "Reverse"
+        1: "Forward"
       default: "0"
 
   - title: "Minimum brightness"
